@@ -116,6 +116,7 @@
         }
 
         function show(id) {
+            if (id !== 'logic-tunnel') closeElder();
             if (id === 'visual' && !vantageMode && protocolMode && solvedCount < 3) {
                 const taskDisplay = document.getElementById('task-display');
                 if (taskDisplay) taskDisplay.innerText = `Neural lock incomplete: ${solvedCount}/3`;
@@ -190,6 +191,7 @@
                 document.getElementById('task-display').innerText = `Neural lock incomplete: ${solvedCount}/3`;
                 return;
             }
+            closeElder();
             shatterPoint = false;
             vantageMode = false;
             protocolMode = false;
@@ -208,6 +210,7 @@
             if (!display) return;
 
             if (vantageShatterTimer) clearTimeout(vantageShatterTimer);
+            closeElder();
             vantageMode = true;
             shatterPoint = false;
             show('visual');
@@ -229,6 +232,7 @@
 
         function startVisual() {
             shatterPoint = false;
+            closeElder();
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             sparkX = canvas.width / 2; particles = [];
             for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, sx: Math.random()-0.5, sy: Math.random()-0.5 });
@@ -237,6 +241,7 @@
 
         function animate() {
             if (!document.getElementById('visual').classList.contains('active')) return;
+            ctx.globalAlpha = 1;
             ctx.fillStyle = 'rgba(2, 6, 23, 0.2)'; ctx.fillRect(0,0,canvas.width, canvas.height);
             if (!shatterPoint) {
                 sparkX += sparkSpeed * sparkDir;
@@ -256,6 +261,7 @@
 
         // --- WEAVER ---
         function startWeave() {
+            closeElder();
             weavingActive = true; show('weave');
             const instr = document.getElementById('weave-instructions');
             instr.style.opacity = "1"; setTimeout(() => instr.style.opacity = "0", 3500);
@@ -338,6 +344,7 @@
             protocolMode = false;
             canProceed = false;
             lastSolvedAnswer = "";
+            closeElder();
             if (vantageShatterTimer) {
                 clearTimeout(vantageShatterTimer);
                 vantageShatterTimer = null;
