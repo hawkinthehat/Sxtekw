@@ -100,11 +100,10 @@
 
     <div id="visual" class="screen">
         <canvas id="canvas"></canvas>
-        <div id="logic-overlay" style="position: absolute; top: 25%; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); padding: 25px; border-radius: 20px; border: 1px solid var(--teal); width: 80%; max-width: 400px; z-index: 20; display: none; opacity: 0; transition: opacity 1s ease;">
-            <p style="color: var(--teal); font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 10px;">NEURAL LOAD INITIATED</p>
-            <h2 id="logic-text" style="color: white; margin: 0; font-size: 1.4rem;"></h2>
+        <div id="vantage-display" style="position: absolute; top: 40%; width: 100%; text-align: center; pointer-events: none; z-index: 10;">
+            <h1 id="floating-thought" style="color: var(--text); font-size: 2rem; letter-spacing: 8px; opacity: 0; transition: all 2s ease-in-out; text-transform: uppercase;"></h1>
         </div>
-        <h3 id="visual-msg" style="position: absolute; bottom: 15%; width: 100%;">CATCH THE CLICK</h3>
+        <h3 id="visual-msg" style="position: absolute; bottom: 100px; width: 100%;">CATCH THE CLICK</h3>
     </div>
 
     <div id="weave" class="screen">
@@ -227,16 +226,35 @@
         }
 
         function initVantage() {
-            vantageMode = true; shatterPoint = false;
-            const thought = document.getElementById('thought-input').value || "Worry";
+            const input = document.getElementById('thought-input');
+            const thought = input.value.trim() || "UNCERTAINTY";
+            
+            vantageMode = true;
+            shatterPoint = false;
+            
+            // 1. Transition to the Visual Screen
             show('visual');
-            document.getElementById('visual-msg').innerText = `OBSERVE: ${thought.toUpperCase()}`;
-            setTimeout(() => { 
-                shatterPoint = true; 
+            
+            // 2. Display the Thought
+            const display = document.getElementById('floating-thought');
+            display.innerText = thought;
+            display.style.opacity = "1";
+            display.style.transform = "scale(1.1)";
+            
+            document.getElementById('visual-msg').innerText = "OBSERVE THE SIGNAL";
+
+            // 3. The "Shatter" Timer
+            setTimeout(() => {
+                shatterPoint = true;
+                display.style.opacity = "0"; // Make the text vanish as particles explode
+                display.style.transform = "scale(0.5) blur(10px)";
+                
                 if (navigator.vibrate) navigator.vibrate([100, 50, 200]);
-                document.getElementById('visual-msg').innerText = "SHATTERED. RECOVERY SUGGESTED.";
+                document.getElementById('visual-msg').innerText = "SIGNAL SHATTERED";
+                
+                // 4. Recovery Transition
                 setTimeout(() => triggerSuccess(), 5000);
-            }, 12000);
+            }, 8000); // 8 seconds of observation before the shatter
         }
 
         function startWeave() {
