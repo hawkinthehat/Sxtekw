@@ -79,7 +79,7 @@
         let particles = [], weavePoints = [], mouse = { x: null, y: null }, audioCtx;
         let leftOsc, rightOsc, vantageMode = false, shatterPoint = false, weavingActive = false;
         let sparkX = 0, sparkDir = 1, sparkSpeed = 6, solvedCount = 0, currentTaskAnswer = "";
-        let protocolUnlocked = false;
+        let protocolMode = false;
         let vantageShatterTimer = null;
         const rootStyles = getComputedStyle(document.documentElement);
         const tealColor = rootStyles.getPropertyValue('--teal').trim() || "#2dd4bf";
@@ -93,7 +93,7 @@
         ];
 
         function show(id) {
-            if (id === 'visual' && !vantageMode && !protocolUnlocked) {
+            if (id === 'visual' && !vantageMode && protocolMode && solvedCount < 3) {
                 const taskDisplay = document.getElementById('task-display');
                 if (taskDisplay) taskDisplay.innerText = `Neural lock incomplete: ${solvedCount}/3`;
                 id = 'logic-tunnel';
@@ -107,7 +107,7 @@
         // --- LOGIC TUNNEL ---
         function startProtocol() {
             solvedCount = 0;
-            protocolUnlocked = false;
+            protocolMode = true;
             shatterPoint = false;
             vantageMode = false;
             const btn = document.getElementById('ready-btn');
@@ -134,7 +134,6 @@
                 solvedCount++; if (navigator.vibrate) navigator.vibrate(20); updateCounter();
                 if (solvedCount >= 3) {
                     const btn = document.getElementById('ready-btn');
-                    protocolUnlocked = true;
                     btn.style.opacity = "1"; btn.style.pointerEvents = "auto"; btn.disabled = false; btn.innerText = "I AM READY TO WEAVE";
                 }
                 generateTask();
@@ -152,13 +151,14 @@
         function updateCounter() { document.getElementById('task-counter').innerText = `NEURAL SYNC: ${solvedCount}/3 ACHIEVED`; }
 
         function attemptProceed() {
-            if (solvedCount < 3 || !protocolUnlocked) {
+            if (!protocolMode || solvedCount < 3) {
                 if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
                 document.getElementById('task-display').innerText = `Neural lock incomplete: ${solvedCount}/3`;
                 return;
             }
             shatterPoint = false;
             vantageMode = false;
+            protocolMode = false;
             document.getElementById('visual-msg').innerText = "FOLLOW THE LIGHT";
             show('visual');
         }
@@ -298,7 +298,7 @@
 
         function exitAll() {
             weavingActive = false; vantageMode = false; shatterPoint = false;
-            protocolUnlocked = false;
+            protocolMode = false;
             if (vantageShatterTimer) {
                 clearTimeout(vantageShatterTimer);
                 vantageShatterTimer = null;
@@ -314,11 +314,6 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('home').classList.add('active');
         }
-
-        // Remove startup state drift from bfcache/hot-reload or stale eval:
-        // always force protocol locked on script boot.
-        startProtocol();
-        show('home');
 
         // Rotating Tips
         let tipIdx = 0;
