@@ -61,7 +61,11 @@
 
     <div id="visual" class="screen">
         <canvas id="canvas"></canvas>
-        <h3 id="visual-msg">CATCH THE CLICK</h3>
+        <div id="logic-overlay" style="position: absolute; top: 25%; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); padding: 25px; border-radius: 20px; border: 1px solid var(--teal); width: 80%; max-width: 400px; z-index: 20; display: none; opacity: 0; transition: opacity 1s ease;">
+            <p style="color: var(--teal); font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 10px;">NEURAL LOAD INITIATED</p>
+            <h2 id="logic-text" style="color: white; margin: 0; font-size: 1.4rem;"></h2>
+        </div>
+        <h3 id="visual-msg" style="position: absolute; bottom: 15%; width: 100%;">CATCH THE CLICK</h3>
     </div>
 
     <div id="weave" class="screen">
@@ -115,9 +119,26 @@
         }
 
         function startProtocol() {
-            const task = logicTasks[Math.floor(Math.random()*logicTasks.length)];
-            alert(`SYSTEM RED RESET: ${task}`); 
+            const task = logicTasks[Math.floor(Math.random() * logicTasks.length)];
+            const overlay = document.getElementById('logic-overlay');
+            const logicText = document.getElementById('logic-text');
+            
+            // Set the task text
+            logicText.innerText = task;
+            
+            // Show the visual screen first
             show('visual');
+            
+            // Fade in the "Soft Box" logic task
+            overlay.style.display = 'block';
+            overlay.style.opacity = '0';
+            setTimeout(() => { overlay.style.opacity = '1'; }, 100);
+
+            // Auto-hide the logic task after 12 seconds, leaving just the Pulse Sync
+            setTimeout(() => {
+                overlay.style.opacity = '0';
+                setTimeout(() => { overlay.style.display = 'none'; }, 1000);
+            }, 12000);
         }
 
         function initVantage() {
