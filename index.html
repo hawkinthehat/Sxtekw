@@ -73,6 +73,14 @@
         <button class="btn secondary" style="position: absolute; bottom: 40px; width: 60%;" onclick="exitAll()">EXIT TO CALM</button>
     </div>
 
+    <div id="elder-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); z-index: 5000; flex-direction: column; justify-content: center; align-items: center; padding: 40px; backdrop-filter: blur(10px);">
+        <div style="border: 1px solid var(--gold); padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 30px rgba(251, 191, 36, 0.1);">
+            <h3 id="elder-title" style="color: var(--teal); letter-spacing: 3px; margin-top: 0;">MESSAGE</h3>
+            <p id="elder-msg" style="line-height: 1.6; color: var(--text); opacity: 0.9; margin: 20px 0;"></p>
+            <button class="btn gold-btn" onclick="closeElder()">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
     <script>
         const canvas = document.getElementById('canvas'); const ctx = canvas.getContext('2d');
         const weaveCanvas = document.getElementById('weave-canvas'); const wCtx = weaveCanvas.getContext('2d');
@@ -92,6 +100,19 @@
             "VAGAL TONE: Take a long, slow exhale through pursed lips."
         ];
 
+        // --- THE ELDER SYSTEM ---
+        function elderSpeak(title, message) {
+            document.getElementById('elder-title').innerText = title;
+            document.getElementById('elder-msg').innerText = message;
+            const overlay = document.getElementById('elder-overlay');
+            overlay.style.display = 'flex';
+            overlay.style.animation = 'fadeIn 0.4s ease-out';
+        }
+
+        function closeElder() {
+            document.getElementById('elder-overlay').style.display = 'none';
+        }
+
         function show(id) {
             if (id === 'visual' && !vantageMode && protocolMode && solvedCount < 3) {
                 const taskDisplay = document.getElementById('task-display');
@@ -110,6 +131,7 @@
             protocolMode = true;
             shatterPoint = false;
             vantageMode = false;
+            elderSpeak("SYSTEM RED", "The signal is fragmented. We must restore the logic gate before the weave can begin.");
             const btn = document.getElementById('ready-btn');
             btn.style.opacity = "0.15"; btn.style.pointerEvents = "none"; btn.disabled = true; btn.innerText = "LOCKED";
             updateCounter(); show('logic-tunnel'); generateTask();
@@ -135,6 +157,9 @@
                 if (solvedCount >= 3) {
                     const btn = document.getElementById('ready-btn');
                     btn.style.opacity = "1"; btn.style.pointerEvents = "auto"; btn.disabled = false; btn.innerText = "I AM READY TO WEAVE";
+                    if (solvedCount === 3) {
+                        elderSpeak("NEURAL LOCK", "The logic is restored. The Weaver is now open to you.");
+                    }
                 }
                 generateTask();
             } else {
@@ -145,6 +170,7 @@
                         taskBox.style.border = "1px solid rgba(45, 212, 191, 0.2)";
                     }, 350);
                 }
+                elderSpeak("SYNC INTERRUPTED", "Pause. Breathe once. Then answer again.");
             }
         }
 
