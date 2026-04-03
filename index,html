@@ -134,33 +134,47 @@
         }
 
         async function startProtocol() {
-            // Stage 1: Physical Grounding
-            alert("SYSTEM RED: Identifying Environment...");
-            const sense = prompt("Name 3 BLUE things you see right now (comma separated):");
-            if (!sense || sense.split(',').length < 3) return exitAll();
+            let tasksSolved = 0;
+            let userReady = false;
 
-            // Stage 2: Computational Logic
-            const num1 = Math.floor(Math.random() * 20) + 10;
-            const num2 = Math.floor(Math.random() * 15) + 5;
-            const math = prompt(`Neural Sync: What is ${num1} + ${num2}?`);
-            if (parseInt(math) !== (num1 + num2)) {
-                alert("Sync Failed. Retrying...");
-                return startProtocol(); // Loops until they get it right
+            while (!userReady) {
+                // Choose a random task type
+                const type = Math.floor(Math.random() * 3);
+                let challenge, answer;
+
+                if (type === 0) { // MATH
+                    const n1 = Math.floor(Math.random() * 15) + 10;
+                    const n2 = Math.floor(Math.random() * 10) + 5;
+                    challenge = `SYNC: What is ${n1} + ${n2}?`;
+                    answer = (n1 + n2).toString();
+                } else if (type === 1) { // LINGUISTIC
+                    const words = ["HAWKS", "SALISH", "CEDAR", "RIVER", "SOUND"];
+                    const word = words[Math.floor(Math.random() * words.length)];
+                    challenge = `REVERSE: Spell '${word}' backwards:`;
+                    answer = word.split('').reverse().join('').toUpperCase();
+                } else { // SENSORY
+                    challenge = "GROUNDING: Name a color you see right now:";
+                    answer = "ANY"; // Accept any input for grounding
+                }
+
+                const input = prompt(`${challenge}\n\n(Solved: ${tasksSolved})\nType 'READY' if you feel the quiet.`);
+                
+                if (!input) return exitAll(); // Cancel if they hit cancel
+
+                if (input.toUpperCase() === "READY" && tasksSolved >= 3) {
+                    userReady = true;
+                } else if (input.toUpperCase() === "READY" && tasksSolved < 3) {
+                    alert("Neural lock not yet achieved. Complete a few more tasks first.");
+                } else if (answer === "ANY" || input.toUpperCase() === answer) {
+                    tasksSolved++;
+                    if (navigator.vibrate) navigator.vibrate(20);
+                } else {
+                    alert("Sync interrupted. Focus on the next one.");
+                }
             }
 
-            // Stage 3: Linguistic Reversal (The "Cycle Breaker")
-            const words = ["HAWKS", "SALISH", "QUIET", "WEAVER"];
-            const word = words[Math.floor(Math.random() * words.length)];
-            const reverse = prompt(`Final Lock: Spell '${word}' backwards:`);
-            
-            if (reverse.toUpperCase() === word.split('').reverse().join('')) {
-                if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
-                alert("NEURAL LOCK ACHIEVED. Proceeding to Pulse Sync.");
-                show('visual'); // Only now do they get the EMDR spark
-            } else {
-                alert("Sequence Interrupted. Restarting Firewall.");
-                startProtocol();
-            }
+            if (navigator.vibrate) navigator.vibrate([50, 100, 50]);
+            show('visual'); // Move to Pulse Sync (EMDR)
         }
 
         function initVantage() {
