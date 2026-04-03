@@ -326,9 +326,28 @@
         }
 
         function exitAll() {
-            weavingActive = false; vantageMode = false; shatterPoint = false;
-            if(leftOsc) { leftOsc.stop(); rightOsc.stop(); }
+            // 1. Stop the Visual Loops
+            weavingActive = false;
+            vantageMode = false;
+            shatterPoint = false;
+            
+            // 2. Kill the Audio
+            if (leftOsc) {
+                leftOsc.stop();
+                rightOsc.stop();
+                leftOsc = null;
+                rightOsc = null;
+            }
+            
+            // 3. Clear the Canvases
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            wCtx.clearRect(0, 0, weaveCanvas.width, weaveCanvas.height);
+            
+            // 4. Return to Home
             show('home');
+            
+            // 5. Final Haptic Confirmation
+            if (navigator.vibrate) navigator.vibrate(50);
         }
     </script>
 </body>
