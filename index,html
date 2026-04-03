@@ -19,6 +19,13 @@
             50% { transform: scaleX(2); opacity: 1; }
             100% { transform: scaleX(1); opacity: 0.5; }
         }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            50% { transform: translateX(6px); }
+            75% { transform: translateX(-4px); }
+            100% { transform: translateX(0); }
+        }
 
         .btn { background: var(--teal); color: var(--bg); border: none; padding: 20px; border-radius: 18px; width: 100%; max-width: 360px; font-weight: 900; font-size: 1rem; margin: 8px 0; cursor: pointer; letter-spacing: 2px; text-transform: uppercase; z-index: 20; transition: 0.3s; }
         .btn:active { transform: scale(0.95); }
@@ -66,6 +73,25 @@
         <button class="btn secondary" onclick="show('home')">BACK</button>
     </div>
 
+    <div id="logic-tunnel" class="screen">
+        <div style="margin-bottom: 40px;">
+            <h2 style="color: var(--red); letter-spacing: 5px;">NEURAL LOCK</h2>
+            <p id="task-counter" style="opacity: 0.6; font-size: 0.8rem;">TASKS COMPLETED: 0/3</p>
+        </div>
+
+        <div id="task-display" style="font-size: 1.4rem; font-weight: bold; min-height: 80px; color: var(--teal);">
+            Identify Environment...
+        </div>
+
+        <input type="text" id="logic-input" placeholder="Type answer here..." autofocus>
+        
+        <button id="next-task-btn" class="btn" onclick="checkLogic()">SUBMIT ANSWER</button>
+        
+        <button id="ready-btn" class="btn gold-btn" style="opacity: 0.2; pointer-events: none; margin-top: 20px;" onclick="show('visual')">
+            I AM READY TO WEAVE
+        </button>
+    </div>
+
     <div id="visual" class="screen">
         <canvas id="canvas"></canvas>
         <div id="logic-overlay" style="position: absolute; top: 25%; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); padding: 25px; border-radius: 20px; border: 1px solid var(--teal); width: 80%; max-width: 400px; z-index: 20; display: none; opacity: 0; transition: opacity 1s ease;">
@@ -111,8 +137,8 @@
         
         // Pulse Sync Params
         let sparkX = 0, sparkDir = 1, sparkSpeed = 6;
-
-        const logicTasks = ["Spell 'CALM' backwards", "What is 18 + 24?", "Name 3 PNW trees", "Count back from 20 by 4s"];
+        let tasksSolved = 0;
+        let currentAnswer = "";
 
         function initAudio() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -133,48 +159,60 @@
             if (id === 'visual') startVisual();
         }
 
-        async function startProtocol() {
-            let tasksSolved = 0;
-            let userReady = false;
+        function startProtocol() {
+            tasksSolved = 0;
+            updateTaskCounter();
+            document.getElementById('ready-btn').style.opacity = "0.2";
+            document.getElementById('ready-btn').style.pointerEvents = "none";
+            show('logic-tunnel');
+            generateNewTask();
+        }
 
-            while (!userReady) {
-                // Choose a random task type
-                const type = Math.floor(Math.random() * 3);
-                let challenge, answer;
+        function generateNewTask() {
+            const type = Math.floor(Math.random() * 2); // 0: Math, 1: Reverse
+            const display = document.getElementById('task-display');
+            const inputField = document.getElementById('logic-input');
+            inputField.value = "";
+            inputField.focus();
 
-                if (type === 0) { // MATH
-                    const n1 = Math.floor(Math.random() * 15) + 10;
-                    const n2 = Math.floor(Math.random() * 10) + 5;
-                    challenge = `SYNC: What is ${n1} + ${n2}?`;
-                    answer = (n1 + n2).toString();
-                } else if (type === 1) { // LINGUISTIC
-                    const words = ["HAWKS", "SALISH", "CEDAR", "RIVER", "SOUND"];
-                    const word = words[Math.floor(Math.random() * words.length)];
-                    challenge = `REVERSE: Spell '${word}' backwards:`;
-                    answer = word.split('').reverse().join('').toUpperCase();
-                } else { // SENSORY
-                    challenge = "GROUNDING: Name a color you see right now:";
-                    answer = "ANY"; // Accept any input for grounding
-                }
-
-                const input = prompt(`${challenge}\n\n(Solved: ${tasksSolved})\nType 'READY' if you feel the quiet.`);
-                
-                if (!input) return exitAll(); // Cancel if they hit cancel
-
-                if (input.toUpperCase() === "READY" && tasksSolved >= 3) {
-                    userReady = true;
-                } else if (input.toUpperCase() === "READY" && tasksSolved < 3) {
-                    alert("Neural lock not yet achieved. Complete a few more tasks first.");
-                } else if (answer === "ANY" || input.toUpperCase() === answer) {
-                    tasksSolved++;
-                    if (navigator.vibrate) navigator.vibrate(20);
-                } else {
-                    alert("Sync interrupted. Focus on the next one.");
-                }
+            if (type === 0) {
+                const n1 = Math.floor(Math.random() * 12) + 8;
+                const n2 = Math.floor(Math.random() * 9) + 4;
+                display.innerText = `What is ${n1} + ${n2}?`;
+                currentAnswer = (n1 + n2).toString();
+            } else {
+                const words = ["HAWKS", "SALISH", "CEDAR", "QUIET"];
+                const word = words[Math.floor(Math.random() * words.length)];
+                display.innerText = `Spell '${word}' Backwards:`;
+                currentAnswer = word.split('').reverse().join('').toUpperCase();
             }
+        }
 
-            if (navigator.vibrate) navigator.vibrate([50, 100, 50]);
-            show('visual'); // Move to Pulse Sync (EMDR)
+        function checkLogic() {
+            const val = document.getElementById('logic-input').value.toUpperCase().trim();
+            
+            if (val === currentAnswer) {
+                tasksSolved++;
+                if (navigator.vibrate) navigator.vibrate(25);
+                updateTaskCounter();
+                
+                if (tasksSolved >= 3) {
+                    // UNLOCK THE "MOVE ON" BUTTON
+                    const btn = document.getElementById('ready-btn');
+                    btn.style.opacity = "1";
+                    btn.style.pointerEvents = "auto";
+                    btn.innerText = "SIGNAL LOCKED: PROCEED";
+                }
+                generateNewTask();
+            } else {
+                // Feedback for wrong answer
+                document.getElementById('logic-tunnel').style.animation = "shake 0.2s ease-in-out";
+                setTimeout(() => { document.getElementById('logic-tunnel').style.animation = ""; }, 200);
+            }
+        }
+
+        function updateTaskCounter() {
+            document.getElementById('task-counter').innerText = `NEURAL SYNC: ${tasksSolved}/3 ACHIEVED`;
         }
 
         function initVantage() {
