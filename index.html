@@ -88,6 +88,8 @@
         let leftOsc, rightOsc, vantageMode = false, shatterPoint = false, weavingActive = false;
         let sparkX = 0, sparkDir = 1, sparkSpeed = 6, solvedCount = 0, currentTaskAnswer = "";
         let protocolMode = false;
+        let canProceed = false;
+        let lastSolvedAnswer = "";
         let vantageShatterTimer = null;
         const rootStyles = getComputedStyle(document.documentElement);
         const tealColor = rootStyles.getPropertyValue('--teal').trim() || "#2dd4bf";
@@ -129,6 +131,8 @@
         function startProtocol() {
             solvedCount = 0;
             protocolMode = true;
+            canProceed = false;
+            lastSolvedAnswer = "";
             shatterPoint = false;
             vantageMode = false;
             elderSpeak("SYSTEM RED", "The signal is fragmented. We must restore the logic gate before the weave can begin.");
@@ -151,11 +155,14 @@
         }
 
         function checkLogic() {
-            const val = document.getElementById('logic-input').value.toUpperCase().trim();
-            if (val === currentTaskAnswer) {
+            const inputEl = document.getElementById('logic-input');
+            const val = inputEl.value.toUpperCase().trim();
+            if (val && val === currentTaskAnswer && val !== lastSolvedAnswer) {
+                lastSolvedAnswer = val;
                 solvedCount++; if (navigator.vibrate) navigator.vibrate(20); updateCounter();
                 if (solvedCount >= 3) {
                     const btn = document.getElementById('ready-btn');
+                    canProceed = true;
                     btn.style.opacity = "1"; btn.style.pointerEvents = "auto"; btn.disabled = false; btn.innerText = "I AM READY TO WEAVE";
                     if (solvedCount === 3) {
                         elderSpeak("NEURAL LOCK", "The logic is restored. The Weaver is now open to you.");
@@ -177,7 +184,8 @@
         function updateCounter() { document.getElementById('task-counter').innerText = `NEURAL SYNC: ${solvedCount}/3 ACHIEVED`; }
 
         function attemptProceed() {
-            if (!protocolMode || solvedCount < 3) {
+            const btn = document.getElementById('ready-btn');
+            if (!protocolMode || solvedCount < 3 || !canProceed || btn.disabled) {
                 if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
                 document.getElementById('task-display').innerText = `Neural lock incomplete: ${solvedCount}/3`;
                 return;
@@ -185,6 +193,9 @@
             shatterPoint = false;
             vantageMode = false;
             protocolMode = false;
+            canProceed = false;
+            btn.disabled = true;
+            btn.style.pointerEvents = "none";
             document.getElementById('visual-msg').innerText = "FOLLOW THE LIGHT";
             show('visual');
         }
@@ -325,6 +336,8 @@
         function exitAll() {
             weavingActive = false; vantageMode = false; shatterPoint = false;
             protocolMode = false;
+            canProceed = false;
+            lastSolvedAnswer = "";
             if (vantageShatterTimer) {
                 clearTimeout(vantageShatterTimer);
                 vantageShatterTimer = null;
