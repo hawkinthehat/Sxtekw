@@ -1,0 +1,16 @@
+{
+  "name": "SXT’EKW | Neural Weaver",
+  "short_name": "SXT’EKW",
+  "description": "Ancestral-inspired neural grounding and weaving.",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#2dd4bf",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
