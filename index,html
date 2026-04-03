@@ -157,6 +157,8 @@
         function startWeave() {
             weavingActive = true;
             show('weave');
+            // Initial Instruction Overlay
+            document.getElementById('weave-progress').innerHTML = "DRAG TO CONNECT THE DOTS<br><small>Follow the pattern to build the basket</small>";
             weaveCanvas.width = window.innerWidth; weaveCanvas.height = window.innerHeight;
             weavePoints = [];
             const cols = 8, rows = 10;
@@ -233,20 +235,45 @@
         function animateWeave() {
             if (!weavingActive) return;
             wCtx.fillStyle = 'rgba(2, 6, 23, 0.4)'; wCtx.fillRect(0,0,weaveCanvas.width, weaveCanvas.height);
+            
             let locked = 0;
             weavePoints.forEach(p => {
+                // MAGNETIC SNAP: Increase the radius to 60 for easier "locking"
                 let d = Math.sqrt((mouse.x-p.x)**2 + (mouse.y-p.y)**2);
-                if (d < 45 && !p.locked) { p.locked = true; if(navigator.vibrate) navigator.vibrate(15); }
+                if (d < 60 && !p.locked) {
+                    p.locked = true;
+                    if(navigator.vibrate) navigator.vibrate(10);
+                }
+                
                 if (p.locked) {
-                    locked++; wCtx.fillStyle = "var(--gold)"; wCtx.beginPath(); wCtx.arc(p.x, p.y, 3, 0, Math.PI*2); wCtx.fill();
+                    locked++;
+                    wCtx.shadowBlur = 10; wCtx.shadowColor = "var(--gold)";
+                    wCtx.fillStyle = "var(--gold)";
+                    wCtx.beginPath(); wCtx.arc(p.x, p.y, 4, 0, Math.PI*2); wCtx.fill();
+                    wCtx.shadowBlur = 0;
+
+                    // DRAW CONNECTIONS
                     weavePoints.forEach(p2 => {
-                        if(p2.locked && Math.sqrt((p2.x-p.x)**2 + (p2.y-p.y)**2) < 120) {
-                            wCtx.strokeStyle = "rgba(251, 191, 36, 0.25)"; wCtx.beginPath(); wCtx.moveTo(p.x, p.y); wCtx.lineTo(p2.x, p2.y); wCtx.stroke();
+                        if(p2.locked && Math.sqrt((p2.x-p.x)**2 + (p2.y-p.y)**2) < 130) {
+                            wCtx.strokeStyle = "rgba(251, 191, 36, 0.4)";
+                            wCtx.lineWidth = 2;
+                            wCtx.beginPath(); wCtx.moveTo(p.x, p.y); wCtx.lineTo(p2.x, p2.y); wCtx.stroke();
                         }
                     });
-                } else { wCtx.fillStyle = "rgba(255,255,255,0.1)"; wCtx.beginPath(); wCtx.arc(p.x, p.y, 1, 0, Math.PI*2); wCtx.fill(); }
+                } else {
+                    // UNLOCKED DOTS: Make them slightly larger and pulse so they are visible
+                    wCtx.fillStyle = "rgba(255,255,255,0.15)";
+                    wCtx.beginPath(); wCtx.arc(p.x, p.y, 2, 0, Math.PI*2); wCtx.fill();
+                }
             });
-            document.getElementById('weave-progress').innerText = `${Math.round(locked/weavePoints.length*100)}% WOVEN`;
+            
+            let percent = Math.round(locked/weavePoints.length*100);
+            document.getElementById('weave-progress').innerText = `${percent}% WOVEN`;
+            
+            if (percent > 95) {
+                document.getElementById('weave-progress').innerText = "COMPLETE. YOU ARE CENTERED.";
+            }
+            
             requestAnimationFrame(animateWeave);
         }
 
