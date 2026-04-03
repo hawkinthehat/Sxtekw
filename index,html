@@ -79,6 +79,9 @@
         let particles = [], weavePoints = [], mouse = { x: null, y: null }, audioCtx;
         let leftOsc, rightOsc, vantageMode = false, shatterPoint = false, weavingActive = false;
         let sparkX = 0, sparkDir = 1, sparkSpeed = 6, solvedCount = 0, currentTaskAnswer = "";
+        const rootStyles = getComputedStyle(document.documentElement);
+        const tealColor = rootStyles.getPropertyValue('--teal').trim() || "#2dd4bf";
+        const goldColor = rootStyles.getPropertyValue('--gold').trim() || "#fbbf24";
 
         const bioTips = [
             "OWL EYES: Soften your gaze. See the screen edges without moving your head.",
@@ -124,6 +127,14 @@
                     btn.style.opacity = "1"; btn.style.pointerEvents = "auto"; btn.innerText = "I AM READY TO WEAVE";
                 }
                 generateTask();
+            } else {
+                const taskBox = document.querySelector('#logic-tunnel > div');
+                if (taskBox) {
+                    taskBox.style.border = "1px solid rgba(244, 63, 94, 0.6)";
+                    setTimeout(() => {
+                        taskBox.style.border = "1px solid rgba(45, 212, 191, 0.2)";
+                    }, 350);
+                }
             }
         }
 
@@ -155,11 +166,11 @@
             if (!shatterPoint) {
                 sparkX += sparkSpeed * sparkDir;
                 if (sparkX >= canvas.width - 40 || sparkX <= 40) { sparkDir *= -1; if (navigator.vibrate) navigator.vibrate(30); }
-                ctx.fillStyle = "var(--teal)"; ctx.beginPath(); ctx.arc(sparkX, canvas.height/2, 10, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = tealColor; ctx.beginPath(); ctx.arc(sparkX, canvas.height/2, 10, 0, Math.PI*2); ctx.fill();
             } else {
                 particles.forEach(p => {
                     p.x += p.sx * 5; p.y += p.sy * 5;
-                    ctx.fillStyle = "var(--gold)"; ctx.globalAlpha = 0.4; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = goldColor; ctx.globalAlpha = 0.4; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
                 });
             }
             requestAnimationFrame(animate);
@@ -184,7 +195,7 @@
                 let d = Math.sqrt((mouse.x-p.x)**2 + (mouse.y-p.y)**2);
                 if (d < 50 && !p.locked) { p.locked = true; if(navigator.vibrate) navigator.vibrate(15); }
                 if (p.locked) {
-                    locked++; wCtx.fillStyle = "var(--gold)"; wCtx.beginPath(); wCtx.arc(p.x, p.y, 3, 0, Math.PI*2); wCtx.fill();
+                    locked++; wCtx.fillStyle = goldColor; wCtx.beginPath(); wCtx.arc(p.x, p.y, 3, 0, Math.PI*2); wCtx.fill();
                     weavePoints.forEach(p2 => { if(p2.locked && Math.sqrt((p2.x-p.x)**2 + (p2.y-p.y)**2) < 120) { wCtx.strokeStyle = "rgba(251, 191, 36, 0.2)"; wCtx.beginPath(); wCtx.moveTo(p.x, p.y); wCtx.lineTo(p2.x, p2.y); wCtx.stroke(); } });
                 } else { wCtx.fillStyle = "rgba(255,255,255,0.1)"; wCtx.beginPath(); wCtx.arc(p.x, p.y, 1, 0, Math.PI*2); wCtx.fill(); }
             });
@@ -196,6 +207,9 @@
         window.addEventListener('touchstart', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
         window.addEventListener('touchmove', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
         window.addEventListener('mousedown', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        document.getElementById('logic-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') checkLogic();
+        });
 
         function exitAll() {
             weavingActive = false; vantageMode = false; shatterPoint = false;
