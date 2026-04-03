@@ -101,6 +101,8 @@
         // --- LOGIC TUNNEL ---
         function startProtocol() {
             solvedCount = 0;
+            shatterPoint = false;
+            vantageMode = false;
             const btn = document.getElementById('ready-btn');
             btn.style.opacity = "0.15"; btn.style.pointerEvents = "none"; btn.disabled = true; btn.innerText = "LOCKED";
             updateCounter(); show('logic-tunnel'); generateTask();
@@ -147,6 +149,9 @@
                 document.getElementById('task-display').innerText = `Neural lock incomplete: ${solvedCount}/3`;
                 return;
             }
+            shatterPoint = false;
+            vantageMode = false;
+            document.getElementById('visual-msg').innerText = "FOLLOW THE LIGHT";
             show('visual');
         }
 
@@ -178,6 +183,7 @@
         }
 
         function startVisual() {
+            shatterPoint = false;
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             sparkX = canvas.width / 2; particles = [];
             for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, sx: Math.random()-0.5, sy: Math.random()-0.5 });
@@ -190,7 +196,10 @@
             if (!shatterPoint) {
                 sparkX += sparkSpeed * sparkDir;
                 if (sparkX >= canvas.width - 40 || sparkX <= 40) { sparkDir *= -1; if (navigator.vibrate) navigator.vibrate(30); }
-                ctx.fillStyle = tealColor; ctx.beginPath(); ctx.arc(sparkX, canvas.height/2, 10, 0, Math.PI*2); ctx.fill();
+                ctx.shadowBlur = 22;
+                ctx.shadowColor = tealColor;
+                ctx.fillStyle = tealColor; ctx.beginPath(); ctx.arc(sparkX, canvas.height/2, 12, 0, Math.PI*2); ctx.fill();
+                ctx.shadowBlur = 0;
             } else {
                 particles.forEach(p => {
                     p.x += p.sx * 5; p.y += p.sy * 5;
