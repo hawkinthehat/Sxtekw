@@ -130,6 +130,7 @@
 
         // --- LOGIC TUNNEL ---
         function startProtocol() {
+            closeElder();
             solvedCount = 0;
             protocolMode = true;
             canProceed = false;
@@ -158,8 +159,7 @@
         function checkLogic() {
             const inputEl = document.getElementById('logic-input');
             const val = inputEl.value.toUpperCase().trim();
-            if (val && val === currentTaskAnswer && val !== lastSolvedAnswer) {
-                lastSolvedAnswer = val;
+            if (val && val === currentTaskAnswer) {
                 solvedCount++; if (navigator.vibrate) navigator.vibrate(20); updateCounter();
                 if (solvedCount >= 3) {
                     const btn = document.getElementById('ready-btn');
@@ -180,6 +180,8 @@
                 }
                 elderSpeak("SYNC INTERRUPTED", "Pause. Breathe once. Then answer again.");
             }
+            inputEl.value = "";
+            inputEl.focus();
         }
 
         function updateCounter() { document.getElementById('task-counter').innerText = `NEURAL SYNC: ${solvedCount}/3 ACHIEVED`; }
