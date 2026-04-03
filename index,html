@@ -74,20 +74,26 @@
     </div>
 
     <div id="logic-tunnel" class="screen">
-        <div style="margin-bottom: 40px;">
-            <h2 style="color: var(--red); letter-spacing: 5px;">NEURAL LOCK</h2>
-            <p id="task-counter" style="opacity: 0.6; font-size: 0.8rem;">TASKS COMPLETED: 0/3</p>
+        <div style="margin-bottom: 30px;">
+            <h2 style="color: var(--red); letter-spacing: 5px; margin: 0;">NEURAL LOCK</h2>
+            <p id="task-counter" style="opacity: 0.6; font-size: 0.8rem; margin-top: 5px;">SYNC STATUS: 0/3</p>
         </div>
 
-        <div id="task-display" style="font-size: 1.4rem; font-weight: bold; min-height: 80px; color: var(--teal);">
-            Identify Environment...
+        <div id="task-box" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(45, 212, 191, 0.2); padding: 30px; border-radius: 20px; width: 100%; max-width: 340px;">
+            <div id="task-display" style="font-size: 1.3rem; font-weight: bold; color: var(--teal); margin-bottom: 20px; min-height: 60px;">
+                Initializing...
+            </div>
+            <input type="text" id="logic-input"
+                   style="width: 100%; background: var(--bg); border: 2px solid var(--teal); color: white; padding: 15px; border-radius: 12px; text-align: center; font-size: 1.2rem; margin-bottom: 15px;"
+                   placeholder="Answer..."
+                   inputmode="text"
+                   autocomplete="off">
+            <button class="btn" onclick="checkLogic()" style="padding: 15px; font-size: 0.9rem;">SUBMIT SIGNAL</button>
         </div>
-
-        <input type="text" id="logic-input" placeholder="Type answer here..." autofocus>
         
-        <button id="next-task-btn" class="btn" onclick="checkLogic()">SUBMIT ANSWER</button>
-        
-        <button id="ready-btn" class="btn gold-btn" style="opacity: 0.2; pointer-events: none; margin-top: 20px;" onclick="show('visual')">
+        <button id="ready-btn" class="btn gold-btn"
+                style="opacity: 0.15; pointer-events: none; margin-top: 30px; transition: all 0.5s ease; box-shadow: 0 0 0 rgba(251, 191, 36, 0);"
+                onclick="show('visual')">
             I AM READY TO WEAVE
         </button>
     </div>
@@ -137,8 +143,8 @@
         
         // Pulse Sync Params
         let sparkX = 0, sparkDir = 1, sparkSpeed = 6;
-        let tasksSolved = 0;
-        let currentAnswer = "";
+        let solvedCount = 0;
+        let currentTaskAnswer = "";
 
         function initAudio() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -160,59 +166,64 @@
         }
 
         function startProtocol() {
-            tasksSolved = 0;
-            updateTaskCounter();
-            document.getElementById('ready-btn').style.opacity = "0.2";
-            document.getElementById('ready-btn').style.pointerEvents = "none";
+            solvedCount = 0;
+            const readyBtn = document.getElementById('ready-btn');
+            readyBtn.style.opacity = "0.15";
+            readyBtn.style.pointerEvents = "none";
+            readyBtn.style.boxShadow = "none";
+            readyBtn.innerText = "LOCKED";
+            
+            updateCounter();
             show('logic-tunnel');
-            generateNewTask();
+            generateTask();
         }
 
-        function generateNewTask() {
-            const type = Math.floor(Math.random() * 2); // 0: Math, 1: Reverse
+        function generateTask() {
             const display = document.getElementById('task-display');
-            const inputField = document.getElementById('logic-input');
-            inputField.value = "";
-            inputField.focus();
+            const input = document.getElementById('logic-input');
+            const type = Math.floor(Math.random() * 2);
+            input.value = "";
+            input.focus();
 
-            if (type === 0) {
-                const n1 = Math.floor(Math.random() * 12) + 8;
-                const n2 = Math.floor(Math.random() * 9) + 4;
-                display.innerText = `What is ${n1} + ${n2}?`;
-                currentAnswer = (n1 + n2).toString();
-            } else {
-                const words = ["HAWKS", "SALISH", "CEDAR", "QUIET"];
+            if (type === 0) { // MATH
+                const a = Math.floor(Math.random() * 12) + 7;
+                const b = Math.floor(Math.random() * 8) + 5;
+                display.innerText = `Solve: ${a} + ${b}`;
+                currentTaskAnswer = (a + b).toString();
+            } else { // REVERSE
+                const words = ["HAWKS", "SALISH", "CEDAR", "QUIET", "WEAVE"];
                 const word = words[Math.floor(Math.random() * words.length)];
-                display.innerText = `Spell '${word}' Backwards:`;
-                currentAnswer = word.split('').reverse().join('').toUpperCase();
+                display.innerText = `Spell Backwards: ${word}`;
+                currentTaskAnswer = word.split('').reverse().join('').toUpperCase();
             }
         }
 
         function checkLogic() {
-            const val = document.getElementById('logic-input').value.toUpperCase().trim();
+            const userVal = document.getElementById('logic-input').value.toUpperCase().trim();
             
-            if (val === currentAnswer) {
-                tasksSolved++;
-                if (navigator.vibrate) navigator.vibrate(25);
-                updateTaskCounter();
+            if (userVal === currentTaskAnswer) {
+                solvedCount++;
+                if (navigator.vibrate) navigator.vibrate(20);
+                updateCounter();
                 
-                if (tasksSolved >= 3) {
-                    // UNLOCK THE "MOVE ON" BUTTON
-                    const btn = document.getElementById('ready-btn');
-                    btn.style.opacity = "1";
-                    btn.style.pointerEvents = "auto";
-                    btn.innerText = "SIGNAL LOCKED: PROCEED";
+                if (solvedCount >= 3) {
+                    const readyBtn = document.getElementById('ready-btn');
+                    readyBtn.style.opacity = "1";
+                    readyBtn.style.pointerEvents = "auto";
+                    readyBtn.style.boxShadow = "0 0 20px rgba(251, 191, 36, 0.4)";
+                    readyBtn.innerText = "I AM READY TO WEAVE";
                 }
-                generateNewTask();
+                generateTask();
             } else {
-                // Feedback for wrong answer
-                document.getElementById('logic-tunnel').style.animation = "shake 0.2s ease-in-out";
-                setTimeout(() => { document.getElementById('logic-tunnel').style.animation = ""; }, 200);
+                // Subtle shake for wrong answer
+                const box = document.getElementById('task-box');
+                box.style.borderColor = "var(--red)";
+                setTimeout(() => { box.style.borderColor = "rgba(45, 212, 191, 0.2)"; }, 400);
             }
         }
 
-        function updateTaskCounter() {
-            document.getElementById('task-counter').innerText = `NEURAL SYNC: ${tasksSolved}/3 ACHIEVED`;
+        function updateCounter() {
+            document.getElementById('task-counter').innerText = `NEURAL SYNC: ${solvedCount}/3 ACHIEVED`;
         }
 
         function initVantage() {
