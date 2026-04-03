@@ -89,7 +89,7 @@
             <h2 style="color: var(--gold); letter-spacing: 5px; margin: 0;">NEURAL WEAVER</h2>
             <p id="weave-progress" style="opacity: 0.6;">0% WOVEN</p>
         </div>
-        <button class="btn secondary" style="position: absolute; bottom: 40px;" onclick="exitAll()">EXIT WEAVE</button>
+        <button class="btn secondary" style="position: absolute; bottom: 40px; width: 60%; border-color: rgba(255,255,255,0.2); z-index: 110;" onclick="exitAll()">EXIT TO CALM</button>
     </div>
 
     <div id="success" class="screen">
@@ -305,6 +305,20 @@
         window.addEventListener('touchstart', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
         window.addEventListener('touchmove', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
         window.addEventListener('mousedown', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+        // Emergency Double-Tap Exit
+        let lastTap = 0;
+        window.addEventListener('touchend', () => {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0) {
+                // Double Tap Detected
+                if (confirm("Exit to Home?")) {
+                    exitAll();
+                }
+            }
+            lastTap = currentTime;
+        });
 
         function triggerSuccess() {
             exitAll(); document.getElementById('success-quote').innerText = "System neutralized. The signal is clear. Re-weave your quiet below.";
