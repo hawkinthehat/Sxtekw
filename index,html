@@ -133,27 +133,34 @@
             if (id === 'visual') startVisual();
         }
 
-        function startProtocol() {
-            const task = logicTasks[Math.floor(Math.random() * logicTasks.length)];
-            const overlay = document.getElementById('logic-overlay');
-            const logicText = document.getElementById('logic-text');
-            
-            // Set the task text
-            logicText.innerText = task;
-            
-            // Show the visual screen first
-            show('visual');
-            
-            // Fade in the "Soft Box" logic task
-            overlay.style.display = 'block';
-            overlay.style.opacity = '0';
-            setTimeout(() => { overlay.style.opacity = '1'; }, 100);
+        async function startProtocol() {
+            // Stage 1: Physical Grounding
+            alert("SYSTEM RED: Identifying Environment...");
+            const sense = prompt("Name 3 BLUE things you see right now (comma separated):");
+            if (!sense || sense.split(',').length < 3) return exitAll();
 
-            // Auto-hide the logic task after 12 seconds, leaving just the Pulse Sync
-            setTimeout(() => {
-                overlay.style.opacity = '0';
-                setTimeout(() => { overlay.style.display = 'none'; }, 1000);
-            }, 12000);
+            // Stage 2: Computational Logic
+            const num1 = Math.floor(Math.random() * 20) + 10;
+            const num2 = Math.floor(Math.random() * 15) + 5;
+            const math = prompt(`Neural Sync: What is ${num1} + ${num2}?`);
+            if (parseInt(math) !== (num1 + num2)) {
+                alert("Sync Failed. Retrying...");
+                return startProtocol(); // Loops until they get it right
+            }
+
+            // Stage 3: Linguistic Reversal (The "Cycle Breaker")
+            const words = ["HAWKS", "SALISH", "QUIET", "WEAVER"];
+            const word = words[Math.floor(Math.random() * words.length)];
+            const reverse = prompt(`Final Lock: Spell '${word}' backwards:`);
+            
+            if (reverse.toUpperCase() === word.split('').reverse().join('')) {
+                if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+                alert("NEURAL LOCK ACHIEVED. Proceeding to Pulse Sync.");
+                show('visual'); // Only now do they get the EMDR spark
+            } else {
+                alert("Sequence Interrupted. Restarting Firewall.");
+                startProtocol();
+            }
         }
 
         function initVantage() {
