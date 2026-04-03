@@ -79,6 +79,7 @@
         let particles = [], weavePoints = [], mouse = { x: null, y: null }, audioCtx;
         let leftOsc, rightOsc, vantageMode = false, shatterPoint = false, weavingActive = false;
         let sparkX = 0, sparkDir = 1, sparkSpeed = 6, solvedCount = 0, currentTaskAnswer = "";
+        let vantageShatterTimer = null;
         const rootStyles = getComputedStyle(document.documentElement);
         const tealColor = rootStyles.getPropertyValue('--teal').trim() || "#2dd4bf";
         const goldColor = rootStyles.getPropertyValue('--gold').trim() || "#fbbf24";
@@ -151,12 +152,26 @@
 
         // --- VANTAGE & VISUAL ---
         function initVantage() {
-            const thought = document.getElementById('thought-input').value.toUpperCase() || "Worry";
-            show('visual'); vantageMode = true; shatterPoint = false;
+            const thoughtInput = document.getElementById('thought-input');
+            const thought = (thoughtInput ? thoughtInput.value : "").trim().toUpperCase() || "UNCERTAINTY";
             const display = document.getElementById('floating-thought');
-            display.innerText = thought; display.style.opacity = "1";
-            setTimeout(() => {
+            if (!display) return;
+
+            if (vantageShatterTimer) clearTimeout(vantageShatterTimer);
+            show('visual');
+            vantageMode = true;
+            shatterPoint = false;
+
+            display.innerText = thought;
+            display.style.transform = "scale(1)";
+            display.style.filter = "blur(0px)";
+            display.style.opacity = "1";
+            document.getElementById('visual-msg').innerText = "OBSERVE THE SIGNAL";
+
+            vantageShatterTimer = setTimeout(() => {
                 shatterPoint = true; display.style.opacity = "0";
+                display.style.transform = "scale(0.5)";
+                display.style.filter = "blur(10px)";
                 if (navigator.vibrate) navigator.vibrate([100, 50, 200]);
                 document.getElementById('visual-msg').innerText = "SIGNAL SHATTERED";
             }, 8000);
@@ -222,6 +237,18 @@
 
         function exitAll() {
             weavingActive = false; vantageMode = false; shatterPoint = false;
+            if (vantageShatterTimer) {
+                clearTimeout(vantageShatterTimer);
+                vantageShatterTimer = null;
+            }
+            const display = document.getElementById('floating-thought');
+            if (display) {
+                display.style.opacity = "0";
+                display.style.transform = "scale(1)";
+                display.style.filter = "blur(0px)";
+                display.innerText = "";
+            }
+            document.getElementById('visual-msg').innerText = "CATCH THE CLICK";
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('home').classList.add('active');
         }
