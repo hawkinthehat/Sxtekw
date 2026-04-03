@@ -213,17 +213,61 @@
 
         function animateWeave() {
             if (!weavingActive) return;
-            wCtx.fillStyle = 'rgba(2, 6, 23, 0.3)'; wCtx.fillRect(0,0,weaveCanvas.width, weaveCanvas.height);
+            
+            // Create a "Trailing" effect by not clearing the canvas fully
+            wCtx.fillStyle = 'rgba(2, 6, 23, 0.15)';
+            wCtx.fillRect(0, 0, weaveCanvas.width, weaveCanvas.height);
+            
             let locked = 0;
+            const time = Date.now() * 0.002; // Used for the "Pulse"
+
             weavePoints.forEach(p => {
-                let d = Math.sqrt((mouse.x-p.x)**2 + (mouse.y-p.y)**2);
-                if (d < 50 && !p.locked) { p.locked = true; if(navigator.vibrate) navigator.vibrate(15); }
+                // Floating movement (The "Current")
+                if (!p.locked) {
+                    p.x += Math.sin(time + p.y) * 0.5;
+                    p.y += Math.cos(time + p.x) * 0.5;
+                }
+
+                let d = Math.sqrt((mouse.x - p.x)**2 + (mouse.y - p.y)**2);
+                if (d < 55 && !p.locked) {
+                    p.locked = true;
+                    if (navigator.vibrate) navigator.vibrate(10);
+                }
+                
                 if (p.locked) {
-                    locked++; wCtx.fillStyle = goldColor; wCtx.beginPath(); wCtx.arc(p.x, p.y, 3, 0, Math.PI*2); wCtx.fill();
-                    weavePoints.forEach(p2 => { if(p2.locked && Math.sqrt((p2.x-p.x)**2 + (p2.y-p.y)**2) < 120) { wCtx.strokeStyle = "rgba(251, 191, 36, 0.2)"; wCtx.beginPath(); wCtx.moveTo(p.x, p.y); wCtx.lineTo(p2.x, p2.y); wCtx.stroke(); } });
-                } else { wCtx.fillStyle = "rgba(255,255,255,0.1)"; wCtx.beginPath(); wCtx.arc(p.x, p.y, 1, 0, Math.PI*2); wCtx.fill(); }
+                    locked++;
+                    // Glowing Core
+                    wCtx.shadowBlur = 15;
+                    wCtx.shadowColor = goldColor;
+                    wCtx.fillStyle = goldColor;
+                    wCtx.beginPath(); wCtx.arc(p.x, p.y, 4, 0, Math.PI*2); wCtx.fill();
+                    wCtx.shadowBlur = 0;
+
+                    // Thread Connections
+                    weavePoints.forEach(p2 => {
+                        if (p2.locked && Math.sqrt((p2.x - p.x)**2 + (p2.y - p.y)**2) < 140) {
+                            wCtx.strokeStyle = `rgba(251, 191, 36, ${0.2 + Math.sin(time) * 0.1})`;
+                            wCtx.lineWidth = 2;
+                            wCtx.beginPath(); wCtx.moveTo(p.x, p.y); wCtx.lineTo(p2.x, p2.y); wCtx.stroke();
+                        }
+                    });
+                } else {
+                    // Subtle "Breathing" for uncollected dots
+                    wCtx.fillStyle = `rgba(45, 212, 191, ${0.1 + Math.sin(time) * 0.05})`;
+                    wCtx.beginPath(); wCtx.arc(p.x, p.y, 2, 0, Math.PI*2); wCtx.fill();
+                }
             });
-            document.getElementById('weave-progress').innerText = `${Math.round(locked/weavePoints.length*100)}% WOVEN`;
+
+            let percent = Math.round(locked / weavePoints.length * 100);
+            document.getElementById('weave-progress').innerText = `${percent}% WOVEN`;
+            
+            if (percent >= 100) {
+                document.getElementById('weave-progress').innerText = "NEURAL SYNC COMPLETE";
+                // Flash effect
+                wCtx.fillStyle = "rgba(255, 255, 255, 0.05)";
+                wCtx.fillRect(0, 0, weaveCanvas.width, weaveCanvas.height);
+            }
+            
             requestAnimationFrame(animateWeave);
         }
 
