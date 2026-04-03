@@ -96,6 +96,9 @@
         let particles = [], weavePoints = [], mouse = { x: null, y: null }, audioCtx, isMuted = false;
         let binauralGain, leftOsc, rightOsc, vantageMode = false, shatterPoint = false, weavingActive = false;
         let visualAnimating = false, weaveAnimating = false, vantageTimer = null, successTimer = null;
+        let sparkX = 0;
+        let sparkDir = 1;
+        let sparkSpeed = 5;
 
         const logicTasks = ["Spell 'CALM' backwards", "What is 18 + 24?", "Name 3 PNW trees", "Count back from 20 by 4s"];
 
@@ -181,6 +184,8 @@
         function startVisual() {
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             particles = []; for (let i = 0; i < 60; i++) particles.push(new Neuron());
+            sparkX = canvas.width / 2;
+            sparkDir = 1;
             stopBinaural();
             binauralGain = audioCtx.createGain();
             binauralGain.gain.setValueAtTime(0, audioCtx.currentTime);
@@ -192,6 +197,43 @@
             leftOsc.connect(binauralGain); rightOsc.connect(binauralGain);
             leftOsc.start(); rightOsc.start();
             if (!visualAnimating) animate();
+        }
+
+        function drawPulseSync() {
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            // Move the Spark
+            sparkX += sparkSpeed * sparkDir;
+
+            // Boundary Detection + Haptic Pulse
+            if (sparkX >= w - 50 || sparkX <= 50) {
+                sparkDir *= -1;
+                // The "System Red" Haptic Anchor
+                if (navigator.vibrate) {
+                    navigator.vibrate(25); // Sharp, tactile "click"
+                }
+                // Visual "Flash" at the edge
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = "var(--teal)";
+            }
+
+            // Draw the Spark (The "Signal")
+            ctx.fillStyle = "var(--teal)";
+            ctx.beginPath();
+            ctx.arc(sparkX, h / 2, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw the "Trace Lines" (Visualizing the sync)
+            ctx.strokeStyle = "rgba(45, 212, 191, 0.2)";
+            ctx.setLineDash([5, 15]);
+            ctx.beginPath();
+            ctx.moveTo(0, h/2);
+            ctx.lineTo(w, h/2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.shadowBlur = 0; // Reset for next frame
         }
 
         class Neuron {
@@ -230,6 +272,7 @@
             visualAnimating = true;
             ctx.fillStyle = 'rgba(2, 6, 23, 0.2)'; ctx.fillRect(0,0,canvas.width, canvas.height);
             particles.forEach(p => { p.update(); p.draw(); });
+            drawPulseSync();
             requestAnimationFrame(animate);
         }
 
