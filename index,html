@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SXT’EKW | Neural Weaver</title>
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="logo.png">
     <style>
         :root { --bg: #020617; --teal: #2dd4bf; --text: #f1f5f9; --red: #f43f5e; --card: #1e293b; --gold: #fbbf24; --cedar: #78350f; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
