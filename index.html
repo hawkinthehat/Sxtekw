@@ -73,10 +73,11 @@
         <button class="btn secondary" style="position: absolute; bottom: 40px; width: 60%;" onclick="exitAll()">EXIT TO CALM</button>
     </div>
 
-    <div id="elder-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); z-index: 5000; flex-direction: column; justify-content: center; align-items: center; padding: 40px; backdrop-filter: blur(10px);">
+    <div id="elder-overlay" style="display: none; opacity: 0; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); z-index: 5000; flex-direction: column; justify-content: center; align-items: center; padding: 40px; backdrop-filter: blur(10px); transition: opacity 0.15s ease-out;">
         <div style="border: 1px solid var(--gold); padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 30px rgba(251, 191, 36, 0.1);">
             <h3 id="elder-title" style="color: var(--teal); letter-spacing: 3px; margin-top: 0;">MESSAGE</h3>
             <p id="elder-msg" style="line-height: 1.6; color: var(--text); opacity: 0.9; margin: 20px 0;"></p>
+            <div style="width: 28px; height: 2px; margin: 0 auto 16px auto; background: rgba(251, 191, 36, 0.35); border-radius: 2px;"></div>
             <button class="btn gold-btn" onclick="closeElder()">ACKNOWLEDGE</button>
         </div>
     </div>
@@ -108,11 +109,17 @@
             document.getElementById('elder-msg').innerText = message;
             const overlay = document.getElementById('elder-overlay');
             overlay.style.display = 'flex';
-            overlay.style.animation = 'fadeIn 0.4s ease-out';
+            requestAnimationFrame(() => {
+                overlay.style.opacity = '1';
+            });
         }
 
         function closeElder() {
-            document.getElementById('elder-overlay').style.display = 'none';
+            const overlay = document.getElementById('elder-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                if (overlay.style.opacity === '0') overlay.style.display = 'none';
+            }, 160);
         }
 
         function show(id) {
