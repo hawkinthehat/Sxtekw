@@ -38,12 +38,12 @@
     <div id="logic-tunnel" class="screen">
         <h2 style="color: var(--red); letter-spacing: 5px;">NEURAL LOCK</h2>
         <p id="task-counter" style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 20px;">SYNC STATUS: 0/3</p>
-        <div style="background: rgba(255,255,255,0.03); padding: 30px; border-radius: 20px; width: 100%; max-width: 340px;">
+        <div id="task-box" style="background: rgba(255,255,255,0.03); padding: 30px; border-radius: 20px; width: 100%; max-width: 340px;">
             <div id="task-display" style="font-size: 1.3rem; color: var(--teal); margin-bottom: 20px; min-height: 50px;">Initializing...</div>
             <input type="text" id="logic-input" placeholder="Answer..." inputmode="text" autocomplete="off">
             <button class="btn" onclick="checkLogic()">SUBMIT SIGNAL</button>
         </div>
-        <button id="ready-btn" class="btn gold-btn" style="opacity: 0.15; pointer-events: none; margin-top: 20px;" onclick="show('visual')">LOCKED</button>
+        <button id="ready-btn" class="btn gold-btn" style="opacity: 0.15; pointer-events: none; margin-top: 20px;" onclick="attemptProceed()" disabled>LOCKED</button>
         <div id="bio-tip">VAGAL HUM: Make a low 'Mmm' sound while you solve.</div>
     </div>
 
@@ -101,7 +101,7 @@
         function startProtocol() {
             solvedCount = 0;
             const btn = document.getElementById('ready-btn');
-            btn.style.opacity = "0.15"; btn.style.pointerEvents = "none"; btn.innerText = "LOCKED";
+            btn.style.opacity = "0.15"; btn.style.pointerEvents = "none"; btn.disabled = true; btn.innerText = "LOCKED";
             updateCounter(); show('logic-tunnel'); generateTask();
         }
 
@@ -124,11 +124,11 @@
                 solvedCount++; if (navigator.vibrate) navigator.vibrate(20); updateCounter();
                 if (solvedCount >= 3) {
                     const btn = document.getElementById('ready-btn');
-                    btn.style.opacity = "1"; btn.style.pointerEvents = "auto"; btn.innerText = "I AM READY TO WEAVE";
+                    btn.style.opacity = "1"; btn.style.pointerEvents = "auto"; btn.disabled = false; btn.innerText = "I AM READY TO WEAVE";
                 }
                 generateTask();
             } else {
-                const taskBox = document.querySelector('#logic-tunnel > div');
+                const taskBox = document.getElementById('task-box');
                 if (taskBox) {
                     taskBox.style.border = "1px solid rgba(244, 63, 94, 0.6)";
                     setTimeout(() => {
@@ -139,6 +139,15 @@
         }
 
         function updateCounter() { document.getElementById('task-counter').innerText = `NEURAL SYNC: ${solvedCount}/3 ACHIEVED`; }
+
+        function attemptProceed() {
+            if (solvedCount < 3) {
+                if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
+                document.getElementById('task-display').innerText = `Neural lock incomplete: ${solvedCount}/3`;
+                return;
+            }
+            show('visual');
+        }
 
         // --- VANTAGE & VISUAL ---
         function initVantage() {
