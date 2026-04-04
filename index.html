@@ -62,19 +62,19 @@
                 🔊
             </button>
         </div>
-        <p style="opacity: 0.5; font-size: 0.7rem; margin-bottom: 40px; letter-spacing: 4px;">THE QUIET</p>
-        <button class="btn emergency" onclick="startProtocol()" style="background: var(--red); border: 3px solid var(--cedar); box-shadow: 0 10px 20px rgba(0,0,0,0.4);">
+        <p style="opacity: 0.5; font-size: 0.7rem; margin-bottom: 40px; letter-spacing: 4px;">THE QUIET <span style="font-style: italic;">[ suh-t-ekw ]</span></p>
+        <button class="btn emergency" onclick="playNativeSignal('still'); startProtocol();" style="background: var(--red); border: 3px solid var(--cedar); box-shadow: 0 10px 20px rgba(0,0,0,0.4);">
             ST’ÉXEM
-            <span style="display: block; font-size: 0.6rem; opacity: 0.9; margin-top: 5px; font-weight: normal; letter-spacing: 2px;">[ TO BE STILL ]</span>
+            <span style="display: block; font-size: 0.6rem; opacity: 0.9; margin-top: 5px; font-weight: normal;">ST-EH-KHUM [ TO BE STILL ]</span>
         </button>
         <button class="btn" onclick="startSaccade()">FEATHER SACCADES (10)</button>
-        <button class="btn gold-btn" onclick="startWeave()" style="margin-top: 15px;">
+        <button class="btn gold-btn" onclick="playNativeSignal('weave'); startWeave();" style="margin-top: 15px;">
             KW’ÉTL’EN
-            <span style="display: block; font-size: 0.6rem; opacity: 0.8; margin-top: 5px; font-weight: normal; letter-spacing: 2px;">[ TO WEAVE ]</span>
+            <span style="display: block; font-size: 0.6rem; opacity: 0.8; margin-top: 5px; font-weight: normal;">KW-ETH-LUHN [ TO WEAVE ]</span>
         </button>
-        <button class="btn secondary" onclick="show('vantage')" style="margin-top: 25px; border: 1px solid var(--teal); color: var(--teal); border-radius: 50px; width: 70%;">
+        <button class="btn secondary" onclick="playNativeSignal('stop'); show('vantage')" style="margin-top: 25px; border: 1px solid var(--teal); color: var(--teal); border-radius: 50px; width: 70%;">
             KW’ÉLAP
-            <span style="display: block; font-size: 0.5rem; opacity: 0.7; margin-top: 2px; font-weight: normal;">[ TO STOP ]</span>
+            <span style="display: block; font-size: 0.5rem; opacity: 0.7; margin-top: 2px; font-weight: normal;">KW-EH-LAHP [ TO STOP ]</span>
         </button>
         <div id="audio-settings" style="margin: 20px 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; width: 100%; max-width: 360px;">
             <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 10px; letter-spacing: 2px;">AUDIO ENVIRONMENT</p>
@@ -199,6 +199,54 @@
             audio.onended = clearPulse;
             audio.onerror = clearPulse;
             audio.play().catch(clearPulse);
+        }
+
+        function speakNative(word) {
+            if (!("speechSynthesis" in window)) return;
+            const msg = new SpeechSynthesisUtterance();
+            msg.text = word;
+            msg.rate = 0.8;
+            msg.pitch = 1;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(msg);
+        }
+
+        const nativeAudio = {
+            still: new Audio("./assets/audio/stexem.mp3"),
+            weave: new Audio("./assets/audio/kwetlen.mp3"),
+            stop: new Audio("./assets/audio/kwelap.mp3")
+        };
+
+        const nativeSpeechMap = {
+            still: "St-eh-khum",
+            weave: "Kw-eth-luhn",
+            stop: "Kw-eh-lahp"
+        };
+
+        function playNativeSignal(key) {
+            if (currentAudioMode === "silent") return;
+
+            const sound = nativeAudio[key];
+            const fallbackWord = nativeSpeechMap[key];
+            if (!sound) {
+                if (fallbackWord) speakNative(fallbackWord);
+                return;
+            }
+
+            let fallbackUsed = false;
+            const fallback = () => {
+                if (fallbackUsed || !fallbackWord) return;
+                fallbackUsed = true;
+                speakNative(fallbackWord);
+            };
+
+            sound.volume = 0.6;
+            sound.currentTime = 0;
+            sound.onerror = fallback;
+            const playPromise = sound.play();
+            if (playPromise && typeof playPromise.catch === "function") {
+                playPromise.catch(fallback);
+            }
         }
 
         function setAudioMode(mode) {
