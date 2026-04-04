@@ -38,8 +38,18 @@
         <h1 style="color: var(--teal); letter-spacing: 10px; font-weight: 900; margin-bottom: 5px;">SXT’EKW</h1>
         <p style="opacity: 0.5; font-size: 0.7rem; margin-bottom: 30px; letter-spacing: 4px;">THE QUIET | HAWKINTHEHAT</p>
         <button class="btn emergency" onclick="startProtocol()">SYSTEM RED: RESET</button>
+        <button class="btn" onclick="startSaccade()">FEATHER SACCADES (10)</button>
         <button class="btn gold-btn" onclick="startWeave()">THE WEAVE (MEDITATION)</button>
         <button class="btn secondary" onclick="show('vantage')">The Vantage (Observe)</button>
+        <div id="audio-settings" style="margin: 20px 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; width: 100%; max-width: 360px;">
+            <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 10px; letter-spacing: 2px;">AUDIO ENVIRONMENT</p>
+            <div style="display: flex; justify-content: space-around; gap: 10px;">
+                <button id="mode-headphone" class="btn secondary" style="font-size: 0.7rem; padding: 10px;" onclick="setAudioMode('headphone')">🎧 PHONES</button>
+                <button id="mode-speaker" class="btn secondary" style="font-size: 0.7rem; padding: 10px;" onclick="setAudioMode('speaker')">🔊 SPEAKER</button>
+                <button id="mode-silent" class="btn secondary" style="font-size: 0.7rem; padding: 10px;" onclick="setAudioMode('silent')">🔕 SILENT</button>
+            </div>
+            <p id="audio-notice" style="font-size: 0.6rem; color: var(--gold); margin-top: 10px; min-height: 12px; transition: 0.3s;"></p>
+        </div>
         <div style="margin-top: 40px;"><a href="https://www.buymeacoffee.com/Hawkinthehat" target="_blank" style="color: var(--gold); text-decoration: none; font-size: 0.8rem;">SUPPORT THE FOUNDER ☕</a></div>
     </div>
 
@@ -95,7 +105,10 @@
         const weaveCanvas = document.getElementById('weave-canvas'); const wCtx = weaveCanvas.getContext('2d');
         let particles = [], weavePoints = [], mouse = { x: null, y: null }, audioCtx;
         let leftOsc, rightOsc, vantageMode = false, shatterPoint = false, weavingActive = false;
-        let sparkX = 0, sparkDir = 1, sparkSpeed = 6, solvedCount = 0, currentTaskAnswer = "";
+        let featherX = 0, featherY = 0, featherAngle = 0, featherDir = 1;
+        let solvedCount = 0, currentTaskAnswer = "";
+        let catches = 0, saccadeCount = 0, isSaccadicMode = false;
+        let currentAudioMode = 'headphone';
         let protocolMode = false;
         let canProceed = false;
         let lastSolvedAnswer = "";
@@ -128,6 +141,67 @@
             setTimeout(() => {
                 if (overlay.style.opacity === '0') overlay.style.display = 'none';
             }, 160);
+        }
+
+        function setAudioMode(mode) {
+            currentAudioMode = mode;
+            document.querySelectorAll('#audio-settings .btn').forEach((btn) => {
+                btn.style.borderColor = 'rgba(255,255,255,0.2)';
+                btn.style.color = 'rgba(255,255,255,0.6)';
+            });
+
+            const activeBtn = document.getElementById(`mode-${mode}`);
+            if (activeBtn) {
+                activeBtn.style.borderColor = tealColor;
+                activeBtn.style.color = tealColor;
+            }
+
+            const notice = document.getElementById('audio-notice');
+            if (!notice) return;
+            if (mode === 'headphone') notice.innerText = "OPTIMAL: Binaural Sync Active.";
+            else if (mode === 'speaker') notice.innerText = "AMBIENT: Best for open rooms.";
+            else notice.innerText = "SILENT: Visual & Haptic focus only.";
+        }
+
+        function stopNeuralAudio() {
+            [leftOsc, rightOsc].forEach((osc) => {
+                if (!osc) return;
+                try { osc.stop(); } catch (_) {}
+                try { osc.disconnect(); } catch (_) {}
+            });
+            leftOsc = null;
+            rightOsc = null;
+        }
+
+        function playNeuralAudio() {
+            stopNeuralAudio();
+            if (currentAudioMode === 'silent') return;
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            leftOsc = audioCtx.createOscillator();
+            rightOsc = audioCtx.createOscillator();
+            const leftPanner = audioCtx.createStereoPanner();
+            const rightPanner = audioCtx.createStereoPanner();
+            const gain = audioCtx.createGain();
+            gain.gain.value = 0.05;
+
+            leftOsc.frequency.value = 432;
+            if (currentAudioMode === 'headphone') {
+                rightOsc.frequency.value = 438;
+                leftPanner.pan.value = -1;
+                rightPanner.pan.value = 1;
+            } else {
+                rightOsc.frequency.value = 432.5;
+                leftPanner.pan.value = 0;
+                rightPanner.pan.value = 0;
+            }
+
+            leftOsc.connect(leftPanner).connect(gain);
+            rightOsc.connect(rightPanner).connect(gain);
+            gain.connect(audioCtx.destination);
+            leftOsc.start();
+            rightOsc.start();
         }
 
         function show(id) {
@@ -219,6 +293,75 @@
             show('visual');
         }
 
+        function startSaccade() {
+            catches = 0;
+            saccadeCount = 0;
+            isSaccadicMode = true;
+            protocolMode = false;
+            closeElder();
+            show('visual');
+            document.getElementById('visual-msg').innerText = "CATCH THE FEATHER: 0/10";
+            teleportFeather();
+        }
+
+        function startSaccadeGame() {
+            startSaccade();
+        }
+
+        function teleportFeather() {
+            const pad = 100;
+            featherX = Math.random() * (canvas.width - pad * 2) + pad;
+            featherY = Math.random() * (canvas.height - pad * 2) + pad;
+            if (navigator.vibrate) navigator.vibrate(15);
+        }
+
+        function moveFeatherRandomly() {
+            teleportFeather();
+            document.getElementById('visual-msg').innerText = `SYNCS: ${saccadeCount}/10`;
+        }
+
+        function drawFeather(x, y, angle) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+
+            ctx.strokeStyle = goldColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, -40);
+            ctx.lineTo(0, 40);
+            ctx.stroke();
+
+            ctx.fillStyle = tealColor;
+            ctx.globalAlpha = 0.6;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 15, 35, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = tealColor;
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function handleSaccadeCatch(x, y) {
+            if (!isSaccadicMode || !document.getElementById('visual').classList.contains('active')) return;
+            const d = Math.sqrt((x - featherX) ** 2 + (y - featherY) ** 2);
+            if (d < 120) {
+                catches++;
+                saccadeCount = catches;
+                if (navigator.vibrate) navigator.vibrate([20, 10, 20]);
+                if (catches >= 10) {
+                    isSaccadicMode = false;
+                    elderSpeak("SYSTEM SYNCED", "Neural pathways cleared. The 'Quiet' is restored.");
+                    setTimeout(() => exitAll(), 1400);
+                } else {
+                    document.getElementById('visual-msg').innerText = `CATCH THE FEATHER: ${catches}/10`;
+                    teleportFeather();
+                }
+            }
+        }
+
         // --- VANTAGE & VISUAL ---
         function initVantage() {
             const thoughtInput = document.getElementById('thought-input');
@@ -251,26 +394,48 @@
             shatterPoint = false;
             closeElder();
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            sparkX = canvas.width / 2; particles = [];
-            for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, sx: Math.random()-0.5, sy: Math.random()-0.5 });
+            featherX = canvas.width / 2;
+            featherY = canvas.height / 2;
+            featherAngle = 0;
+            featherDir = 1;
+            particles = [];
+            for (let i = 0; i < 30; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    opacity: Math.random()
+                });
+            }
+            playNeuralAudio();
             animate();
         }
 
         function animate() {
             if (!document.getElementById('visual').classList.contains('active')) return;
             ctx.globalAlpha = 1;
-            ctx.fillStyle = 'rgba(2, 6, 23, 0.2)'; ctx.fillRect(0,0,canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             if (!shatterPoint) {
-                sparkX += sparkSpeed * sparkDir;
-                if (sparkX >= canvas.width - 40 || sparkX <= 40) { sparkDir *= -1; if (navigator.vibrate) navigator.vibrate(30); }
-                ctx.shadowBlur = 22;
-                ctx.shadowColor = tealColor;
-                ctx.fillStyle = tealColor; ctx.beginPath(); ctx.arc(sparkX, canvas.height/2, 12, 0, Math.PI*2); ctx.fill();
-                ctx.shadowBlur = 0;
+                if (isSaccadicMode) {
+                    featherAngle = Math.sin(Date.now() * 0.003) * 0.15;
+                    drawFeather(featherX, featherY, featherAngle);
+                } else {
+                    featherX += (5 * featherDir);
+                    featherY = (canvas.height / 2) + Math.sin(Date.now() * 0.002) * 50;
+                    featherAngle = Math.sin(Date.now() * 0.002) * 0.3;
+                    if (featherX >= canvas.width - 60 || featherX <= 60) {
+                        featherDir *= -1;
+                        if (navigator.vibrate) navigator.vibrate(35);
+                    }
+                    drawFeather(featherX, featherY, featherAngle);
+                }
             } else {
                 particles.forEach(p => {
-                    p.x += p.sx * 5; p.y += p.sy * 5;
-                    ctx.fillStyle = goldColor; ctx.globalAlpha = 0.4; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+                    p.y += 2;
+                    if (p.y > canvas.height) p.y = 0;
+                    ctx.fillStyle = goldColor;
+                    ctx.globalAlpha = p.opacity;
+                    ctx.fillRect(p.x, p.y, 2, 2);
                 });
             }
             requestAnimationFrame(animate);
@@ -351,7 +516,11 @@
         // --- GLOBAL CONTROLS ---
         window.addEventListener('touchstart', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
         window.addEventListener('touchmove', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
-        window.addEventListener('mousedown', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        window.addEventListener('mousedown', e => { mouse.x = e.clientX; mouse.y = e.clientY; handleSaccadeCatch(e.clientX, e.clientY); });
+        window.addEventListener('touchend', e => {
+            if (!e.changedTouches || !e.changedTouches[0]) return;
+            handleSaccadeCatch(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        });
         document.getElementById('logic-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') checkLogic();
         });
@@ -362,6 +531,10 @@
             canProceed = false;
             lastSolvedAnswer = "";
             closeElder();
+            isSaccadicMode = false;
+            catches = 0;
+            saccadeCount = 0;
+            stopNeuralAudio();
             if (vantageShatterTimer) {
                 clearTimeout(vantageShatterTimer);
                 vantageShatterTimer = null;
@@ -384,6 +557,8 @@
             const tip = document.getElementById('bio-tip');
             if(tip) { tip.style.opacity = "0"; setTimeout(() => { tipIdx = (tipIdx + 1) % bioTips.length; tip.innerText = bioTips[tipIdx]; tip.style.opacity = "0.6"; }, 1000); }
         }, 10000);
+
+        setAudioMode(currentAudioMode);
     </script>
 </body>
 </html>
