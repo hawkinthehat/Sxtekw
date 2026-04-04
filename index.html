@@ -18,7 +18,17 @@
     <style>
         :root { --bg: #020617; --teal: #2dd4bf; --text: #f1f5f9; --red: #f43f5e; --card: #1e293b; --gold: #fbbf24; --cedar: #78350f; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; margin: 0; overflow: hidden; touch-action: none; text-align: center; height: 100vh; }
+        html, body {
+            position: fixed;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: none;
+            overscroll-behavior: none;
+        }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; margin: 0; text-align: center; }
         
         .screen { display: none; height: 100vh; width: 100vw; flex-direction: column; justify-content: center; align-items: center; position: absolute; padding: 30px; z-index: 5; }
         .active { display: flex; animation: fadeIn 0.5s ease-out; }
@@ -650,9 +660,22 @@
         }
 
         // --- GLOBAL CONTROLS ---
-        window.addEventListener('touchstart', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
-        window.addEventListener('touchmove', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
-        window.addEventListener('mousedown', e => { mouse.x = e.clientX; mouse.y = e.clientY; handleSaccadeCatch(e.clientX, e.clientY); });
+        // Prevent browser swipe/back-refresh gestures while weaving.
+        window.addEventListener('touchmove', function(e) {
+            if (weavingActive && e.cancelable) e.preventDefault();
+        }, { passive: false });
+
+        function handleInput(e) {
+            const touch = e.touches && e.touches[0];
+            const clientX = touch ? touch.clientX : e.clientX;
+            const clientY = touch ? touch.clientY : e.clientY;
+            mouse.x = clientX;
+            mouse.y = clientY;
+        }
+
+        window.addEventListener('touchstart', handleInput, { passive: false });
+        window.addEventListener('touchmove', handleInput, { passive: false });
+        window.addEventListener('mousedown', e => { handleInput(e); handleSaccadeCatch(e.clientX, e.clientY); });
         window.addEventListener('touchend', e => {
             if (!e.changedTouches || !e.changedTouches[0]) return;
             handleSaccadeCatch(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
