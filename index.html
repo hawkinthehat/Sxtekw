@@ -17,290 +17,365 @@
         .btn:active { transform: scale(0.95); }
         .emergency { background: var(--red); color: white; box-shadow: 0 0 30px rgba(244, 63, 94, 0.4); }
         .gold-btn { background: var(--gold); color: var(--bg); border: 2px solid var(--cedar); }
-        .secondary { background: none; border: 1px solid var(--cedar); color: var(--cedar); }
+        .secondary { background: none; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
         
-        .top-bar { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; display: flex; justify-content: space-between; z-index: 1000; }
-        .control-icon { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px); color: white; }
-
+        #logic-input { width: 100%; background: rgba(255,255,255,0.05); border: 2px solid var(--teal); color: white; padding: 15px; border-radius: 12px; text-align: center; font-size: 1.2rem; margin-bottom: 15px; }
         canvas { position: absolute; top: 0; left: 0; z-index: 1; }
-        #visual-msg { color: var(--teal); letter-spacing: 4px; z-index: 10; font-weight: 900; margin-top: 20px; text-shadow: 0 0 10px rgba(45, 212, 191, 0.5); }
-        input { background: rgba(255,255,255,0.05); border: 1px solid var(--teal); color: white; padding: 18px; border-radius: 15px; width: 85%; text-align: center; margin: 25px 0; font-size: 1.2rem; }
+        #bio-tip { position: absolute; bottom: 30px; width: 80%; opacity: 0.6; font-size: 0.75rem; color: var(--gold); border-top: 1px solid rgba(251, 191, 36, 0.2); padding-top: 15px; pointer-events: none; transition: opacity 1s; }
     </style>
 </head>
 <body>
 
-    <div id="ui-overlay" style="display: none;">
-        <div class="top-bar">
-            <div id="vol-btn" class="control-icon" onclick="toggleAudio()">🔊</div>
-            <div class="control-icon" onclick="window.open('https://buymeacoffee.com/hawkinthehat', '_blank')" style="color: var(--gold);">☕</div>
-            <div class="control-icon" onclick="exitAll()" style="color: var(--red);">✕</div>
-        </div>
-    </div>
-
     <div id="home" class="screen active">
         <h1 style="color: var(--teal); letter-spacing: 10px; font-weight: 900; margin-bottom: 5px;">SXT’EKW</h1>
-        <p style="opacity: 0.5; font-size: 0.7rem; margin-bottom: 30px; letter-spacing: 4px;">THE QUIET | NEURAL WEAVER</p>
-        
+        <p style="opacity: 0.5; font-size: 0.7rem; margin-bottom: 30px; letter-spacing: 4px;">THE QUIET | HAWKINTHEHAT</p>
         <button class="btn emergency" onclick="startProtocol()">SYSTEM RED: RESET</button>
         <button class="btn gold-btn" onclick="startWeave()">THE WEAVE (MEDITATION)</button>
         <button class="btn secondary" onclick="show('vantage')">The Vantage (Observe)</button>
-        
-        <div style="margin-top: 40px; opacity: 0.4; font-size: 0.75rem;">
-            <p>Inspired by Coast Salish Resilience</p>
-            <a href="https://buymeacoffee.com/hawkinthehat" target="_blank" style="color: var(--gold); text-decoration: none; font-weight: bold;">Support the Project ⚡</a>
+        <div style="margin-top: 40px;"><a href="https://www.buymeacoffee.com/Hawkinthehat" target="_blank" style="color: var(--gold); text-decoration: none; font-size: 0.8rem;">SUPPORT THE FOUNDER ☕</a></div>
+    </div>
+
+    <div id="logic-tunnel" class="screen">
+        <h2 style="color: var(--red); letter-spacing: 5px;">NEURAL LOCK</h2>
+        <p id="task-counter" style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 20px;">SYNC STATUS: 0/3</p>
+        <div id="task-box" style="background: rgba(255,255,255,0.03); padding: 30px; border-radius: 20px; width: 100%; max-width: 340px;">
+            <div id="task-display" style="font-size: 1.3rem; color: var(--teal); margin-bottom: 20px; min-height: 50px;">Initializing...</div>
+            <input type="text" id="logic-input" placeholder="Answer..." inputmode="text" autocomplete="off">
+            <button class="btn" onclick="checkLogic()">SUBMIT SIGNAL</button>
         </div>
+        <button id="ready-btn" class="btn gold-btn" style="opacity: 0.15; pointer-events: none; margin-top: 20px;" onclick="attemptProceed()" disabled>LOCKED</button>
+        <div id="bio-tip">VAGAL HUM: Make a low 'Mmm' sound while you solve.</div>
     </div>
 
     <div id="vantage" class="screen">
         <h2 style="color: var(--teal);">THE VANTAGE</h2>
-        <p style="opacity: 0.8; max-width: 280px;">Label the thought. Observe it shatter. Re-weave the quiet.</p>
-        <input type="text" id="thought-input" placeholder="Worry Name...">
+        <input type="text" id="thought-input" placeholder="Worry Name..." style="background: rgba(255,255,255,0.05); border: 1px solid var(--teal); color: white; padding: 15px; border-radius: 15px; width: 80%; text-align: center; margin: 20px 0;">
         <button class="btn" onclick="initVantage()">BEGIN OBSERVATION</button>
         <button class="btn secondary" onclick="show('home')">BACK</button>
     </div>
 
     <div id="visual" class="screen">
         <canvas id="canvas"></canvas>
-        <h3 id="visual-msg">FOLLOW THE LIGHT</h3>
+        <div id="vantage-display" style="position: absolute; top: 40%; width: 100%; text-align: center; pointer-events: none; z-index: 10;">
+            <h1 id="floating-thought" style="color: var(--text); font-size: 2rem; letter-spacing: 8px; opacity: 0; transition: 2s; text-transform: uppercase;"></h1>
+        </div>
+        <h3 id="visual-msg" style="position: absolute; bottom: 100px; width: 100%; color: var(--teal);">CATCH THE CLICK</h3>
+        <button class="btn secondary" style="position: absolute; top: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%;" onclick="exitAll()">✕</button>
     </div>
 
     <div id="weave" class="screen">
         <canvas id="weave-canvas"></canvas>
-        <div style="position: absolute; top: 80px; pointer-events: none;">
-            <h2 id="weave-title" style="color: var(--gold); letter-spacing: 5px; margin: 0;">NEURAL WEAVER</h2>
-            <p id="weave-progress" style="opacity: 0.6;">0% WOVEN</p>
+        <div id="weave-instructions" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; pointer-events: none; z-index: 100; transition: 1.5s;">
+            <h2 style="color: var(--teal); letter-spacing: 5px;">THE WEAVE</h2>
+            <p style="color: var(--gold); font-weight: bold;">DRAG THUMB TO CONNECT DOTS<br><small style="font-weight: normal; opacity: 0.7;">Build the basket. Restore the quiet.</small></p>
         </div>
-        <button class="btn secondary" style="position: absolute; bottom: 40px;" onclick="exitAll()">EXIT WEAVE</button>
+        <p id="weave-progress" style="position: absolute; top: 40px; opacity: 0.6;">0% WOVEN</p>
+        <button class="btn secondary" style="position: absolute; bottom: 40px; width: 60%;" onclick="exitAll()">EXIT TO CALM</button>
     </div>
 
-    <div id="success" class="screen">
-        <h1 style="color: var(--teal); letter-spacing: 4px;">SXT’EKW REACHED</h1>
-        <p id="success-quote" style="max-width: 300px; line-height: 1.6;"></p>
-        <button class="btn gold-btn" onclick="window.open('https://buymeacoffee.com/hawkinthehat', '_blank')">WEAVE THE QUIET</button>
-        <button class="btn secondary" onclick="show('home')">RETURN TO HOME</button>
-        <a href="https://buymeacoffee.com/hawkinthehat" target="_blank" style="margin-top: 10px; color: var(--gold); text-decoration: none; font-weight: bold;">Support the Project ⚡</a>
+    <div id="elder-overlay" style="display: none; opacity: 0; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); z-index: 5000; flex-direction: column; justify-content: center; align-items: center; padding: 40px; backdrop-filter: blur(10px); transition: opacity 0.15s ease-out;">
+        <div style="border: 1px solid var(--gold); padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 30px rgba(251, 191, 36, 0.1);">
+            <h3 id="elder-title" style="color: var(--teal); letter-spacing: 3px; margin-top: 0;">MESSAGE</h3>
+            <p id="elder-msg" style="line-height: 1.6; color: var(--text); opacity: 0.9; margin: 20px 0;"></p>
+            <div style="width: 28px; height: 2px; margin: 0 auto 16px auto; background: rgba(251, 191, 36, 0.35); border-radius: 2px;"></div>
+            <button class="btn gold-btn" onclick="closeElder()">ACKNOWLEDGE</button>
+        </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const weaveCanvas = document.getElementById('weave-canvas');
-        const wCtx = weaveCanvas.getContext('2d');
-        
-        let particles = [], weavePoints = [], mouse = { x: null, y: null }, audioCtx, isMuted = false;
-        let binauralGain, leftOsc, rightOsc, vantageMode = false, shatterPoint = false, weavingActive = false;
-        let visualAnimating = false, weaveAnimating = false, vantageTimer = null, successTimer = null;
+        const canvas = document.getElementById('canvas'); const ctx = canvas.getContext('2d');
+        const weaveCanvas = document.getElementById('weave-canvas'); const wCtx = weaveCanvas.getContext('2d');
+        let particles = [], weavePoints = [], mouse = { x: null, y: null }, audioCtx;
+        let leftOsc, rightOsc, vantageMode = false, shatterPoint = false, weavingActive = false;
+        let sparkX = 0, sparkDir = 1, sparkSpeed = 6, solvedCount = 0, currentTaskAnswer = "";
+        let protocolMode = false;
+        let canProceed = false;
+        let lastSolvedAnswer = "";
+        let vantageShatterTimer = null;
+        const rootStyles = getComputedStyle(document.documentElement);
+        const tealColor = rootStyles.getPropertyValue('--teal').trim() || "#2dd4bf";
+        const goldColor = rootStyles.getPropertyValue('--gold').trim() || "#fbbf24";
 
-        const logicTasks = ["Spell 'CALM' backwards", "What is 18 + 24?", "Name 3 PNW trees", "Count back from 20 by 4s"];
+        const bioTips = [
+            "OWL EYES: Soften your gaze. See the screen edges without moving your head.",
+            "VAGAL HUM: Make a low 'Mmm' sound. Feel the vibration in your chest.",
+            "PERIPHERAL: Don't stare at the spark. Watch it with your side-vision.",
+            "VAGAL TONE: Take a long, slow exhale through pursed lips."
+        ];
 
-        function initAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+        // --- THE ELDER SYSTEM ---
+        function elderSpeak(title, message) {
+            document.getElementById('elder-title').innerText = title;
+            document.getElementById('elder-msg').innerText = message;
+            const overlay = document.getElementById('elder-overlay');
+            overlay.style.display = 'flex';
+            requestAnimationFrame(() => {
+                overlay.style.opacity = '1';
+            });
         }
 
-        function toggleAudio() {
-            isMuted = !isMuted;
-            document.getElementById('vol-btn').innerText = isMuted ? "🔇" : "🔊";
-            if (binauralGain && audioCtx) {
-                binauralGain.gain.setTargetAtTime(isMuted ? 0 : 0.05, audioCtx.currentTime, 0.1);
-            }
+        function closeElder() {
+            const overlay = document.getElementById('elder-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                if (overlay.style.opacity === '0') overlay.style.display = 'none';
+            }, 160);
         }
 
         function show(id) {
-            initAudio();
+            if (id !== 'logic-tunnel') closeElder();
+            if (id === 'visual' && !vantageMode && protocolMode && solvedCount < 3) {
+                const taskDisplay = document.getElementById('task-display');
+                if (taskDisplay) taskDisplay.innerText = `Neural lock incomplete: ${solvedCount}/3`;
+                id = 'logic-tunnel';
+            }
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            document.getElementById('ui-overlay').style.display = (id === 'home' || id === 'success') ? 'none' : 'block';
             if (id === 'visual') startVisual();
+            if (id === 'home') exitAll();
         }
 
+        // --- LOGIC TUNNEL ---
         function startProtocol() {
-            const task = logicTasks[Math.floor(Math.random()*logicTasks.length)];
-            alert(`METAL HACK: ${task}`); // Simplest logic trigger for v1
+            closeElder();
+            solvedCount = 0;
+            protocolMode = true;
+            canProceed = false;
+            lastSolvedAnswer = "";
+            shatterPoint = false;
+            vantageMode = false;
+            elderSpeak("SYSTEM RED", "The signal is fragmented. We must restore the logic gate before the weave can begin.");
+            const btn = document.getElementById('ready-btn');
+            btn.style.opacity = "0.15"; btn.style.pointerEvents = "none"; btn.disabled = true; btn.innerText = "LOCKED";
+            updateCounter(); show('logic-tunnel'); generateTask();
+        }
+
+        function generateTask() {
+            const display = document.getElementById('task-display'); const input = document.getElementById('logic-input');
+            const type = Math.floor(Math.random() * 2); input.value = ""; input.focus();
+            if (type === 0) {
+                const a = Math.floor(Math.random() * 12) + 8; const b = Math.floor(Math.random() * 9) + 4;
+                display.innerText = `Solve: ${a} + ${b}`; currentTaskAnswer = (a + b).toString();
+            } else {
+                const words = ["HAWKS", "SALISH", "CEDAR", "QUIET"];
+                const word = words[Math.floor(Math.random() * words.length)];
+                display.innerText = `Spell Backwards: ${word}`; currentTaskAnswer = word.split('').reverse().join('').toUpperCase();
+            }
+        }
+
+        function checkLogic() {
+            const inputEl = document.getElementById('logic-input');
+            const val = inputEl.value.toUpperCase().trim();
+            if (val && val === currentTaskAnswer) {
+                solvedCount++; if (navigator.vibrate) navigator.vibrate(20); updateCounter();
+                if (solvedCount >= 3) {
+                    const btn = document.getElementById('ready-btn');
+                    canProceed = true;
+                    btn.style.opacity = "1"; btn.style.pointerEvents = "auto"; btn.disabled = false; btn.innerText = "I AM READY TO WEAVE";
+                    if (solvedCount === 3) {
+                        elderSpeak("NEURAL LOCK", "The logic is restored. The Weaver is now open to you.");
+                    }
+                }
+                generateTask();
+            } else {
+                const taskBox = document.getElementById('task-box');
+                if (taskBox) {
+                    taskBox.style.border = "1px solid rgba(244, 63, 94, 0.6)";
+                    setTimeout(() => {
+                        taskBox.style.border = "1px solid rgba(45, 212, 191, 0.2)";
+                    }, 350);
+                }
+                elderSpeak("SYNC INTERRUPTED", "Pause. Breathe once. Then answer again.");
+            }
+            inputEl.value = "";
+            inputEl.focus();
+        }
+
+        function updateCounter() { document.getElementById('task-counter').innerText = `NEURAL SYNC: ${solvedCount}/3 ACHIEVED`; }
+
+        function attemptProceed() {
+            const btn = document.getElementById('ready-btn');
+            if (!protocolMode || solvedCount < 3 || !canProceed || btn.disabled) {
+                if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
+                document.getElementById('task-display').innerText = `Neural lock incomplete: ${solvedCount}/3`;
+                return;
+            }
+            closeElder();
+            shatterPoint = false;
+            vantageMode = false;
+            protocolMode = false;
+            canProceed = false;
+            btn.disabled = true;
+            btn.style.pointerEvents = "none";
+            document.getElementById('visual-msg').innerText = "FOLLOW THE LIGHT";
             show('visual');
         }
 
+        // --- VANTAGE & VISUAL ---
         function initVantage() {
-            vantageMode = true; shatterPoint = false;
-            const thought = document.getElementById('thought-input').value || "Worry";
+            const thoughtInput = document.getElementById('thought-input');
+            const thought = (thoughtInput ? thoughtInput.value : "").trim().toUpperCase() || "UNCERTAINTY";
+            const display = document.getElementById('floating-thought');
+            if (!display) return;
+
+            if (vantageShatterTimer) clearTimeout(vantageShatterTimer);
+            closeElder();
+            vantageMode = true;
+            shatterPoint = false;
             show('visual');
-            document.getElementById('visual-msg').innerText = `OBSERVE: ${thought.toUpperCase()}`;
-            if (vantageTimer) clearTimeout(vantageTimer);
-            if (successTimer) clearTimeout(successTimer);
-            vantageTimer = setTimeout(() => {
-                shatterPoint = true; 
+
+            display.innerText = thought;
+            display.style.transform = "scale(1)";
+            display.style.filter = "blur(0px)";
+            display.style.opacity = "1";
+            document.getElementById('visual-msg').innerText = "OBSERVE THE SIGNAL";
+
+            vantageShatterTimer = setTimeout(() => {
+                shatterPoint = true; display.style.opacity = "0";
+                display.style.transform = "scale(0.5)";
+                display.style.filter = "blur(10px)";
                 if (navigator.vibrate) navigator.vibrate([100, 50, 200]);
-                document.getElementById('visual-msg').innerText = "SHATTERED. RECOVERY SUGGESTED.";
-                successTimer = setTimeout(() => triggerSuccess("System neutralized. The mind is rooted like the cedar."), 4000);
-            }, 12000);
-        }
-
-        function startWeave() {
-            weavingActive = true;
-            show('weave');
-            weaveCanvas.width = window.innerWidth; weaveCanvas.height = window.innerHeight;
-            weavePoints = [];
-            const cols = 8, rows = 10;
-            for(let i=0; i<cols; i++) {
-                for(let j=0; j<rows; j++) {
-                    weavePoints.push({
-                        x: (weaveCanvas.width / (cols + 1)) * (i + 1),
-                        y: (weaveCanvas.height / (rows + 1)) * (j + 1),
-                        locked: false
-                    });
-                }
-            }
-            document.getElementById('weave-progress').innerText = "0% WOVEN";
-            if (!weaveAnimating) animateWeave();
-        }
-
-        function stopBinaural() {
-            [leftOsc, rightOsc].forEach((osc) => {
-                if (!osc) return;
-                try {
-                    osc.stop();
-                } catch (e) {
-                    // Oscillator may already be stopped; ignore.
-                }
-                osc.disconnect();
-            });
-            leftOsc = null;
-            rightOsc = null;
-            if (binauralGain) {
-                binauralGain.disconnect();
-                binauralGain = null;
-            }
+                document.getElementById('visual-msg').innerText = "SIGNAL SHATTERED";
+            }, 8000);
         }
 
         function startVisual() {
+            shatterPoint = false;
+            closeElder();
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            particles = []; for (let i = 0; i < 60; i++) particles.push(new Neuron());
-            stopBinaural();
-            binauralGain = audioCtx.createGain();
-            binauralGain.gain.setValueAtTime(0, audioCtx.currentTime);
-            binauralGain.gain.linearRampToValueAtTime(isMuted ? 0 : 0.05, audioCtx.currentTime + 2);
-            binauralGain.connect(audioCtx.destination);
-            
-            leftOsc = audioCtx.createOscillator(); rightOsc = audioCtx.createOscillator();
-            leftOsc.frequency.value = 432; rightOsc.frequency.value = 442;
-            leftOsc.connect(binauralGain); rightOsc.connect(binauralGain);
-            leftOsc.start(); rightOsc.start();
-            if (!visualAnimating) animate();
-        }
-
-        class Neuron {
-            constructor() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.sx = (Math.random()-0.5); this.sy = (Math.random()-0.5); }
-            update() {
-                this.x += this.sx; this.y += this.sy;
-                if (mouse.x) {
-                    let d = Math.sqrt((mouse.x-this.x)**2 + (mouse.y-this.y)**2);
-                    if (d < 150) {
-                        let f = (150-d)/150;
-                        if(shatterPoint) { this.x -= (mouse.x-this.x)*f*0.4; this.y -= (mouse.y-this.y)*f*0.4; }
-                        else { this.x += (mouse.x-this.x)*f*0.1; this.y += (mouse.y-this.y)*f*0.1; }
-                    }
-                }
-                if (this.x > canvas.width || this.x < 0) this.sx *= -1;
-                if (this.y > canvas.height || this.y < 0) this.sy *= -1;
-            }
-            draw() {
-                ctx.fillStyle = shatterPoint ? "var(--gold)" : "var(--teal)";
-                ctx.globalAlpha = 0.4; ctx.beginPath(); ctx.arc(this.x, this.y, 2, 0, Math.PI*2); ctx.fill();
-                particles.forEach(p => {
-                    let dist = Math.sqrt((p.x-this.x)**2 + (p.y-this.y)**2);
-                    if (dist < 80) {
-                        ctx.strokeStyle = shatterPoint ? "var(--cedar)" : "var(--teal)";
-                        ctx.globalAlpha = 0.15 - dist/80; ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(p.x, p.y); ctx.stroke();
-                    }
-                });
-            }
+            sparkX = canvas.width / 2; particles = [];
+            for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, sx: Math.random()-0.5, sy: Math.random()-0.5 });
+            animate();
         }
 
         function animate() {
-            if (!document.getElementById('visual').classList.contains('active')) {
-                visualAnimating = false;
-                return;
-            }
-            visualAnimating = true;
+            if (!document.getElementById('visual').classList.contains('active')) return;
+            ctx.globalAlpha = 1;
             ctx.fillStyle = 'rgba(2, 6, 23, 0.2)'; ctx.fillRect(0,0,canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
+            if (!shatterPoint) {
+                sparkX += sparkSpeed * sparkDir;
+                if (sparkX >= canvas.width - 40 || sparkX <= 40) { sparkDir *= -1; if (navigator.vibrate) navigator.vibrate(30); }
+                ctx.shadowBlur = 22;
+                ctx.shadowColor = tealColor;
+                ctx.fillStyle = tealColor; ctx.beginPath(); ctx.arc(sparkX, canvas.height/2, 12, 0, Math.PI*2); ctx.fill();
+                ctx.shadowBlur = 0;
+            } else {
+                particles.forEach(p => {
+                    p.x += p.sx * 5; p.y += p.sy * 5;
+                    ctx.fillStyle = goldColor; ctx.globalAlpha = 0.4; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+                });
+            }
             requestAnimationFrame(animate);
         }
 
+        // --- WEAVER ---
+        function startWeave() {
+            closeElder();
+            weavingActive = true; show('weave');
+            const instr = document.getElementById('weave-instructions');
+            instr.style.opacity = "1"; setTimeout(() => instr.style.opacity = "0", 3500);
+            weaveCanvas.width = window.innerWidth; weaveCanvas.height = window.innerHeight;
+            weavePoints = []; const cols = 7, rows = 9;
+            for(let i=0; i<cols; i++) for(let j=0; j<rows; j++) weavePoints.push({ x: (weaveCanvas.width / (cols + 1)) * (i + 1), y: (weaveCanvas.height / (rows + 1)) * (j + 1), locked: false });
+            animateWeave();
+        }
+
         function animateWeave() {
-            if (!weavingActive || !document.getElementById('weave').classList.contains('active')) {
-                weaveAnimating = false;
-                return;
-            }
-            weaveAnimating = true;
-            wCtx.fillStyle = 'rgba(2, 6, 23, 0.3)'; wCtx.fillRect(0,0,weaveCanvas.width, weaveCanvas.height);
+            if (!weavingActive) return;
+            
+            // Create a "Trailing" effect by not clearing the canvas fully
+            wCtx.fillStyle = 'rgba(2, 6, 23, 0.15)';
+            wCtx.fillRect(0, 0, weaveCanvas.width, weaveCanvas.height);
+            
             let locked = 0;
+            const time = Date.now() * 0.002; // Used for the "Pulse"
+
             weavePoints.forEach(p => {
-                let d = Math.sqrt((mouse.x-p.x)**2 + (mouse.y-p.y)**2);
-                if (d < 40 && !p.locked) { p.locked = true; if(navigator.vibrate) navigator.vibrate(10); }
+                // Floating movement (The "Current")
+                if (!p.locked) {
+                    p.x += Math.sin(time + p.y) * 0.5;
+                    p.y += Math.cos(time + p.x) * 0.5;
+                }
+
+                let d = Math.sqrt((mouse.x - p.x)**2 + (mouse.y - p.y)**2);
+                if (d < 55 && !p.locked) {
+                    p.locked = true;
+                    if (navigator.vibrate) navigator.vibrate(10);
+                }
+                
                 if (p.locked) {
-                    locked++; wCtx.fillStyle = "var(--gold)"; wCtx.beginPath(); wCtx.arc(p.x, p.y, 3, 0, Math.PI*2); wCtx.fill();
+                    locked++;
+                    // Glowing Core
+                    wCtx.shadowBlur = 15;
+                    wCtx.shadowColor = goldColor;
+                    wCtx.fillStyle = goldColor;
+                    wCtx.beginPath(); wCtx.arc(p.x, p.y, 4, 0, Math.PI*2); wCtx.fill();
+                    wCtx.shadowBlur = 0;
+
+                    // Thread Connections
                     weavePoints.forEach(p2 => {
-                        if(p2.locked && Math.sqrt((p2.x-p.x)**2 + (p2.y-p.y)**2) < 100) {
-                            wCtx.strokeStyle = "rgba(251, 191, 36, 0.2)"; wCtx.beginPath(); wCtx.moveTo(p.x, p.y); wCtx.lineTo(p2.x, p2.y); wCtx.stroke();
+                        if (p2.locked && Math.sqrt((p2.x - p.x)**2 + (p2.y - p.y)**2) < 140) {
+                            wCtx.strokeStyle = `rgba(251, 191, 36, ${0.2 + Math.sin(time) * 0.1})`;
+                            wCtx.lineWidth = 2;
+                            wCtx.beginPath(); wCtx.moveTo(p.x, p.y); wCtx.lineTo(p2.x, p2.y); wCtx.stroke();
                         }
                     });
-                } else { wCtx.fillStyle = "rgba(255,255,255,0.1)"; wCtx.beginPath(); wCtx.arc(p.x, p.y, 1, 0, Math.PI*2); wCtx.fill(); }
+                } else {
+                    // Subtle "Breathing" for uncollected dots
+                    wCtx.fillStyle = `rgba(45, 212, 191, ${0.1 + Math.sin(time) * 0.05})`;
+                    wCtx.beginPath(); wCtx.arc(p.x, p.y, 2, 0, Math.PI*2); wCtx.fill();
+                }
             });
-            const progress = Math.round(locked / weavePoints.length * 100);
-            document.getElementById('weave-progress').innerText = `${progress}% WOVEN`;
-            if (progress >= 100) {
-                triggerSuccess("Weave complete. Quiet restored.");
-                return;
+
+            let percent = Math.round(locked / weavePoints.length * 100);
+            document.getElementById('weave-progress').innerText = `${percent}% WOVEN`;
+            
+            if (percent >= 100) {
+                document.getElementById('weave-progress').innerText = "NEURAL SYNC COMPLETE";
+                // Flash effect
+                wCtx.fillStyle = "rgba(255, 255, 255, 0.05)";
+                wCtx.fillRect(0, 0, weaveCanvas.width, weaveCanvas.height);
             }
+            
             requestAnimationFrame(animateWeave);
         }
 
-        function trackTouch(e) {
-            if (!e.touches || !e.touches[0]) return;
-            mouse.x = e.touches[0].clientX;
-            mouse.y = e.touches[0].clientY;
-        }
-
-        function trackMouse(e) {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        }
-
-        function clearPointer() {
-            mouse.x = null;
-            mouse.y = null;
-        }
-
+        // --- GLOBAL CONTROLS ---
         window.addEventListener('touchstart', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
-        window.addEventListener('touchmove', trackTouch);
-        window.addEventListener('touchend', clearPointer);
-        window.addEventListener('touchcancel', clearPointer);
-        window.addEventListener('mousemove', trackMouse);
-        window.addEventListener('mousedown', trackMouse);
-        window.addEventListener('mouseleave', clearPointer);
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            if (weavingActive) startWeave();
+        window.addEventListener('touchmove', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
+        window.addEventListener('mousedown', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        document.getElementById('logic-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') checkLogic();
         });
-
-        function triggerSuccess(message) {
-            exitAll();
-            document.getElementById('success-quote').innerText = message || "System neutralized. The mind is rooted like the cedar.";
-            show('success');
-        }
 
         function exitAll() {
             weavingActive = false; vantageMode = false; shatterPoint = false;
-            if (vantageTimer) clearTimeout(vantageTimer);
-            if (successTimer) clearTimeout(successTimer);
-            vantageTimer = null;
-            successTimer = null;
-            stopBinaural();
-            clearPointer();
-            show('home');
+            protocolMode = false;
+            canProceed = false;
+            lastSolvedAnswer = "";
+            closeElder();
+            if (vantageShatterTimer) {
+                clearTimeout(vantageShatterTimer);
+                vantageShatterTimer = null;
+            }
+            const display = document.getElementById('floating-thought');
+            if (display) {
+                display.style.opacity = "0";
+                display.style.transform = "scale(1)";
+                display.style.filter = "blur(0px)";
+                display.innerText = "";
+            }
+            document.getElementById('visual-msg').innerText = "CATCH THE CLICK";
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('home').classList.add('active');
         }
+
+        // Rotating Tips
+        let tipIdx = 0;
+        setInterval(() => {
+            const tip = document.getElementById('bio-tip');
+            if(tip) { tip.style.opacity = "0"; setTimeout(() => { tipIdx = (tipIdx + 1) % bioTips.length; tip.innerText = bioTips[tipIdx]; tip.style.opacity = "0.6"; }, 1000); }
+        }, 10000);
     </script>
 </body>
 </html>
