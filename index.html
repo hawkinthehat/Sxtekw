@@ -89,7 +89,7 @@
             ST’ÉXEM
             <span style="display: block; font-size: 0.6rem; opacity: 0.9; margin-top: 5px; font-weight: normal;">ST-EH-KHUM [ TO BE STILL ]</span>
         </button>
-        <button class="btn" onclick="startPaxwad()">FEATHER SACCADES (10)</button>
+        <button class="btn" onclick="startPaxwad()">P’ÁX̌WAD SACCADES (10)</button>
         <button class="btn gold-btn" onclick="playNativeSignal('weave'); startWeave();" style="margin-top: 15px;">
             KW’ÉTL’EN
             <span style="display: block; font-size: 0.6rem; opacity: 0.8; margin-top: 5px; font-weight: normal;">KW-ETH-LUHN [ TO WEAVE ]</span>
@@ -153,7 +153,7 @@
 
             <div id="saccade-instr" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin: 0 auto; width: 80%; max-width: 300px; font-size: 0.7rem; line-height: 1.4; border: 1px dashed rgba(0, 163, 108, 0.3);">
                 <span style="color: var(--gold);">FOLLOW THE SPARK:</span><br>
-                Tap the feather 10 times.<br>
+                Tap P’ÁX̌WAD 10 times.<br>
                 Move only your eyes, stay still.
             </div>
         </div>
@@ -576,7 +576,7 @@
                         document.getElementById('saccade-count').innerText = `SYNCS: ${saccadeTaps}/10`;
                         moveSaccadeFeather();
                     } else {
-                        document.getElementById('visual-msg').innerText = `CATCH THE FEATHER: ${saccadeTaps}/10`;
+                        document.getElementById('visual-msg').innerText = `CATCH P’ÁX̌WAD: ${saccadeTaps}/10`;
                         teleportFeather();
                     }
                 }
