@@ -491,7 +491,6 @@
             const instr = document.getElementById('saccade-instr');
             if (instr) {
                 instr.style.opacity = "1";
-                instr.style.transition = "opacity 1s";
             }
             document.getElementById('saccade-count').innerText = "SYNCS: 0/10";
             moveSaccadeFeather();
@@ -508,12 +507,17 @@
 
         function moveSaccadeFeather() {
             const pad = 80;
+            const canvas = document.getElementById('saccade-canvas');
+            if (!canvas) return;
             featherX = Math.random() * (window.innerWidth - pad * 2) + pad;
             featherY = Math.random() * (window.innerHeight - pad * 2) + pad;
             if (navigator.vibrate) navigator.vibrate(20);
             if (saccadeTaps === 3) {
                 const instr = document.getElementById('saccade-instr');
-                if (instr) instr.style.opacity = "0";
+                if (instr) {
+                    instr.style.opacity = "0";
+                    instr.style.transition = "opacity 1s";
+                }
             }
         }
 
