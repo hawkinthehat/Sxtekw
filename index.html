@@ -166,7 +166,6 @@
         let currentAudioMode = 'headphone';
         let protocolMode = false;
         let canProceed = false;
-        let lastSolvedAnswer = "";
         let vantageShatterTimer = null;
         let currentTargetText = "THE NOISE";
         const rootStyles = getComputedStyle(document.documentElement);
@@ -358,7 +357,6 @@
             solvedCount = 0;
             protocolMode = true;
             canProceed = false;
-            lastSolvedAnswer = "";
             shatterPoint = false;
             vantageMode = false;
             elderSpeak("ST’ÉXEM", "The noise is high. Let us return to the quiet through the logic of the ancestors.");
@@ -439,20 +437,11 @@
             teleportFeather();
         }
 
-        function startSaccadeGame() {
-            startSaccade();
-        }
-
         function teleportFeather() {
             const pad = 100;
             featherX = Math.random() * (canvas.width - pad * 2) + pad;
             featherY = Math.random() * (canvas.height - pad * 2) + pad;
             if (navigator.vibrate) navigator.vibrate(15);
-        }
-
-        function moveFeatherRandomly() {
-            teleportFeather();
-            document.getElementById('visual-msg').innerText = `SYNCS: ${saccadeCount}/10`;
         }
 
         function drawFeather(x, y, angle) {
@@ -756,7 +745,6 @@
             weavingActive = false; vantageMode = false; shatterPoint = false;
             protocolMode = false;
             canProceed = false;
-            lastSolvedAnswer = "";
             currentTargetText = "THE NOISE";
             closeElder();
             isSaccadicMode = false;
