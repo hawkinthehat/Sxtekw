@@ -4,10 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SXT’EKW | Neural Weaver</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
+    <meta name="theme-color" content="#020617">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SXT’EKW">
     <style>
-        :root { --bg: #020617; --teal: #2dd4bf; --text: #f1f5f9; --red: #f43f5e; --card: #1e293b; --gold: #fbbf24; --cedar: #78350f; }
+        :root { --bg: #020617; --teal: #2dd4bf; --jade: #2dd4bf; --text: #f1f5f9; --red: #f43f5e; --card: #1e293b; --gold: #fbbf24; --cedar: #78350f; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; margin: 0; overflow: hidden; touch-action: none; text-align: center; height: 100vh; }
+        html, body {
+            position: fixed;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: none;
+            overscroll-behavior: none;
+        }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; margin: 0; text-align: center; }
         
         .screen { display: none; height: 100vh; width: 100vw; flex-direction: column; justify-content: center; align-items: center; position: absolute; padding: 30px; z-index: 5; }
         .active { display: flex; animation: fadeIn 0.5s ease-out; }
@@ -18,6 +39,34 @@
         .emergency { background: var(--red); color: white; box-shadow: 0 0 30px rgba(244, 63, 94, 0.4); }
         .gold-btn { background: var(--gold); color: var(--bg); border: 2px solid var(--cedar); }
         .secondary { background: none; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
+        .btn-mini {
+            background: rgba(0, 163, 108, 0.1);
+            border: 1px solid var(--jade);
+            color: var(--jade);
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            z-index: 10000;
+        }
+        .title-row { display: flex; align-items: center; gap: 12px; }
+        .title-pronounce-btn {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 1.25rem;
+            transition: color 0.25s ease;
+            padding: 0;
+        }
+        .title-pronounce-btn:hover { color: var(--red); }
+        .text-white { color: #ffffff; }
+        .animate-pulse { animation: titlePulse 1.2s ease-in-out infinite; }
+        @keyframes titlePulse {
+            0%, 100% { opacity: 1; text-shadow: 0 0 0 rgba(255, 255, 255, 0); }
+            50% { opacity: 0.7; text-shadow: 0 0 14px rgba(255, 255, 255, 0.35); }
+        }
         
         #logic-input { width: 100%; background: rgba(255,255,255,0.05); border: 2px solid var(--teal); color: white; padding: 15px; border-radius: 12px; text-align: center; font-size: 1.2rem; margin-bottom: 15px; }
         canvas { position: absolute; top: 0; left: 0; z-index: 1; }
@@ -27,15 +76,43 @@
 <body>
 
     <div id="home" class="screen active">
-        <h1 style="color: var(--teal); letter-spacing: 10px; font-weight: 900; margin-bottom: 5px;">SXT’EKW</h1>
-        <p style="opacity: 0.5; font-size: 0.7rem; margin-bottom: 30px; letter-spacing: 4px;">THE QUIET | HAWKINTHEHAT</p>
-        <button class="btn emergency" onclick="startProtocol()">SYSTEM RED: RESET</button>
-        <button class="btn gold-btn" onclick="startWeave()">THE WEAVE (MEDITATION)</button>
-        <button class="btn secondary" onclick="show('vantage')">The Vantage (Observe)</button>
+        <h1 style="color: var(--teal); opacity: 0.1; font-size: 0.7rem; letter-spacing: 5px;">HAWKIN THE HAT</h1>
+        <div class="title-row">
+            <h2 data-spirit="weaver" style="color: #ffffff; font-size: 2.25rem; font-weight: 900; letter-spacing: -0.02em; text-transform: uppercase; margin: 0;">SXT’EKW</h2>
+            <button onclick="playPronunciation('weaver')" class="title-pronounce-btn" aria-label="Play pronunciation">
+                🔊
+            </button>
+        </div>
+        <p style="opacity: 0.5; font-size: 0.7rem; margin-bottom: 40px; letter-spacing: 4px;">THE QUIET <span style="font-style: italic;">[ suh-t-ekw ]</span></p>
+        <button class="btn emergency" onclick="playNativeSignal('still'); startProtocol();" style="background: var(--red); border: 3px solid var(--cedar); box-shadow: 0 10px 20px rgba(0,0,0,0.4);">
+            ST’ÉXEM
+            <span style="display: block; font-size: 0.6rem; opacity: 0.9; margin-top: 5px; font-weight: normal;">ST-EH-KHUM [ TO BE STILL ]</span>
+        </button>
+        <button class="btn" onclick="startSaccade()">FEATHER SACCADES (10)</button>
+        <button class="btn gold-btn" onclick="playNativeSignal('weave'); startWeave();" style="margin-top: 15px;">
+            KW’ÉTL’EN
+            <span style="display: block; font-size: 0.6rem; opacity: 0.8; margin-top: 5px; font-weight: normal;">KW-ETH-LUHN [ TO WEAVE ]</span>
+        </button>
+        <button class="btn secondary" onclick="playNativeSignal('stop'); show('vantage')" style="margin-top: 25px; border: 1px solid var(--teal); color: var(--teal); border-radius: 50px; width: 70%;">
+            KW’ÉLAP
+            <span style="display: block; font-size: 0.5rem; opacity: 0.7; margin-top: 2px; font-weight: normal;">KW-EH-LAHP [ TO STOP ]</span>
+        </button>
+        <div id="audio-settings" style="margin: 20px 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; width: 100%; max-width: 360px;">
+            <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 10px; letter-spacing: 2px;">AUDIO ENVIRONMENT</p>
+            <div style="display: flex; justify-content: space-around; gap: 10px;">
+                <button id="mode-headphone" class="btn secondary" style="font-size: 0.7rem; padding: 10px;" onclick="setAudioMode('headphone')">🎧 PHONES</button>
+                <button id="mode-speaker" class="btn secondary" style="font-size: 0.7rem; padding: 10px;" onclick="setAudioMode('speaker')">🔊 SPEAKER</button>
+                <button id="mode-silent" class="btn secondary" style="font-size: 0.7rem; padding: 10px;" onclick="setAudioMode('silent')">🔕 SILENT</button>
+            </div>
+            <p id="audio-notice" style="font-size: 0.6rem; color: var(--gold); margin-top: 10px; min-height: 12px; transition: 0.3s;"></p>
+        </div>
         <div style="margin-top: 40px;"><a href="https://www.buymeacoffee.com/Hawkinthehat" target="_blank" style="color: var(--gold); text-decoration: none; font-size: 0.8rem;">SUPPORT THE FOUNDER ☕</a></div>
     </div>
 
     <div id="logic-tunnel" class="screen">
+        <button class="btn-mini" onclick="exitToHome()" style="position: absolute; top: 20px; left: 20px; border: 1px solid var(--red); color: var(--red); background: rgba(244, 63, 94, 0.05);">
+            HÍLU <span style="font-style: italic; opacity: 0.6;">[ HEE-LOO ]</span>
+        </button>
         <h2 style="color: var(--red); letter-spacing: 5px;">NEURAL LOCK</h2>
         <p id="task-counter" style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 20px;">SYNC STATUS: 0/3</p>
         <div id="task-box" style="background: rgba(255,255,255,0.03); padding: 30px; border-radius: 20px; width: 100%; max-width: 340px;">
@@ -48,7 +125,17 @@
     </div>
 
     <div id="vantage" class="screen">
-        <h2 style="color: var(--teal);">THE VANTAGE</h2>
+        <div style="background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(8px); padding: 32px; border-radius: 24px; border: 1px solid rgba(45, 212, 191, 0.25); border-bottom: 4px solid rgba(45, 212, 191, 0.3); width: 100%; max-width: 420px; margin-bottom: 16px;">
+            <h2 style="color: #ffffff; font-size: 2.25rem; font-weight: 900; letter-spacing: -0.02em; text-transform: uppercase; margin: 0 0 4px 0;">
+                KW’ÉKW’E
+            </h2>
+            <p style="color: #2dd4bf; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3em; font-weight: 700; margin: 0 0 16px 0;">
+                Osprey Scout: Focus Protocol
+            </p>
+            <p style="color: #64748b; font-size: 11px; font-style: italic; line-height: 1.6; margin: 0;">
+                "The eye that sees through the surface to the logic beneath."
+            </p>
+        </div>
         <input type="text" id="thought-input" placeholder="Worry Name..." style="background: rgba(255,255,255,0.05); border: 1px solid var(--teal); color: white; padding: 15px; border-radius: 15px; width: 80%; text-align: center; margin: 20px 0;">
         <button class="btn" onclick="initVantage()">BEGIN OBSERVATION</button>
         <button class="btn secondary" onclick="show('home')">BACK</button>
@@ -56,6 +143,9 @@
 
     <div id="visual" class="screen">
         <canvas id="canvas"></canvas>
+        <button id="exit-room" class="btn-mini" onclick="exitToHome()" style="position: absolute; top: 20px; left: 20px;">
+            HÍLU <span style="font-style: italic; opacity: 0.6;">[ HEE-LOO ]</span>
+        </button>
         <div id="vantage-display" style="position: absolute; top: 40%; width: 100%; text-align: center; pointer-events: none; z-index: 10;">
             <h1 id="floating-thought" style="color: var(--text); font-size: 2rem; letter-spacing: 8px; opacity: 0; transition: 2s; text-transform: uppercase;"></h1>
         </div>
@@ -74,6 +164,9 @@
     </div>
 
     <div id="elder-overlay" style="display: none; opacity: 0; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); z-index: 5000; flex-direction: column; justify-content: center; align-items: center; padding: 40px; backdrop-filter: blur(10px); transition: opacity 0.15s ease-out;">
+        <button class="btn-mini" onclick="exitToHome()" style="position: absolute; top: 20px; left: 20px; border: 1px solid var(--gold); color: var(--gold); background: rgba(251, 191, 36, 0.07);">
+            HÍLU <span style="font-style: italic; opacity: 0.6;">[ HEE-LOO ]</span>
+        </button>
         <div style="border: 1px solid var(--gold); padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 30px rgba(251, 191, 36, 0.1);">
             <h3 id="elder-title" style="color: var(--teal); letter-spacing: 3px; margin-top: 0;">MESSAGE</h3>
             <p id="elder-msg" style="line-height: 1.6; color: var(--text); opacity: 0.9; margin: 20px 0;"></p>
@@ -86,15 +179,19 @@
         const canvas = document.getElementById('canvas'); const ctx = canvas.getContext('2d');
         const weaveCanvas = document.getElementById('weave-canvas'); const wCtx = weaveCanvas.getContext('2d');
         let particles = [], weavePoints = [], mouse = { x: null, y: null }, audioCtx;
-        let leftOsc, rightOsc, vantageMode = false, shatterPoint = false, weavingActive = false;
-        let sparkX = 0, sparkDir = 1, sparkSpeed = 6, solvedCount = 0, currentTaskAnswer = "";
+        let leftOsc, rightOsc, masterGain, vantageMode = false, shatterPoint = false, weavingActive = false;
+        let featherX = 0, featherY = 0, featherAngle = 0, featherDir = 1;
+        let solvedCount = 0, currentTaskAnswer = "";
+        let catches = 0, saccadeCount = 0, isSaccadicMode = false;
+        let currentAudioMode = 'headphone';
         let protocolMode = false;
         let canProceed = false;
-        let lastSolvedAnswer = "";
         let vantageShatterTimer = null;
+        let currentTargetText = "THE NOISE";
         const rootStyles = getComputedStyle(document.documentElement);
         const tealColor = rootStyles.getPropertyValue('--teal').trim() || "#2dd4bf";
         const goldColor = rootStyles.getPropertyValue('--gold').trim() || "#fbbf24";
+        const jadeColor = rootStyles.getPropertyValue('--jade').trim() || tealColor;
 
         const bioTips = [
             "OWL EYES: Soften your gaze. See the screen edges without moving your head.",
@@ -122,6 +219,149 @@
             }, 160);
         }
 
+        function playPronunciation(spirit) {
+            const title = document.querySelector(`[data-spirit="${spirit}"]`);
+            if (!title) return;
+
+            const audio = new Audio(`./assets/audio/${spirit}_pronunciation.mp3`);
+            title.classList.add('animate-pulse', 'text-white');
+            const clearPulse = () => title.classList.remove('animate-pulse');
+
+            audio.onended = clearPulse;
+            audio.onerror = clearPulse;
+            audio.play().catch(clearPulse);
+        }
+
+        function speakNative(word) {
+            if (!("speechSynthesis" in window)) return false;
+            try {
+                const msg = new SpeechSynthesisUtterance();
+                msg.text = word;
+                msg.rate = 0.8;
+                msg.pitch = 1;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(msg);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        const nativeAudio = {
+            still: new Audio("./assets/audio/stexem.mp3"),
+            weave: new Audio("./assets/audio/kwetlen.mp3"),
+            stop: new Audio("./assets/audio/kwelap.mp3")
+        };
+
+        const nativeSpeechMap = {
+            still: "St-eh-khum",
+            weave: "Kw-eth-luhn",
+            stop: "Kw-eh-lahp"
+        };
+
+        // Keep built-in voice as primary. Set to false when recorded audio should lead.
+        const preferBuiltInNativeVoice = true;
+
+        function playRecordedNativeAudio(key, fallbackWord) {
+            const sound = nativeAudio[key];
+            if (!sound) return false;
+
+            let fallbackUsed = false;
+            const fallback = () => {
+                if (fallbackUsed || !fallbackWord) return;
+                fallbackUsed = true;
+                speakNative(fallbackWord);
+            };
+
+            sound.volume = 0.6;
+            sound.currentTime = 0;
+            sound.onerror = fallback;
+            const playPromise = sound.play();
+            if (playPromise && typeof playPromise.catch === "function") {
+                playPromise.catch(fallback);
+            }
+            return true;
+        }
+
+        function playNativeSignal(key) {
+            if (currentAudioMode === "silent") return;
+            const word = nativeSpeechMap[key];
+
+            if (preferBuiltInNativeVoice) {
+                if (word && speakNative(word)) return;
+                playRecordedNativeAudio(key, word);
+                return;
+            }
+
+            if (playRecordedNativeAudio(key, word)) return;
+            if (word) speakNative(word);
+        }
+
+        function setAudioMode(mode) {
+            currentAudioMode = mode;
+            document.querySelectorAll('#audio-settings .btn').forEach((btn) => {
+                btn.style.borderColor = 'rgba(255,255,255,0.2)';
+                btn.style.color = 'rgba(255,255,255,0.6)';
+            });
+
+            const activeBtn = document.getElementById(`mode-${mode}`);
+            if (activeBtn) {
+                activeBtn.style.borderColor = tealColor;
+                activeBtn.style.color = tealColor;
+            }
+
+            const notice = document.getElementById('audio-notice');
+            if (!notice) return;
+            if (mode === 'headphone') notice.innerText = "OPTIMAL: Binaural Sync Active.";
+            else if (mode === 'speaker') notice.innerText = "AMBIENT: Best for open rooms.";
+            else notice.innerText = "SILENT: Visual & Haptic focus only.";
+        }
+
+        function stopNeuralAudio() {
+            [leftOsc, rightOsc].forEach((osc) => {
+                if (!osc) return;
+                try { osc.stop(); } catch (_) {}
+                try { osc.disconnect(); } catch (_) {}
+            });
+            if (masterGain) {
+                try { masterGain.disconnect(); } catch (_) {}
+            }
+            leftOsc = null;
+            rightOsc = null;
+            masterGain = null;
+        }
+
+        function playNeuralAudio() {
+            stopNeuralAudio();
+            if (currentAudioMode === 'silent') return;
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            leftOsc = audioCtx.createOscillator();
+            rightOsc = audioCtx.createOscillator();
+            const leftPanner = audioCtx.createStereoPanner();
+            const rightPanner = audioCtx.createStereoPanner();
+            masterGain = audioCtx.createGain();
+            masterGain.gain.value = 0.05;
+
+            leftOsc.frequency.value = 432;
+            if (currentAudioMode === 'headphone') {
+                rightOsc.frequency.value = 438;
+                leftPanner.pan.value = -1;
+                rightPanner.pan.value = 1;
+            } else {
+                rightOsc.frequency.value = 432.5;
+                leftPanner.pan.value = 0;
+                rightPanner.pan.value = 0;
+            }
+
+            leftOsc.connect(leftPanner).connect(masterGain);
+            rightOsc.connect(rightPanner).connect(masterGain);
+            masterGain.connect(audioCtx.destination);
+            leftOsc.start();
+            rightOsc.start();
+        }
+
         function show(id) {
             if (id !== 'logic-tunnel') closeElder();
             if (id === 'visual' && !vantageMode && protocolMode && solvedCount < 3) {
@@ -141,10 +381,9 @@
             solvedCount = 0;
             protocolMode = true;
             canProceed = false;
-            lastSolvedAnswer = "";
             shatterPoint = false;
             vantageMode = false;
-            elderSpeak("SYSTEM RED", "The signal is fragmented. We must restore the logic gate before the weave can begin.");
+            elderSpeak("ST’ÉXEM", "The noise is high. Let us return to the quiet through the logic of the ancestors.");
             const btn = document.getElementById('ready-btn');
             btn.style.opacity = "0.15"; btn.style.pointerEvents = "none"; btn.disabled = true; btn.innerText = "LOCKED";
             updateCounter(); show('logic-tunnel'); generateTask();
@@ -211,58 +450,219 @@
             show('visual');
         }
 
+        function startSaccade() {
+            catches = 0;
+            saccadeCount = 0;
+            isSaccadicMode = true;
+            protocolMode = false;
+            closeElder();
+            show('visual');
+            document.getElementById('visual-msg').innerText = "CATCH THE FEATHER: 0/10";
+            teleportFeather();
+        }
+
+        function teleportFeather() {
+            const pad = 100;
+            featherX = Math.random() * (canvas.width - pad * 2) + pad;
+            featherY = Math.random() * (canvas.height - pad * 2) + pad;
+            if (navigator.vibrate) navigator.vibrate(15);
+        }
+
+        function drawFeather(x, y, angle) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+
+            ctx.strokeStyle = goldColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, -40);
+            ctx.lineTo(0, 40);
+            ctx.stroke();
+
+            ctx.fillStyle = tealColor;
+            ctx.globalAlpha = 0.6;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 15, 35, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = tealColor;
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function handleSaccadeCatch(x, y) {
+            if (!isSaccadicMode || !document.getElementById('visual').classList.contains('active')) return;
+            const d = Math.sqrt((x - featherX) ** 2 + (y - featherY) ** 2);
+            if (d < 120) {
+                catches++;
+                saccadeCount = catches;
+                if (navigator.vibrate) navigator.vibrate([20, 10, 20]);
+                if (catches >= 10) {
+                    isSaccadicMode = false;
+                    elderSpeak("SYSTEM SYNCED", "Neural pathways cleared. The 'Quiet' is restored.");
+                    setTimeout(() => exitAll(), 1400);
+                } else {
+                    document.getElementById('visual-msg').innerText = `CATCH THE FEATHER: ${catches}/10`;
+                    teleportFeather();
+                }
+            }
+        }
+
+        function seedVantageParticles() {
+            particles = [];
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            for (let i = 0; i < 90; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 0.4 + Math.random() * 1.1;
+                particles.push({
+                    x: centerX + (Math.random() - 0.5) * 30,
+                    y: centerY + (Math.random() - 0.5) * 30,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 1
+                });
+            }
+        }
+
+        // --- ENHANCED KW’ÉLAP VANTAGE ---
+        function animateKwelap() {
+            if (!vantageMode || !document.getElementById('visual').classList.contains('active')) return;
+
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (!shatterPoint) {
+                ctx.save();
+                ctx.font = "bold 35px sans-serif";
+                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                const jitterX = (Math.random() - 0.5) * 2;
+                const jitterY = (Math.random() - 0.5) * 2;
+                ctx.fillText(currentTargetText, (canvas.width / 2) + jitterX, (canvas.height / 2) + jitterY);
+                ctx.restore();
+
+                const angle = Date.now() * 0.002;
+                const radius = 120;
+                const fx = (canvas.width / 2) + Math.cos(angle) * radius;
+                const fy = (canvas.height / 2) + Math.sin(angle) * radius;
+                drawFeather(fx, fy, angle + Math.PI / 2);
+            } else {
+                particles = particles.filter((p) => p.life > 0.01);
+                particles.forEach((p) => {
+                    p.x += p.vx * 3;
+                    p.y += p.vy * 3;
+                    ctx.strokeStyle = jadeColor;
+                    ctx.lineWidth = 1;
+                    ctx.globalAlpha = p.life;
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p.x - p.vx * 10, p.y - p.vy * 10);
+                    ctx.stroke();
+                    p.life -= 0.01;
+                });
+                ctx.globalAlpha = 1;
+            }
+            requestAnimationFrame(animateKwelap);
+        }
+
         // --- VANTAGE & VISUAL ---
         function initVantage() {
             const thoughtInput = document.getElementById('thought-input');
-            const thought = (thoughtInput ? thoughtInput.value : "").trim().toUpperCase() || "UNCERTAINTY";
+            const thought = (thoughtInput ? thoughtInput.value : "").trim().toUpperCase() || "THE NOISE";
             const display = document.getElementById('floating-thought');
             if (!display) return;
 
-            if (vantageShatterTimer) clearTimeout(vantageShatterTimer);
+            if (vantageShatterTimer) {
+                clearTimeout(vantageShatterTimer);
+                vantageShatterTimer = null;
+            }
             closeElder();
-            vantageMode = true;
-            shatterPoint = false;
-            show('visual');
-
-            display.innerText = thought;
-            display.style.transform = "scale(1)";
-            display.style.filter = "blur(0px)";
-            display.style.opacity = "1";
-            document.getElementById('visual-msg').innerText = "OBSERVE THE SIGNAL";
+            elderSpeak("KW’ÉLAP", "The movement stops here. Look at the signal until it loses its power to move you.");
 
             vantageShatterTimer = setTimeout(() => {
-                shatterPoint = true; display.style.opacity = "0";
-                display.style.transform = "scale(0.5)";
-                display.style.filter = "blur(10px)";
-                if (navigator.vibrate) navigator.vibrate([100, 50, 200]);
-                document.getElementById('visual-msg').innerText = "SIGNAL SHATTERED";
-            }, 8000);
+                closeElder();
+                vantageMode = true;
+                shatterPoint = false;
+                currentTargetText = thought;
+                show('visual');
+
+                display.innerText = "";
+                display.style.transform = "scale(1)";
+                display.style.filter = "blur(0px)";
+                display.style.opacity = "0";
+                document.getElementById('visual-msg').innerText = "THE SIGNAL IS HALTED";
+
+                vantageShatterTimer = setTimeout(() => {
+                    shatterPoint = true;
+                    seedVantageParticles();
+                    if (navigator.vibrate) navigator.vibrate([150, 100, 150]);
+                    document.getElementById('visual-msg').innerText = "RELEASED TO THE WIND";
+
+                    vantageShatterTimer = setTimeout(() => {
+                        exitAll();
+                    }, 4000);
+                }, 10000);
+            }, 3000);
         }
 
         function startVisual() {
             shatterPoint = false;
             closeElder();
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            sparkX = canvas.width / 2; particles = [];
-            for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, sx: Math.random()-0.5, sy: Math.random()-0.5 });
+            featherX = canvas.width / 2;
+            featherY = canvas.height / 2;
+            featherAngle = 0;
+            featherDir = 1;
+            if (vantageMode) {
+                seedVantageParticles();
+                playNeuralAudio();
+                animateKwelap();
+                return;
+            }
+            particles = [];
+            for (let i = 0; i < 30; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    opacity: Math.random()
+                });
+            }
+            playNeuralAudio();
             animate();
         }
 
         function animate() {
             if (!document.getElementById('visual').classList.contains('active')) return;
+            if (vantageMode) return;
             ctx.globalAlpha = 1;
-            ctx.fillStyle = 'rgba(2, 6, 23, 0.2)'; ctx.fillRect(0,0,canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.2)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             if (!shatterPoint) {
-                sparkX += sparkSpeed * sparkDir;
-                if (sparkX >= canvas.width - 40 || sparkX <= 40) { sparkDir *= -1; if (navigator.vibrate) navigator.vibrate(30); }
-                ctx.shadowBlur = 22;
-                ctx.shadowColor = tealColor;
-                ctx.fillStyle = tealColor; ctx.beginPath(); ctx.arc(sparkX, canvas.height/2, 12, 0, Math.PI*2); ctx.fill();
-                ctx.shadowBlur = 0;
+                if (isSaccadicMode) {
+                    featherAngle = Math.sin(Date.now() * 0.003) * 0.15;
+                    drawFeather(featherX, featherY, featherAngle);
+                } else {
+                    featherX += (5 * featherDir);
+                    featherY = (canvas.height / 2) + Math.sin(Date.now() * 0.002) * 50;
+                    featherAngle = Math.sin(Date.now() * 0.002) * 0.3;
+                    if (featherX >= canvas.width - 60 || featherX <= 60) {
+                        featherDir *= -1;
+                        if (navigator.vibrate) navigator.vibrate(35);
+                    }
+                    drawFeather(featherX, featherY, featherAngle);
+                }
             } else {
                 particles.forEach(p => {
-                    p.x += p.sx * 5; p.y += p.sy * 5;
-                    ctx.fillStyle = goldColor; ctx.globalAlpha = 0.4; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+                    p.y += 2;
+                    if (p.y > canvas.height) p.y = 0;
+                    ctx.fillStyle = goldColor;
+                    ctx.globalAlpha = p.opacity;
+                    ctx.fillRect(p.x, p.y, 2, 2);
                 });
             }
             requestAnimationFrame(animate);
@@ -341,9 +741,26 @@
         }
 
         // --- GLOBAL CONTROLS ---
-        window.addEventListener('touchstart', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
-        window.addEventListener('touchmove', e => { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
-        window.addEventListener('mousedown', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        // Prevent browser swipe/back-refresh gestures while weaving.
+        window.addEventListener('touchmove', function(e) {
+            if (weavingActive && e.cancelable) e.preventDefault();
+        }, { passive: false });
+
+        function handleInput(e) {
+            const touch = e.touches && e.touches[0];
+            const clientX = touch ? touch.clientX : e.clientX;
+            const clientY = touch ? touch.clientY : e.clientY;
+            mouse.x = clientX;
+            mouse.y = clientY;
+        }
+
+        window.addEventListener('touchstart', handleInput, { passive: false });
+        window.addEventListener('touchmove', handleInput, { passive: false });
+        window.addEventListener('mousedown', e => { handleInput(e); handleSaccadeCatch(e.clientX, e.clientY); });
+        window.addEventListener('touchend', e => {
+            if (!e.changedTouches || !e.changedTouches[0]) return;
+            handleSaccadeCatch(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        });
         document.getElementById('logic-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') checkLogic();
         });
@@ -352,8 +769,12 @@
             weavingActive = false; vantageMode = false; shatterPoint = false;
             protocolMode = false;
             canProceed = false;
-            lastSolvedAnswer = "";
+            currentTargetText = "THE NOISE";
             closeElder();
+            isSaccadicMode = false;
+            catches = 0;
+            saccadeCount = 0;
+            stopNeuralAudio();
             if (vantageShatterTimer) {
                 clearTimeout(vantageShatterTimer);
                 vantageShatterTimer = null;
@@ -370,12 +791,53 @@
             document.getElementById('home').classList.add('active');
         }
 
+        function exitToHome() {
+            closeElder();
+            const activeScreen = document.querySelector('.screen.active');
+            if (activeScreen) {
+                activeScreen.style.transition = 'opacity 0.8s ease';
+                activeScreen.style.opacity = '0';
+            }
+
+            if (navigator.vibrate) navigator.vibrate(30);
+
+            if (audioCtx && masterGain) {
+                try {
+                    const now = audioCtx.currentTime;
+                    const startGain = Math.max(masterGain.gain.value || 0.05, 0.0001);
+                    masterGain.gain.cancelScheduledValues(now);
+                    masterGain.gain.setValueAtTime(startGain, now);
+                    masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+                } catch (_) {}
+
+                setTimeout(() => {
+                    stopNeuralAudio();
+                    try { audioCtx.close(); } catch (_) {}
+                    audioCtx = null;
+                }, 600);
+            }
+
+            setTimeout(() => {
+                solvedCount = 0;
+                currentTaskAnswer = "";
+                const input = document.getElementById('logic-input');
+                if (input) input.value = "";
+                show('home');
+                if (activeScreen) {
+                    activeScreen.style.opacity = '1';
+                    activeScreen.style.transition = '';
+                }
+            }, 800);
+        }
+
         // Rotating Tips
         let tipIdx = 0;
         setInterval(() => {
             const tip = document.getElementById('bio-tip');
             if(tip) { tip.style.opacity = "0"; setTimeout(() => { tipIdx = (tipIdx + 1) % bioTips.length; tip.innerText = bioTips[tipIdx]; tip.style.opacity = "0.6"; }, 1000); }
         }, 10000);
+
+        setAudioMode(currentAudioMode);
     </script>
 </body>
 </html>
