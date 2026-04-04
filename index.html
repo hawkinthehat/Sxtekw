@@ -202,13 +202,18 @@
         }
 
         function speakNative(word) {
-            if (!("speechSynthesis" in window)) return;
-            const msg = new SpeechSynthesisUtterance();
-            msg.text = word;
-            msg.rate = 0.8;
-            msg.pitch = 1;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(msg);
+            if (!("speechSynthesis" in window)) return false;
+            try {
+                const msg = new SpeechSynthesisUtterance();
+                msg.text = word;
+                msg.rate = 0.8;
+                msg.pitch = 1;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(msg);
+                return true;
+            } catch (_) {
+                return false;
+            }
         }
 
         const nativeAudio = {
@@ -223,15 +228,12 @@
             stop: "Kw-eh-lahp"
         };
 
-        function playNativeSignal(key) {
-            if (currentAudioMode === "silent") return;
+        // Keep built-in voice as primary. Set to false when recorded audio should lead.
+        const preferBuiltInNativeVoice = true;
 
+        function playRecordedNativeAudio(key, fallbackWord) {
             const sound = nativeAudio[key];
-            const fallbackWord = nativeSpeechMap[key];
-            if (!sound) {
-                if (fallbackWord) speakNative(fallbackWord);
-                return;
-            }
+            if (!sound) return false;
 
             let fallbackUsed = false;
             const fallback = () => {
@@ -247,6 +249,21 @@
             if (playPromise && typeof playPromise.catch === "function") {
                 playPromise.catch(fallback);
             }
+            return true;
+        }
+
+        function playNativeSignal(key) {
+            if (currentAudioMode === "silent") return;
+            const word = nativeSpeechMap[key];
+
+            if (preferBuiltInNativeVoice) {
+                if (word && speakNative(word)) return;
+                playRecordedNativeAudio(key, word);
+                return;
+            }
+
+            if (playRecordedNativeAudio(key, word)) return;
+            if (word) speakNative(word);
         }
 
         function setAudioMode(mode) {
