@@ -50,6 +50,7 @@
             cursor: pointer;
             z-index: 10000;
         }
+        .phonetic { font-style: italic; opacity: 0.75; color: var(--gold); letter-spacing: 2px; font-size: 0.65rem; }
         .title-row { display: flex; align-items: center; gap: 12px; }
         .title-pronounce-btn {
             background: transparent;
@@ -88,7 +89,7 @@
             ST’ÉXEM
             <span style="display: block; font-size: 0.6rem; opacity: 0.9; margin-top: 5px; font-weight: normal;">ST-EH-KHUM [ TO BE STILL ]</span>
         </button>
-        <button class="btn" onclick="startSaccade()">FEATHER SACCADES (10)</button>
+        <button class="btn" onclick="startPaxwad()">P’ÁX̌WAD SACCADES (10)</button>
         <button class="btn gold-btn" onclick="playNativeSignal('weave'); startWeave();" style="margin-top: 15px;">
             KW’ÉTL’EN
             <span style="display: block; font-size: 0.6rem; opacity: 0.8; margin-top: 5px; font-weight: normal;">KW-ETH-LUHN [ TO WEAVE ]</span>
@@ -141,6 +142,28 @@
         <button class="btn secondary" onclick="show('home')">BACK</button>
     </div>
 
+    <div id="saccade-room" class="screen">
+        <button class="btn-mini" onclick="exitToHome()" style="position: absolute; top: 20px; left: 20px; border: 1px solid var(--jade); color: var(--jade);">
+            HÍLU <span style="font-style: italic; opacity: 0.6;">[ HEE-LOO ]</span>
+        </button>
+
+        <div style="margin-top: 80px; position: relative; z-index: 10;">
+            <h2 style="color: var(--jade); letter-spacing: 5px;">P’ÁX̌WAD</h2>
+            <p class="phonetic" style="margin-bottom: 20px;">PAH-KHW-AHD [ THE SPARK ]</p>
+
+            <div id="saccade-instr" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin: 0 auto; width: 80%; max-width: 300px; font-size: 0.7rem; line-height: 1.4; border: 1px dashed rgba(0, 163, 108, 0.3);">
+                <span style="color: var(--gold);">FOLLOW THE SPARK:</span><br>
+                Tap P’ÁX̌WAD 10 times.<br>
+                Move only your eyes, stay still.
+            </div>
+        </div>
+
+        <canvas id="saccade-canvas"></canvas>
+        <div id="saccade-count" style="position: absolute; bottom: 40px; width: 100%; font-size: 0.8rem; color: var(--jade); letter-spacing: 3px; z-index: 10;">
+            SYNCS: 0/10
+        </div>
+    </div>
+
     <div id="visual" class="screen">
         <canvas id="canvas"></canvas>
         <button id="exit-room" class="btn-mini" onclick="exitToHome()" style="position: absolute; top: 20px; left: 20px;">
@@ -177,12 +200,13 @@
 
     <script>
         const canvas = document.getElementById('canvas'); const ctx = canvas.getContext('2d');
+        const saccadeCanvas = document.getElementById('saccade-canvas'); const sCtx = saccadeCanvas.getContext('2d');
         const weaveCanvas = document.getElementById('weave-canvas'); const wCtx = weaveCanvas.getContext('2d');
         let particles = [], weavePoints = [], mouse = { x: null, y: null }, audioCtx;
         let leftOsc, rightOsc, masterGain, vantageMode = false, shatterPoint = false, weavingActive = false;
         let featherX = 0, featherY = 0, featherAngle = 0, featherDir = 1;
         let solvedCount = 0, currentTaskAnswer = "";
-        let catches = 0, saccadeCount = 0, isSaccadicMode = false;
+        let saccadeTaps = 0, isSaccadicMode = false;
         let currentAudioMode = 'headphone';
         let protocolMode = false;
         let canProceed = false;
@@ -451,14 +475,27 @@
         }
 
         function startSaccade() {
-            catches = 0;
-            saccadeCount = 0;
+            startPaxwad();
+        }
+
+        function startPaxwad() {
+            saccadeTaps = 0;
             isSaccadicMode = true;
             protocolMode = false;
+            vantageMode = false;
+            shatterPoint = false;
             closeElder();
-            show('visual');
-            document.getElementById('visual-msg').innerText = "CATCH THE FEATHER: 0/10";
-            teleportFeather();
+            show('saccade-room');
+            saccadeCanvas.width = window.innerWidth;
+            saccadeCanvas.height = window.innerHeight;
+            const instr = document.getElementById('saccade-instr');
+            if (instr) {
+                instr.style.opacity = "1";
+            }
+            document.getElementById('saccade-count').innerText = "SYNCS: 0/10";
+            moveSaccadeFeather();
+            playNeuralAudio();
+            animateSaccadeRoom();
         }
 
         function teleportFeather() {
@@ -468,44 +505,80 @@
             if (navigator.vibrate) navigator.vibrate(15);
         }
 
+        function moveSaccadeFeather() {
+            const pad = 80;
+            const canvas = document.getElementById('saccade-canvas');
+            if (!canvas) return;
+            featherX = Math.random() * (window.innerWidth - pad * 2) + pad;
+            featherY = Math.random() * (window.innerHeight - pad * 2) + pad;
+            if (navigator.vibrate) navigator.vibrate(20);
+            if (saccadeTaps === 3) {
+                const instr = document.getElementById('saccade-instr');
+                if (instr) {
+                    instr.style.opacity = "0";
+                    instr.style.transition = "opacity 1s";
+                }
+            }
+        }
+
+        function drawFeatherOn(targetCtx, x, y, angle) {
+            targetCtx.save();
+            targetCtx.translate(x, y);
+            targetCtx.rotate(angle);
+
+            targetCtx.strokeStyle = goldColor;
+            targetCtx.lineWidth = 2;
+            targetCtx.beginPath();
+            targetCtx.moveTo(0, -40);
+            targetCtx.lineTo(0, 40);
+            targetCtx.stroke();
+
+            targetCtx.fillStyle = tealColor;
+            targetCtx.globalAlpha = 0.6;
+            targetCtx.beginPath();
+            targetCtx.ellipse(0, 0, 15, 35, 0, 0, Math.PI * 2);
+            targetCtx.fill();
+
+            targetCtx.shadowBlur = 15;
+            targetCtx.shadowColor = tealColor;
+            targetCtx.stroke();
+            targetCtx.restore();
+        }
+
         function drawFeather(x, y, angle) {
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(angle);
+            drawFeatherOn(ctx, x, y, angle);
+        }
 
-            ctx.strokeStyle = goldColor;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(0, -40);
-            ctx.lineTo(0, 40);
-            ctx.stroke();
-
-            ctx.fillStyle = tealColor;
-            ctx.globalAlpha = 0.6;
-            ctx.beginPath();
-            ctx.ellipse(0, 0, 15, 35, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = tealColor;
-            ctx.stroke();
-            ctx.restore();
+        function animateSaccadeRoom() {
+            if (!isSaccadicMode || !document.getElementById('saccade-room').classList.contains('active')) return;
+            sCtx.globalAlpha = 1;
+            sCtx.fillStyle = 'rgba(2, 6, 23, 0.2)';
+            sCtx.fillRect(0, 0, saccadeCanvas.width, saccadeCanvas.height);
+            featherAngle = Math.sin(Date.now() * 0.003) * 0.15;
+            drawFeatherOn(sCtx, featherX, featherY, featherAngle);
+            requestAnimationFrame(animateSaccadeRoom);
         }
 
         function handleSaccadeCatch(x, y) {
-            if (!isSaccadicMode || !document.getElementById('visual').classList.contains('active')) return;
+            const inVisual = document.getElementById('visual').classList.contains('active');
+            const inSaccadeRoom = document.getElementById('saccade-room').classList.contains('active');
+            if (!isSaccadicMode || (!inVisual && !inSaccadeRoom)) return;
             const d = Math.sqrt((x - featherX) ** 2 + (y - featherY) ** 2);
             if (d < 120) {
-                catches++;
-                saccadeCount = catches;
+                saccadeTaps++;
                 if (navigator.vibrate) navigator.vibrate([20, 10, 20]);
-                if (catches >= 10) {
+                if (saccadeTaps >= 10) {
                     isSaccadicMode = false;
                     elderSpeak("SYSTEM SYNCED", "Neural pathways cleared. The 'Quiet' is restored.");
                     setTimeout(() => exitAll(), 1400);
                 } else {
-                    document.getElementById('visual-msg').innerText = `CATCH THE FEATHER: ${catches}/10`;
-                    teleportFeather();
+                    if (inSaccadeRoom) {
+                        document.getElementById('saccade-count').innerText = `SYNCS: ${saccadeTaps}/10`;
+                        moveSaccadeFeather();
+                    } else {
+                        document.getElementById('visual-msg').innerText = `CATCH P’ÁX̌WAD: ${saccadeTaps}/10`;
+                        teleportFeather();
+                    }
                 }
             }
         }
@@ -772,9 +845,15 @@
             currentTargetText = "THE NOISE";
             closeElder();
             isSaccadicMode = false;
-            catches = 0;
-            saccadeCount = 0;
+            saccadeTaps = 0;
             stopNeuralAudio();
+            if (saccadeCanvas && sCtx) {
+                sCtx.clearRect(0, 0, saccadeCanvas.width, saccadeCanvas.height);
+            }
+            const saccadeCountEl = document.getElementById('saccade-count');
+            if (saccadeCountEl) saccadeCountEl.innerText = "SYNCS: 0/10";
+            const saccadeInstr = document.getElementById('saccade-instr');
+            if (saccadeInstr) saccadeInstr.style.opacity = "1";
             if (vantageShatterTimer) {
                 clearTimeout(vantageShatterTimer);
                 vantageShatterTimer = null;
@@ -820,6 +899,7 @@
             setTimeout(() => {
                 solvedCount = 0;
                 currentTaskAnswer = "";
+                saccadeTaps = 0;
                 const input = document.getElementById('logic-input');
                 if (input) input.value = "";
                 show('home');
