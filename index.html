@@ -35,12 +35,19 @@
 <body>
 
     <div id="home" class="screen active">
-        <h1 style="color: var(--teal); letter-spacing: 10px; font-weight: 900; margin-bottom: 5px;">SXT’EKW</h1>
-        <p style="opacity: 0.5; font-size: 0.7rem; margin-bottom: 30px; letter-spacing: 4px;">THE QUIET | HAWKINTHEHAT</p>
-        <button class="btn emergency" onclick="startProtocol()">SYSTEM RED: RESET</button>
+        <h1 style="color: var(--teal); opacity: 0.1; font-size: 0.8rem; letter-spacing: 5px;">HAWKIN THE HAT</h1>
+        <h1 style="color: var(--teal); letter-spacing: 12px; font-weight: 900; margin-bottom: 5px;">SXT’EKW</h1>
+        <p style="opacity: 0.5; font-size: 0.7rem; margin-bottom: 40px; letter-spacing: 4px;">THE QUIET</p>
+        <button class="btn emergency" onclick="startProtocol()" style="background: var(--red); border: 3px solid var(--cedar); box-shadow: 0 10px 20px rgba(0,0,0,0.4);">
+            ST’ÉXEM
+            <span style="display: block; font-size: 0.6rem; opacity: 0.9; margin-top: 5px; font-weight: normal; letter-spacing: 2px;">[ TO BE STILL ]</span>
+        </button>
         <button class="btn" onclick="startSaccade()">FEATHER SACCADES (10)</button>
-        <button class="btn gold-btn" onclick="startWeave()">THE WEAVE (MEDITATION)</button>
-        <button class="btn secondary" onclick="show('vantage')">The Vantage (Observe)</button>
+        <button class="btn gold-btn" onclick="startWeave()" style="margin-top: 15px;">
+            KW’ÉTL’EN
+            <span style="display: block; font-size: 0.6rem; opacity: 0.8; margin-top: 5px; font-weight: normal; letter-spacing: 2px;">[ TO WEAVE ]</span>
+        </button>
+        <button class="btn secondary" onclick="show('vantage')" style="margin-top: 25px; border-radius: 50px; width: 50%;">The Vantage</button>
         <div id="audio-settings" style="margin: 20px 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; width: 100%; max-width: 360px;">
             <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 10px; letter-spacing: 2px;">AUDIO ENVIRONMENT</p>
             <div style="display: flex; justify-content: space-around; gap: 10px;">
@@ -226,7 +233,7 @@
             lastSolvedAnswer = "";
             shatterPoint = false;
             vantageMode = false;
-            elderSpeak("SYSTEM RED", "The signal is fragmented. We must restore the logic gate before the weave can begin.");
+            elderSpeak("ST’ÉXEM", "The noise is high. Let us return to the quiet through the logic of the ancestors.");
             const btn = document.getElementById('ready-btn');
             btn.style.opacity = "0.15"; btn.style.pointerEvents = "none"; btn.disabled = true; btn.innerText = "LOCKED";
             updateCounter(); show('logic-tunnel'); generateTask();
