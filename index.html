@@ -169,7 +169,6 @@
         let lastSolvedAnswer = "";
         let vantageShatterTimer = null;
         let currentTargetText = "THE NOISE";
-        let featherDust = [];
         const rootStyles = getComputedStyle(document.documentElement);
         const tealColor = rootStyles.getPropertyValue('--teal').trim() || "#2dd4bf";
         const goldColor = rootStyles.getPropertyValue('--gold').trim() || "#fbbf24";
@@ -498,27 +497,6 @@
             }
         }
 
-        function drawJadeHalt(text, opacity) {
-            const alpha = Math.max(0, Math.min(1, opacity));
-            ctx.save();
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-
-            const pulse = Math.sin(Date.now() * 0.002) * 20;
-            ctx.shadowBlur = 15 + pulse;
-            ctx.shadowColor = jadeColor;
-
-            ctx.font = "bold 40px sans-serif";
-            ctx.fillStyle = `rgba(45, 212, 191, ${alpha})`;
-            ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-
-            ctx.shadowBlur = 0;
-            ctx.font = "italic 12px sans-serif";
-            ctx.fillStyle = `rgba(251, 191, 36, ${alpha * 0.5})`;
-            ctx.fillText("KW-EH-LAHP", canvas.width / 2, (canvas.height / 2) + 50);
-            ctx.restore();
-        }
-
         function seedVantageParticles() {
             particles = [];
             const centerX = canvas.width / 2;
@@ -536,33 +514,8 @@
             }
         }
 
-        function updateFeatherDust() {
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            for (let i = 0; i < 2; i++) {
-                featherDust.push({
-                    x: centerX + (Math.random() - 0.5) * 140,
-                    y: centerY + (Math.random() - 0.5) * 140,
-                    vx: (Math.random() - 0.5) * 0.7,
-                    vy: (Math.random() - 0.5) * 0.7,
-                    life: 0.9,
-                    size: 0.8 + Math.random() * 2
-                });
-            }
-
-            featherDust = featherDust.filter((dust) => dust.life > 0.02);
-            featherDust.forEach((dust) => {
-                dust.x += dust.vx;
-                dust.y += dust.vy;
-                dust.life -= 0.012;
-                ctx.fillStyle = `rgba(251, 191, 36, ${dust.life})`;
-                ctx.beginPath();
-                ctx.arc(dust.x, dust.y, dust.size, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
-        function animateVantage() {
+        // --- ENHANCED KW’ÉLAP VANTAGE ---
+        function animateKwelap() {
             if (!vantageMode || !document.getElementById('visual').classList.contains('active')) return;
 
             ctx.globalAlpha = 1;
@@ -570,24 +523,38 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             if (!shatterPoint) {
-                drawJadeHalt(currentTargetText, 1);
-                updateFeatherDust();
+                ctx.save();
+                ctx.font = "bold 35px sans-serif";
+                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                const jitterX = (Math.random() - 0.5) * 2;
+                const jitterY = (Math.random() - 0.5) * 2;
+                ctx.fillText(currentTargetText, (canvas.width / 2) + jitterX, (canvas.height / 2) + jitterY);
+                ctx.restore();
+
+                const angle = Date.now() * 0.002;
+                const radius = 120;
+                const fx = (canvas.width / 2) + Math.cos(angle) * radius;
+                const fy = (canvas.height / 2) + Math.sin(angle) * radius;
+                drawFeather(fx, fy, angle + Math.PI / 2);
             } else {
                 particles = particles.filter((p) => p.life > 0.01);
                 particles.forEach((p) => {
-                    p.x += p.vx * 2;
-                    p.y += p.vy * 2;
+                    p.x += p.vx * 3;
+                    p.y += p.vy * 3;
                     ctx.strokeStyle = jadeColor;
+                    ctx.lineWidth = 1;
                     ctx.globalAlpha = p.life;
                     ctx.beginPath();
                     ctx.moveTo(p.x, p.y);
-                    ctx.lineTo(p.x - p.vx * 5, p.y - p.vy * 5);
+                    ctx.lineTo(p.x - p.vx * 10, p.y - p.vy * 10);
                     ctx.stroke();
                     p.life -= 0.01;
                 });
                 ctx.globalAlpha = 1;
             }
-            requestAnimationFrame(animateVantage);
+            requestAnimationFrame(animateKwelap);
         }
 
         // --- VANTAGE & VISUAL ---
@@ -609,7 +576,6 @@
                 vantageMode = true;
                 shatterPoint = false;
                 currentTargetText = thought;
-                featherDust = [];
                 show('visual');
 
                 display.innerText = "";
@@ -642,7 +608,7 @@
             if (vantageMode) {
                 seedVantageParticles();
                 playNeuralAudio();
-                animateVantage();
+                animateKwelap();
                 return;
             }
             particles = [];
@@ -792,7 +758,6 @@
             canProceed = false;
             lastSolvedAnswer = "";
             currentTargetText = "THE NOISE";
-            featherDust = [];
             closeElder();
             isSaccadicMode = false;
             catches = 0;
