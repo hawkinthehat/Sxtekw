@@ -39,6 +39,17 @@
         .emergency { background: var(--red); color: white; box-shadow: 0 0 30px rgba(244, 63, 94, 0.4); }
         .gold-btn { background: var(--gold); color: var(--bg); border: 2px solid var(--cedar); }
         .secondary { background: none; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
+        .btn-mini {
+            background: rgba(0, 163, 108, 0.1);
+            border: 1px solid var(--jade);
+            color: var(--jade);
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            z-index: 10000;
+        }
         .title-row { display: flex; align-items: center; gap: 12px; }
         .title-pronounce-btn {
             background: transparent;
@@ -99,6 +110,9 @@
     </div>
 
     <div id="logic-tunnel" class="screen">
+        <button class="btn-mini" onclick="exitToHome()" style="position: absolute; top: 20px; left: 20px; border: 1px solid var(--red); color: var(--red); background: rgba(244, 63, 94, 0.05);">
+            HÍLU <span style="font-style: italic; opacity: 0.6;">[ HEE-LOO ]</span>
+        </button>
         <h2 style="color: var(--red); letter-spacing: 5px;">NEURAL LOCK</h2>
         <p id="task-counter" style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 20px;">SYNC STATUS: 0/3</p>
         <div id="task-box" style="background: rgba(255,255,255,0.03); padding: 30px; border-radius: 20px; width: 100%; max-width: 340px;">
@@ -129,6 +143,9 @@
 
     <div id="visual" class="screen">
         <canvas id="canvas"></canvas>
+        <button id="exit-room" class="btn-mini" onclick="exitToHome()" style="position: absolute; top: 20px; left: 20px;">
+            HÍLU <span style="font-style: italic; opacity: 0.6;">[ HEE-LOO ]</span>
+        </button>
         <div id="vantage-display" style="position: absolute; top: 40%; width: 100%; text-align: center; pointer-events: none; z-index: 10;">
             <h1 id="floating-thought" style="color: var(--text); font-size: 2rem; letter-spacing: 8px; opacity: 0; transition: 2s; text-transform: uppercase;"></h1>
         </div>
@@ -147,6 +164,9 @@
     </div>
 
     <div id="elder-overlay" style="display: none; opacity: 0; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); z-index: 5000; flex-direction: column; justify-content: center; align-items: center; padding: 40px; backdrop-filter: blur(10px); transition: opacity 0.15s ease-out;">
+        <button class="btn-mini" onclick="exitToHome()" style="position: absolute; top: 20px; left: 20px; border: 1px solid var(--gold); color: var(--gold); background: rgba(251, 191, 36, 0.07);">
+            HÍLU <span style="font-style: italic; opacity: 0.6;">[ HEE-LOO ]</span>
+        </button>
         <div style="border: 1px solid var(--gold); padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 30px rgba(251, 191, 36, 0.1);">
             <h3 id="elder-title" style="color: var(--teal); letter-spacing: 3px; margin-top: 0;">MESSAGE</h3>
             <p id="elder-msg" style="line-height: 1.6; color: var(--text); opacity: 0.9; margin: 20px 0;"></p>
@@ -159,7 +179,7 @@
         const canvas = document.getElementById('canvas'); const ctx = canvas.getContext('2d');
         const weaveCanvas = document.getElementById('weave-canvas'); const wCtx = weaveCanvas.getContext('2d');
         let particles = [], weavePoints = [], mouse = { x: null, y: null }, audioCtx;
-        let leftOsc, rightOsc, vantageMode = false, shatterPoint = false, weavingActive = false;
+        let leftOsc, rightOsc, masterGain, vantageMode = false, shatterPoint = false, weavingActive = false;
         let featherX = 0, featherY = 0, featherAngle = 0, featherDir = 1;
         let solvedCount = 0, currentTaskAnswer = "";
         let catches = 0, saccadeCount = 0, isSaccadicMode = false;
@@ -303,8 +323,12 @@
                 try { osc.stop(); } catch (_) {}
                 try { osc.disconnect(); } catch (_) {}
             });
+            if (masterGain) {
+                try { masterGain.disconnect(); } catch (_) {}
+            }
             leftOsc = null;
             rightOsc = null;
+            masterGain = null;
         }
 
         function playNeuralAudio() {
@@ -317,8 +341,8 @@
             rightOsc = audioCtx.createOscillator();
             const leftPanner = audioCtx.createStereoPanner();
             const rightPanner = audioCtx.createStereoPanner();
-            const gain = audioCtx.createGain();
-            gain.gain.value = 0.05;
+            masterGain = audioCtx.createGain();
+            masterGain.gain.value = 0.05;
 
             leftOsc.frequency.value = 432;
             if (currentAudioMode === 'headphone') {
@@ -331,9 +355,9 @@
                 rightPanner.pan.value = 0;
             }
 
-            leftOsc.connect(leftPanner).connect(gain);
-            rightOsc.connect(rightPanner).connect(gain);
-            gain.connect(audioCtx.destination);
+            leftOsc.connect(leftPanner).connect(masterGain);
+            rightOsc.connect(rightPanner).connect(masterGain);
+            masterGain.connect(audioCtx.destination);
             leftOsc.start();
             rightOsc.start();
         }
@@ -765,6 +789,45 @@
             document.getElementById('visual-msg').innerText = "CATCH THE CLICK";
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('home').classList.add('active');
+        }
+
+        function exitToHome() {
+            closeElder();
+            const activeScreen = document.querySelector('.screen.active');
+            if (activeScreen) {
+                activeScreen.style.transition = 'opacity 0.8s ease';
+                activeScreen.style.opacity = '0';
+            }
+
+            if (navigator.vibrate) navigator.vibrate(30);
+
+            if (audioCtx && masterGain) {
+                try {
+                    const now = audioCtx.currentTime;
+                    const startGain = Math.max(masterGain.gain.value || 0.05, 0.0001);
+                    masterGain.gain.cancelScheduledValues(now);
+                    masterGain.gain.setValueAtTime(startGain, now);
+                    masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+                } catch (_) {}
+
+                setTimeout(() => {
+                    stopNeuralAudio();
+                    try { audioCtx.close(); } catch (_) {}
+                    audioCtx = null;
+                }, 600);
+            }
+
+            setTimeout(() => {
+                solvedCount = 0;
+                currentTaskAnswer = "";
+                const input = document.getElementById('logic-input');
+                if (input) input.value = "";
+                show('home');
+                if (activeScreen) {
+                    activeScreen.style.opacity = '1';
+                    activeScreen.style.transition = '';
+                }
+            }, 800);
         }
 
         // Rotating Tips
