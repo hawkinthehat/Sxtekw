@@ -35,7 +35,7 @@
 <body>
 
     <div id="home" class="screen active">
-        <h1 style="color: var(--teal); opacity: 0.1; font-size: 0.8rem; letter-spacing: 5px;">HAWKIN THE HAT</h1>
+        <h1 style="color: var(--teal); opacity: 0.1; font-size: 0.7rem; letter-spacing: 5px;">HAWKIN THE HAT</h1>
         <h1 style="color: var(--teal); letter-spacing: 12px; font-weight: 900; margin-bottom: 5px;">SXT’EKW</h1>
         <p style="opacity: 0.5; font-size: 0.7rem; margin-bottom: 40px; letter-spacing: 4px;">THE QUIET</p>
         <button class="btn emergency" onclick="startProtocol()" style="background: var(--red); border: 3px solid var(--cedar); box-shadow: 0 10px 20px rgba(0,0,0,0.4);">
@@ -47,7 +47,10 @@
             KW’ÉTL’EN
             <span style="display: block; font-size: 0.6rem; opacity: 0.8; margin-top: 5px; font-weight: normal; letter-spacing: 2px;">[ TO WEAVE ]</span>
         </button>
-        <button class="btn secondary" onclick="show('vantage')" style="margin-top: 25px; border-radius: 50px; width: 50%;">The Vantage</button>
+        <button class="btn secondary" onclick="show('vantage')" style="margin-top: 25px; border: 1px solid var(--teal); color: var(--teal); border-radius: 50px; width: 70%;">
+            KW’ÉLAP
+            <span style="display: block; font-size: 0.5rem; opacity: 0.7; margin-top: 2px; font-weight: normal;">[ TO STOP ]</span>
+        </button>
         <div id="audio-settings" style="margin: 20px 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; width: 100%; max-width: 360px;">
             <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 10px; letter-spacing: 2px;">AUDIO ENVIRONMENT</p>
             <div style="display: flex; justify-content: space-around; gap: 10px;">
@@ -372,29 +375,42 @@
         // --- VANTAGE & VISUAL ---
         function initVantage() {
             const thoughtInput = document.getElementById('thought-input');
-            const thought = (thoughtInput ? thoughtInput.value : "").trim().toUpperCase() || "UNCERTAINTY";
+            const thought = (thoughtInput ? thoughtInput.value : "").trim().toUpperCase() || "THE NOISE";
             const display = document.getElementById('floating-thought');
             if (!display) return;
 
-            if (vantageShatterTimer) clearTimeout(vantageShatterTimer);
+            if (vantageShatterTimer) {
+                clearTimeout(vantageShatterTimer);
+                vantageShatterTimer = null;
+            }
             closeElder();
-            vantageMode = true;
-            shatterPoint = false;
-            show('visual');
-
-            display.innerText = thought;
-            display.style.transform = "scale(1)";
-            display.style.filter = "blur(0px)";
-            display.style.opacity = "1";
-            document.getElementById('visual-msg').innerText = "OBSERVE THE SIGNAL";
+            elderSpeak("KW’ÉLAP", "The movement stops here. Look at the signal until it loses its power to move you.");
 
             vantageShatterTimer = setTimeout(() => {
-                shatterPoint = true; display.style.opacity = "0";
-                display.style.transform = "scale(0.5)";
-                display.style.filter = "blur(10px)";
-                if (navigator.vibrate) navigator.vibrate([100, 50, 200]);
-                document.getElementById('visual-msg').innerText = "SIGNAL SHATTERED";
-            }, 8000);
+                closeElder();
+                vantageMode = true;
+                shatterPoint = false;
+                show('visual');
+
+                display.innerText = thought;
+                display.style.transform = "scale(1)";
+                display.style.filter = "blur(0px)";
+                display.style.opacity = "1";
+                document.getElementById('visual-msg').innerText = "THE SIGNAL IS HALTED";
+
+                vantageShatterTimer = setTimeout(() => {
+                    shatterPoint = true;
+                    display.style.opacity = "0";
+                    display.style.transform = "scale(0.5)";
+                    display.style.filter = "blur(10px)";
+                    if (navigator.vibrate) navigator.vibrate([150, 100, 150]);
+                    document.getElementById('visual-msg').innerText = "RELEASED TO THE WIND";
+
+                    vantageShatterTimer = setTimeout(() => {
+                        exitAll();
+                    }, 4000);
+                }, 10000);
+            }, 3000);
         }
 
         function startVisual() {
