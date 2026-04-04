@@ -70,6 +70,7 @@
         }
         
         #logic-input { width: 100%; background: rgba(255,255,255,0.05); border: 2px solid var(--teal); color: white; padding: 15px; border-radius: 12px; text-align: center; font-size: 1.2rem; margin-bottom: 15px; }
+        #saccade-count { position: absolute; bottom: 40px; width: 100%; font-size: 0.8rem; color: var(--jade); letter-spacing: 3px; z-index: 10; }
         canvas { position: absolute; top: 0; left: 0; z-index: 1; }
         #bio-tip { position: absolute; bottom: 30px; width: 80%; opacity: 0.6; font-size: 0.75rem; color: var(--gold); border-top: 1px solid rgba(251, 191, 36, 0.2); padding-top: 15px; pointer-events: none; transition: opacity 1s; }
     </style>
@@ -143,23 +144,26 @@
     </div>
 
     <div id="saccade-room" class="screen">
-        <button class="btn-mini" onclick="exitToHome()" style="position: absolute; top: 20px; left: 20px; border: 1px solid var(--jade); color: var(--jade);">
+        <button class="btn-mini" onclick="exitToHome()">
             HÍLU <span style="font-style: italic; opacity: 0.6;">[ HEE-LOO ]</span>
         </button>
 
-        <div style="margin-top: 80px; position: relative; z-index: 10;">
-            <h2 style="color: var(--jade); letter-spacing: 5px;">P’ÁX̌WAD</h2>
-            <p class="phonetic" style="margin-bottom: 20px;">PAH-KHW-AHD [ THE SPARK ]</p>
+        <div style="margin-top: 60px; padding: 0 20px; position: relative; z-index: 10;">
+            <h2 style="color: var(--jade); letter-spacing: 5px; margin-bottom: 5px;">P’ÁX̌WAD</h2>
+            <p class="phonetic" style="margin-bottom: 25px;">THE SPARK</p>
 
-            <div id="saccade-instr" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin: 0 auto; width: 80%; max-width: 300px; font-size: 0.7rem; line-height: 1.4; border: 1px dashed rgba(0, 163, 108, 0.3);">
-                <span style="color: var(--gold);">FOLLOW THE SPARK:</span><br>
-                Tap P’ÁX̌WAD 10 times.<br>
-                Move only your eyes, stay still.
+            <div id="saccade-instr" style="background: rgba(0, 163, 108, 0.05); border: 2px solid var(--jade); padding: 20px; border-radius: 20px; color: var(--text); line-height: 1.5;">
+                <p style="font-weight: 900; color: var(--gold); margin-top: 0;">GROUNDING RULE:</p>
+                <p style="font-size: 0.9rem;">
+                    Keep your <span style="text-decoration: underline;">head completely still</span>.<br>
+                    Follow the feather with <span style="color: var(--jade); font-weight: bold;">eyes only</span>.
+                </p>
+                <p style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 0;">Tap the feather 10 times to sync.</p>
             </div>
         </div>
 
         <canvas id="saccade-canvas"></canvas>
-        <div id="saccade-count" style="position: absolute; bottom: 40px; width: 100%; font-size: 0.8rem; color: var(--jade); letter-spacing: 3px; z-index: 10;">
+        <div id="saccade-count">
             SYNCS: 0/10
         </div>
     </div>
@@ -488,6 +492,7 @@
             show('saccade-room');
             saccadeCanvas.width = window.innerWidth;
             saccadeCanvas.height = window.innerHeight;
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
             const instr = document.getElementById('saccade-instr');
             if (instr) {
                 instr.style.opacity = "1";
