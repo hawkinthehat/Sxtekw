@@ -202,7 +202,7 @@
         const canvas = document.getElementById('canvas'); const ctx = canvas.getContext('2d');
         const saccadeCanvas = document.getElementById('saccade-canvas'); const sCtx = saccadeCanvas.getContext('2d');
         const weaveCanvas = document.getElementById('weave-canvas'); const wCtx = weaveCanvas.getContext('2d');
-        let particles = [], weavePoints = [], mouse = { x: null, y: null }, audioCtx;
+        let particles = [], mouse = { x: null, y: null }, audioCtx;
         let leftOsc, rightOsc, masterGain, vantageMode = false, shatterPoint = false, weavingActive = false;
         let featherX = 0, featherY = 0, featherAngle = 0, featherDir = 1;
         let solvedCount = 0, currentTaskAnswer = "";
@@ -216,6 +216,59 @@
         const tealColor = rootStyles.getPropertyValue('--teal').trim() || "#2dd4bf";
         const goldColor = rootStyles.getPropertyValue('--gold').trim() || "#fbbf24";
         const jadeColor = rootStyles.getPropertyValue('--jade').trim() || tealColor;
+        let currentLevel = 0;
+        let activeConnections = [];
+        let levelPoints = [];
+        let isWeaveDrawing = false;
+        let lastWeavePointIndex = null;
+        let completionTimer = null;
+        let levelGlowUntil = 0;
+        const activeConnectionKeys = new Set();
+        let requiredConnectionKeys = new Set();
+
+        // STAR-MAP DATA: RAVEN CONSTELLATION
+        const ravenLevel = {
+            name: "SQUWAL'QUW",
+            phonetic: "SK-WALL-KW",
+            meaning: "THE RAVEN",
+            stars: [
+                { x: 50, y: 30, size: 2 }, // Tip of beak
+                { x: 40, y: 45, size: 3 }, // Head
+                { x: 60, y: 45, size: 2 }, // Wing top
+                { x: 40, y: 70, size: 4 }, // Body heart
+                { x: 20, y: 60, size: 2 }, // Wing tip left
+                { x: 80, y: 60, size: 2 }  // Wing tip right
+            ],
+            // The "Weave" paths she must follow
+            paths: [[0, 1], [1, 2], [2, 0], [1, 3], [3, 4], [3, 5]]
+        };
+
+        const levels = [
+            {
+                name: ravenLevel.name, // Raven [ sk-wall-kw ]
+                phonetic: ravenLevel.phonetic,
+                meaning: ravenLevel.meaning,
+                points: ravenLevel.stars,
+                connections: ravenLevel.paths
+            },
+            {
+                name: "STIQÍYU’", // Wolf [ stee-kee-yoo ]
+                phonetic: "STEE-KEE-YOO",
+                meaning: "THE WOLF",
+                points: [
+                    { x: 68, y: 34, size: 2 },
+                    { x: 58, y: 24, size: 2 },
+                    { x: 48, y: 20, size: 3 },
+                    { x: 43, y: 38, size: 3 },
+                    { x: 40, y: 54, size: 4 },
+                    { x: 32, y: 70, size: 3 },
+                    { x: 20, y: 62, size: 2 },
+                    { x: 56, y: 68, size: 2 },
+                    { x: 72, y: 72, size: 2 }
+                ],
+                connections: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [4, 7], [7, 8], [8, 0]]
+            }
+        ];
 
         const bioTips = [
             "OWL EYES: Soften your gaze. See the screen edges without moving your head.",
@@ -319,6 +372,36 @@
 
             if (playRecordedNativeAudio(key, word)) return;
             if (word) speakNative(word);
+        }
+
+        function playSuccessTone() {
+            if (currentAudioMode === "silent") return;
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(660, now);
+            osc.frequency.exponentialRampToValueAtTime(990, now + 0.22);
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(0.06, now + 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+
+            osc.connect(gain).connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.34);
+        }
+
+        function playNative(key) {
+            if (key === "success") {
+                playSuccessTone();
+                if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
+                return;
+            }
+            playNativeSignal(key);
         }
 
         function setAudioMode(mode) {
@@ -742,74 +825,192 @@
         }
 
         // --- WEAVER ---
+        function getConnectionKey(a, b) {
+            return a < b ? `${a}-${b}` : `${b}-${a}`;
+        }
+
+        function getActiveLevel() {
+            return levels[currentLevel];
+        }
+
+        function mapLevelPoints(level) {
+            levelPoints = level.points.map((point) => ({
+                x: (point.x / 100) * weaveCanvas.width,
+                y: (point.y / 100) * weaveCanvas.height,
+                size: point.size || 2
+            }));
+        }
+
+        function celebrateAnimal(name) {
+            const level = getActiveLevel();
+            elderSpeak(name, `${level.meaning} • ${level.phonetic}`);
+        }
+
+        function startNewLevel() {
+            if (!weavingActive) return;
+            if (currentLevel >= levels.length) {
+                document.getElementById('weave-progress').innerText = "ALL CONSTELLATIONS RESTORED";
+                elderSpeak("WEAVE COMPLETE", "The constellations are awake. The quiet is restored.");
+                weavingActive = false;
+                setTimeout(() => exitAll(), 1800);
+                return;
+            }
+
+            const level = getActiveLevel();
+            mapLevelPoints(level);
+            activeConnections = [];
+            activeConnectionKeys.clear();
+            requiredConnectionKeys = new Set(
+                level.connections.map(([a, b]) => getConnectionKey(a, b))
+            );
+            isWeaveDrawing = false;
+            lastWeavePointIndex = null;
+            levelGlowUntil = 0;
+            document.getElementById('weave-progress').innerText =
+                `${level.name} • 0/${level.connections.length}`;
+        }
+
+        function checkCompletion() {
+            if (!weavingActive || completionTimer || currentLevel >= levels.length) return;
+            if (activeConnections.length === levels[currentLevel].connections.length) {
+                // TRIGGER THE "GLOW"
+                levelGlowUntil = Date.now() + 3000;
+                playNative('success');
+                celebrateAnimal(levels[currentLevel].name);
+
+                // Move to next animal after 3 seconds
+                completionTimer = setTimeout(() => {
+                    completionTimer = null;
+                    currentLevel++;
+                    startNewLevel();
+                }, 3000);
+            }
+        }
+
+        function getPointIndexAt(x, y) {
+            for (let i = 0; i < levelPoints.length; i++) {
+                const point = levelPoints[i];
+                const radius = Math.max(18, point.size * 8);
+                const dist = Math.hypot(x - point.x, y - point.y);
+                if (dist <= radius) return i;
+            }
+            return null;
+        }
+
+        function addConnection(fromIndex, toIndex) {
+            if (fromIndex === null || toIndex === null || fromIndex === toIndex) return false;
+            const key = getConnectionKey(fromIndex, toIndex);
+            if (!requiredConnectionKeys.has(key) || activeConnectionKeys.has(key)) return false;
+            activeConnectionKeys.add(key);
+            activeConnections.push([fromIndex, toIndex]);
+            if (navigator.vibrate) navigator.vibrate(12);
+            checkCompletion();
+            return true;
+        }
+
+        function handleWeaveStart(x, y) {
+            if (!weavingActive) return;
+            const startIndex = getPointIndexAt(x, y);
+            if (startIndex === null) return;
+            isWeaveDrawing = true;
+            lastWeavePointIndex = startIndex;
+        }
+
+        function handleWeaveMove(x, y) {
+            if (!weavingActive || !isWeaveDrawing || lastWeavePointIndex === null) return;
+            const nextIndex = getPointIndexAt(x, y);
+            if (nextIndex === null || nextIndex === lastWeavePointIndex) return;
+            if (addConnection(lastWeavePointIndex, nextIndex)) {
+                lastWeavePointIndex = nextIndex;
+            }
+        }
+
+        function handleWeaveEnd() {
+            isWeaveDrawing = false;
+            lastWeavePointIndex = null;
+        }
+
         function startWeave() {
             closeElder();
-            weavingActive = true; show('weave');
+            weavingActive = true;
+            currentLevel = 0;
+            show('weave');
             const instr = document.getElementById('weave-instructions');
-            instr.style.opacity = "1"; setTimeout(() => instr.style.opacity = "0", 3500);
-            weaveCanvas.width = window.innerWidth; weaveCanvas.height = window.innerHeight;
-            weavePoints = []; const cols = 7, rows = 9;
-            for(let i=0; i<cols; i++) for(let j=0; j<rows; j++) weavePoints.push({ x: (weaveCanvas.width / (cols + 1)) * (i + 1), y: (weaveCanvas.height / (rows + 1)) * (j + 1), locked: false });
+            instr.style.opacity = "1";
+            setTimeout(() => { instr.style.opacity = "0"; }, 3500);
+            weaveCanvas.width = window.innerWidth;
+            weaveCanvas.height = window.innerHeight;
+            startNewLevel();
             animateWeave();
         }
 
         function animateWeave() {
             if (!weavingActive) return;
-            
-            // Create a "Trailing" effect by not clearing the canvas fully
-            wCtx.fillStyle = 'rgba(2, 6, 23, 0.15)';
+            wCtx.fillStyle = 'rgba(2, 6, 23, 0.2)';
             wCtx.fillRect(0, 0, weaveCanvas.width, weaveCanvas.height);
-            
-            let locked = 0;
-            const time = Date.now() * 0.002; // Used for the "Pulse"
+            const level = getActiveLevel();
+            if (!level) return;
+            const now = Date.now();
+            const glowPhase = (Math.sin(now * 0.008) + 1) / 2;
+            const isGlowing = now < levelGlowUntil;
 
-            weavePoints.forEach(p => {
-                // Floating movement (The "Current")
-                if (!p.locked) {
-                    p.x += Math.sin(time + p.y) * 0.5;
-                    p.y += Math.cos(time + p.x) * 0.5;
-                }
-
-                let d = Math.sqrt((mouse.x - p.x)**2 + (mouse.y - p.y)**2);
-                if (d < 55 && !p.locked) {
-                    p.locked = true;
-                    if (navigator.vibrate) navigator.vibrate(10);
-                }
-                
-                if (p.locked) {
-                    locked++;
-                    // Glowing Core
-                    wCtx.shadowBlur = 15;
-                    wCtx.shadowColor = goldColor;
-                    wCtx.fillStyle = goldColor;
-                    wCtx.beginPath(); wCtx.arc(p.x, p.y, 4, 0, Math.PI*2); wCtx.fill();
-                    wCtx.shadowBlur = 0;
-
-                    // Thread Connections
-                    weavePoints.forEach(p2 => {
-                        if (p2.locked && Math.sqrt((p2.x - p.x)**2 + (p2.y - p.y)**2) < 140) {
-                            wCtx.strokeStyle = `rgba(251, 191, 36, ${0.2 + Math.sin(time) * 0.1})`;
-                            wCtx.lineWidth = 2;
-                            wCtx.beginPath(); wCtx.moveTo(p.x, p.y); wCtx.lineTo(p2.x, p2.y); wCtx.stroke();
-                        }
-                    });
-                } else {
-                    // Subtle "Breathing" for uncollected dots
-                    wCtx.fillStyle = `rgba(45, 212, 191, ${0.1 + Math.sin(time) * 0.05})`;
-                    wCtx.beginPath(); wCtx.arc(p.x, p.y, 2, 0, Math.PI*2); wCtx.fill();
-                }
+            // Draw required constellation skeleton.
+            wCtx.lineWidth = 1.25;
+            wCtx.strokeStyle = 'rgba(45, 212, 191, 0.25)';
+            level.connections.forEach(([a, b]) => {
+                const p1 = levelPoints[a];
+                const p2 = levelPoints[b];
+                if (!p1 || !p2) return;
+                wCtx.beginPath();
+                wCtx.moveTo(p1.x, p1.y);
+                wCtx.lineTo(p2.x, p2.y);
+                wCtx.stroke();
             });
 
-            let percent = Math.round(locked / weavePoints.length * 100);
-            document.getElementById('weave-progress').innerText = `${percent}% WOVEN`;
-            
-            if (percent >= 100) {
-                document.getElementById('weave-progress').innerText = "NEURAL SYNC COMPLETE";
-                // Flash effect
-                wCtx.fillStyle = "rgba(255, 255, 255, 0.05)";
-                wCtx.fillRect(0, 0, weaveCanvas.width, weaveCanvas.height);
+            // Draw user-completed paths.
+            wCtx.lineWidth = 3;
+            wCtx.strokeStyle = isGlowing
+                ? `rgba(251, 191, 36, ${0.65 + glowPhase * 0.35})`
+                : `rgba(251, 191, 36, ${0.65 + glowPhase * 0.2})`;
+            activeConnections.forEach(([a, b]) => {
+                const p1 = levelPoints[a];
+                const p2 = levelPoints[b];
+                if (!p1 || !p2) return;
+                wCtx.beginPath();
+                wCtx.moveTo(p1.x, p1.y);
+                wCtx.lineTo(p2.x, p2.y);
+                wCtx.stroke();
+            });
+
+            // Draw a live "thread" while dragging.
+            if (isWeaveDrawing && lastWeavePointIndex !== null && mouse.x !== null && mouse.y !== null) {
+                const source = levelPoints[lastWeavePointIndex];
+                if (source) {
+                    wCtx.lineWidth = 2;
+                    wCtx.strokeStyle = 'rgba(251, 191, 36, 0.5)';
+                    wCtx.beginPath();
+                    wCtx.moveTo(source.x, source.y);
+                    wCtx.lineTo(mouse.x, mouse.y);
+                    wCtx.stroke();
+                }
             }
-            
+
+            levelPoints.forEach((point) => {
+                const radius = Math.max(2, point.size * 1.7);
+                const pointGlow = isGlowing ? 12 + glowPhase * 16 : 6 + glowPhase * 4;
+                wCtx.shadowBlur = pointGlow;
+                wCtx.shadowColor = isGlowing ? goldColor : tealColor;
+                wCtx.fillStyle = isGlowing ? goldColor : tealColor;
+                wCtx.beginPath();
+                wCtx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+                wCtx.fill();
+            });
+            wCtx.shadowBlur = 0;
+
+            const total = level.connections.length;
+            const woven = activeConnections.length;
+            document.getElementById('weave-progress').innerText = `${level.name} • ${woven}/${total}`;
+
             requestAnimationFrame(animateWeave);
         }
 
@@ -825,14 +1026,33 @@
             const clientY = touch ? touch.clientY : e.clientY;
             mouse.x = clientX;
             mouse.y = clientY;
+            if (weavingActive && e.type === 'touchmove') {
+                handleWeaveMove(clientX, clientY);
+            }
         }
 
-        window.addEventListener('touchstart', handleInput, { passive: false });
+        window.addEventListener('touchstart', (e) => {
+            handleInput(e);
+            if (!e.touches || !e.touches[0]) return;
+            handleWeaveStart(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
         window.addEventListener('touchmove', handleInput, { passive: false });
-        window.addEventListener('mousedown', e => { handleInput(e); handleSaccadeCatch(e.clientX, e.clientY); });
+        window.addEventListener('mousedown', e => {
+            handleInput(e);
+            handleSaccadeCatch(e.clientX, e.clientY);
+            handleWeaveStart(e.clientX, e.clientY);
+        });
+        window.addEventListener('mousemove', (e) => {
+            handleInput(e);
+            handleWeaveMove(e.clientX, e.clientY);
+        });
+        window.addEventListener('mouseup', () => {
+            handleWeaveEnd();
+        });
         window.addEventListener('touchend', e => {
             if (!e.changedTouches || !e.changedTouches[0]) return;
             handleSaccadeCatch(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+            handleWeaveEnd();
         });
         document.getElementById('logic-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') checkLogic();
@@ -846,6 +1066,18 @@
             closeElder();
             isSaccadicMode = false;
             saccadeTaps = 0;
+            activeConnections = [];
+            activeConnectionKeys.clear();
+            requiredConnectionKeys = new Set();
+            levelPoints = [];
+            isWeaveDrawing = false;
+            lastWeavePointIndex = null;
+            currentLevel = 0;
+            levelGlowUntil = 0;
+            if (completionTimer) {
+                clearTimeout(completionTimer);
+                completionTimer = null;
+            }
             stopNeuralAudio();
             if (saccadeCanvas && sCtx) {
                 sCtx.clearRect(0, 0, saccadeCanvas.width, saccadeCanvas.height);
