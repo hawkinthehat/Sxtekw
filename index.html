@@ -143,6 +143,11 @@
         #paxwad-rule-title {
             color: var(--gold);
             font-weight: 900;
+            margin: 0 0 6px 0;
+        }
+
+        .paxwad-line {
+            margin: 0;
         }
 
         #spark-target {
@@ -171,10 +176,10 @@
         <p class="phonetic">THE QUIET [ suh-t-ekw ]</p>
 
         <div class="home-subtitle">
-            <button type="button" class="menu-btn menu-btn-primary" onclick="startWeave()">
+            <button id="btn-start-weave" type="button" class="menu-btn menu-btn-primary">
                 KW’ÉTL’EN <span class="phonetic menu-btn-sub menu-btn-sub-dark">[ THE WEAVE ]</span>
             </button>
-            <button type="button" class="menu-btn menu-btn-secondary" onclick="startPaxwad()">
+            <button id="btn-start-paxwad" type="button" class="menu-btn menu-btn-secondary">
                 P’ÁX̌WAD <span class="phonetic menu-btn-sub menu-btn-sub-gold">[ THE SPARK ]</span>
             </button>
         </div>
@@ -182,7 +187,7 @@
     </div>
 
     <div id="screen-weave" class="screen">
-        <button type="button" class="btn-hilu" onclick="exitToHome()">HÍLU [ DEPART ]</button>
+        <button id="btn-exit-weave" type="button" class="btn-hilu">HÍLU [ DEPART ]</button>
 
         <div id="weave-header">
             <h2 id="animal-name">READY</h2>
@@ -190,17 +195,18 @@
         </div>
 
         <canvas id="weave-canvas"></canvas>
-        <div id="touch-layer" onmousedown="startLine(event)" onmousemove="drawLine(event)" onmouseup="endLine()" ontouchstart="startLine(event)" ontouchmove="drawLine(event)" ontouchend="endLine()"></div>
+        <div id="touch-layer"></div>
     </div>
 
     <div id="screen-paxwad" class="screen">
-        <button type="button" class="btn-hilu" onclick="exitToHome()">HÍLU [ DEPART ]</button>
+        <button id="btn-exit-paxwad" type="button" class="btn-hilu">HÍLU [ DEPART ]</button>
 
         <div id="paxwad-instr" class="instr-card">
-            <span id="paxwad-rule-title">STILLNESS RULE:</span><br>
-            Keep your head still.<br>Follow the spark with eyes only.
+            <p id="paxwad-rule-title">STILLNESS RULE:</p>
+            <p class="paxwad-line">Keep your head still.</p>
+            <p class="paxwad-line">Follow the spark with eyes only.</p>
         </div>
-        <div id="spark-target" onclick="hitSpark()"></div>
+        <div id="spark-target"></div>
         <div id="spark-count">SYNCS: 0/10</div>
     </div>
 
@@ -339,11 +345,31 @@
             document.getElementById('spark-count').innerText = `SYNCS: ${count}/10`;
         }
 
+        function bindUIEvents() {
+            document.getElementById('btn-start-weave').addEventListener('click', startWeave);
+            document.getElementById('btn-start-paxwad').addEventListener('click', startPaxwad);
+            document.getElementById('btn-exit-weave').addEventListener('click', exitToHome);
+            document.getElementById('btn-exit-paxwad').addEventListener('click', exitToHome);
+            document.getElementById('spark-target').addEventListener('click', hitSpark);
+
+            const touchLayer = document.getElementById('touch-layer');
+            touchLayer.addEventListener('mousedown', startLine);
+            touchLayer.addEventListener('mousemove', drawLine);
+            touchLayer.addEventListener('mouseup', endLine);
+            touchLayer.addEventListener('mouseleave', endLine);
+            touchLayer.addEventListener('touchstart', startLine, { passive: false });
+            touchLayer.addEventListener('touchmove', drawLine, { passive: false });
+            touchLayer.addEventListener('touchend', endLine);
+            touchLayer.addEventListener('touchcancel', endLine);
+        }
+
         // Resize handler for iPad rotation
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         });
+
+        bindUIEvents();
     </script>
 </body>
 </html>
