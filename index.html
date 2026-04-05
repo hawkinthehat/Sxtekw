@@ -5,20 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SXT’EKW | The Quiet</title>
     <style>
-        :root {
-            --bg: #020617; /* Pitch Black for focus */
-            --jade: #00a36c;
-            --teal: #2dd4bf;
-            --text: #f1f5f9;
-            --gold: #fbbf24;
-            --red: #f43f5e;
-        }
-
         body, html {
             margin: 0; padding: 0;
             width: 100%; height: 100%;
-            background: var(--bg);
-            color: var(--text);
+            background: #020617;
+            color: #f1f5f9;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             overflow: hidden;
             touch-action: none; /* Prevents accidental iPad swipes */
@@ -43,8 +34,8 @@
         .btn-hilu {
             position: absolute; top: 30px; left: 30px;
             background: rgba(0, 163, 108, 0.1);
-            border: 1px solid var(--jade);
-            color: var(--jade);
+            border: 1px solid #00a36c;
+            color: #00a36c;
             padding: 10px 20px;
             border-radius: 50px;
             font-size: 0.7rem;
@@ -75,7 +66,7 @@
 
         .home-title {
             letter-spacing: 12px;
-            color: var(--jade);
+            color: #00a36c;
             font-weight: 900;
             margin-bottom: 0;
         }
@@ -94,16 +85,16 @@
         }
 
         .menu-btn-primary {
-            background: var(--jade);
-            color: var(--bg);
+            background: #00a36c;
+            color: #020617;
             border: none;
             margin-bottom: 15px;
         }
 
         .menu-btn-secondary {
             background: none;
-            border: 1px solid var(--gold);
-            color: var(--gold);
+            border: 1px solid #fbbf24;
+            color: #fbbf24;
         }
 
         .menu-btn-sub {
@@ -111,11 +102,11 @@
         }
 
         .menu-btn-sub-dark {
-            color: var(--bg);
+            color: #020617;
         }
 
         .menu-btn-sub-gold {
-            color: var(--gold);
+            color: #fbbf24;
         }
 
         .home-footer {
@@ -135,13 +126,13 @@
         }
 
         #animal-name {
-            color: var(--jade);
+            color: #00a36c;
             letter-spacing: 8px;
             margin: 0;
         }
 
         #paxwad-rule-title {
-            color: var(--gold);
+            color: #fbbf24;
             font-weight: 900;
             margin: 0 0 6px 0;
         }
@@ -154,16 +145,16 @@
             position: absolute;
             width: 40px;
             height: 40px;
-            background: var(--jade);
+            background: #00a36c;
             border-radius: 50%;
-            box-shadow: 0 0 20px var(--jade);
+            box-shadow: 0 0 20px #00a36c;
             cursor: pointer;
         }
 
         #spark-count {
             position: absolute;
             bottom: 50px;
-            color: var(--jade);
+            color: #00a36c;
             font-size: 0.8rem;
             letter-spacing: 4px;
         }
@@ -194,7 +185,7 @@
             <p id="animal-phonetic" class="phonetic"></p>
         </div>
 
-        <canvas id="weave-canvas"></canvas>
+        <div id="weave-canvas-host" aria-hidden="true"></div>
         <div id="touch-layer"></div>
     </div>
 
@@ -231,9 +222,13 @@
         ];
 
         let currentLevel = 0;
-        const canvas = document.getElementById('weave-canvas');
+        const canvasHost = document.getElementById('weave-canvas-host');
+        const canvas = document.createElement('canvas');
+        canvas.id = 'weave-canvas';
+        canvas.setAttribute('aria-hidden', 'true');
+        canvasHost.appendChild(canvas);
         const ctx = canvas.getContext('2d');
-        const jadeColor = getComputedStyle(document.documentElement).getPropertyValue('--jade').trim() || '#00a36c';
+        const jadeColor = '#00a36c';
         let drawing = false;
         let lastPoint = null;
 
