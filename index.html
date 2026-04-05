@@ -118,6 +118,7 @@
         const canvas = document.getElementById('canvas'); const ctx = canvas.getContext('2d');
         const saccadeCanvas = document.getElementById('saccade-canvas'); const sCtx = saccadeCanvas.getContext('2d');
         const weaveCanvas = document.getElementById('weave-canvas'); const wCtx = weaveCanvas.getContext('2d');
+        let particles = [], weavePoints = [], weavePaths = [], mouse = { x: null, y: null }, audioCtx;
         let particles = [], mouse = { x: null, y: null }, audioCtx;
         let leftOsc, rightOsc, masterGain, vantageMode = false, shatterPoint = false, weavingActive = false;
         let featherX = 0, featherY = 0, featherAngle = 0, featherDir = 1;
@@ -138,6 +139,24 @@
         const goldColor = rootStyles.getPropertyValue('--gold').trim() || "#fbbf24";
         const jadeColor = rootStyles.getPropertyValue('--jade').trim() || tealColor;
 
+        // STAR-MAP DATA: WOLF CONSTELLATION (STIQÍYU’)
+        const wolfLevel = {
+            name: "STIQÍYU’",
+            phonetic: "STEE-KEE-YOO",
+            meaning: "THE WOLF",
+            stars: [
+                { x: 80, y: 20, size: 3 }, // Ear tip
+                { x: 70, y: 30, size: 2 }, // Head top
+                { x: 85, y: 40, size: 2 }, // Snout
+                { x: 60, y: 45, size: 4 }, // Shoulder (Heart star)
+                { x: 40, y: 40, size: 2 }, // Back
+                { x: 20, y: 30, size: 3 }, // Tail tip
+                { x: 55, y: 70, size: 2 }, // Front Paw
+                { x: 35, y: 75, size: 2 }  // Back Paw
+            ],
+            // The "Protective" Weave
+            paths: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [3, 6], [4, 7]]
+        };
         // INDIVIDUAL STAR LOGIC
         class Star {
             constructor(x, y, size) {
@@ -194,6 +213,7 @@
             "PERIPHERAL: Don't stare at the spark. Watch it with your side-vision.",
             "VAGAL TONE: Take a long, slow exhale through pursed lips."
         ];
+      
         const screens = ['screen-home', 'screen-weave', 'screen-paxwad'];
 
         function show(id) {
@@ -378,6 +398,21 @@
             weavingActive = true; show('weave');
             const instr = document.getElementById('weave-instructions');
             instr.style.opacity = "1"; setTimeout(() => instr.style.opacity = "0", 3500);
+            const titleEl = instr ? instr.querySelector('h2') : null;
+            const bodyEl = instr ? instr.querySelector('p') : null;
+            if (titleEl) titleEl.innerText = `${wolfLevel.name} (${wolfLevel.phonetic})`;
+            if (bodyEl) bodyEl.innerHTML = `${wolfLevel.meaning}<br><small style="font-weight: normal; opacity: 0.7;">Drag thumb to connect the protective weave.</small>`;
+            weaveCanvas.width = window.innerWidth; weaveCanvas.height = window.innerHeight;
+            weavePoints = wolfLevel.stars.map((star, idx) => ({
+                x: (weaveCanvas.width * star.x) / 100,
+                y: (weaveCanvas.height * star.y) / 100,
+                baseX: (weaveCanvas.width * star.x) / 100,
+                baseY: (weaveCanvas.height * star.y) / 100,
+                size: star.size,
+                driftSeed: idx * 0.75,
+                locked: false
+            }));
+            weavePaths = [...wolfLevel.paths];
             weaveCanvas.width = window.innerWidth; weaveCanvas.height = window.innerHeight;
             wovenPathKeys = new Set();
             activeWeaveStar = null;
@@ -390,6 +425,70 @@
 
         function animateWeave() {
             if (!weavingActive) return;
+            
+            // Create a "Trailing" effect by not clearing the canvas fully
+            wCtx.fillStyle = 'rgba(2, 6, 23, 0.15)';
+            wCtx.fillRect(0, 0, weaveCanvas.width, weaveCanvas.height);
+            
+            let locked = 0;
+            let wovenSegments = 0;
+            const time = Date.now() * 0.002; // Used for the "Pulse"
+
+            weavePaths.forEach(path => {
+                const from = weavePoints[path[0]];
+                const to = weavePoints[path[1]];
+                if (!from || !to) return;
+                const isWoven = from.locked && to.locked;
+                if (isWoven) wovenSegments++;
+                wCtx.strokeStyle = isWoven ? `rgba(251, 191, 36, ${0.35 + Math.sin(time) * 0.1})` : 'rgba(45, 212, 191, 0.15)';
+                wCtx.lineWidth = isWoven ? 2.2 : 1.2;
+                wCtx.beginPath();
+                wCtx.moveTo(from.x, from.y);
+                wCtx.lineTo(to.x, to.y);
+                wCtx.stroke();
+            });
+
+            weavePoints.forEach(p => {
+                // Floating movement (The "Current")
+                if (!p.locked) {
+                    p.x = p.baseX + Math.sin(time + p.driftSeed) * 3;
+                    p.y = p.baseY + Math.cos(time + p.driftSeed) * 3;
+                }
+
+                let d = Math.sqrt((mouse.x - p.x)**2 + (mouse.y - p.y)**2);
+                if (d < 55 && !p.locked) {
+                    p.locked = true;
+                    if (navigator.vibrate) navigator.vibrate(10);
+                }
+                
+                if (p.locked) {
+                    locked++;
+                    // Glowing Core
+                    wCtx.shadowBlur = 15;
+                    wCtx.shadowColor = goldColor;
+                    wCtx.fillStyle = goldColor;
+                    wCtx.beginPath(); wCtx.arc(p.x, p.y, 2 + p.size, 0, Math.PI*2); wCtx.fill();
+                    wCtx.shadowBlur = 0;
+                } else {
+                    // Subtle "Breathing" for uncollected dots
+                    wCtx.fillStyle = `rgba(45, 212, 191, ${0.1 + Math.sin(time) * 0.05})`;
+                    wCtx.beginPath(); wCtx.arc(p.x, p.y, 1 + (p.size * 0.6), 0, Math.PI*2); wCtx.fill();
+                }
+            });
+
+            const starCompletion = weavePoints.length ? (locked / weavePoints.length) : 0;
+            const pathCompletion = weavePaths.length ? (wovenSegments / weavePaths.length) : 0;
+            let percent = Math.round(((starCompletion + pathCompletion) / 2) * 100);
+            document.getElementById('weave-progress').innerText = `${percent}% WOVEN`;
+            
+            if (percent >= 100) {
+                document.getElementById('weave-progress').innerText = "NEURAL SYNC COMPLETE";
+                // Flash effect
+                wCtx.fillStyle = "rgba(255, 255, 255, 0.05)";
+                wCtx.fillRect(0, 0, weaveCanvas.width, weaveCanvas.height);
+            }
+            
+            requestAnimationFrame(animateWeave);
 
             // Create a "Trailing" effect by not clearing the canvas fully
             wCtx.fillStyle = 'rgba(2, 6, 23, 0.15)';
