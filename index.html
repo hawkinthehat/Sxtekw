@@ -72,30 +72,120 @@
             width: 100%; height: 100%;
             z-index: 2;
         }
+
+        .home-title {
+            letter-spacing: 12px;
+            color: var(--jade);
+            font-weight: 900;
+            margin-bottom: 0;
+        }
+
+        .home-subtitle {
+            margin-top: 50px;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .menu-btn {
+            width: 100%;
+            padding: 20px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .menu-btn-primary {
+            background: var(--jade);
+            color: var(--bg);
+            border: none;
+            margin-bottom: 15px;
+        }
+
+        .menu-btn-secondary {
+            background: none;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+        }
+
+        .menu-btn-sub {
+            display: block;
+        }
+
+        .menu-btn-sub-dark {
+            color: var(--bg);
+        }
+
+        .menu-btn-sub-gold {
+            color: var(--gold);
+        }
+
+        .home-footer {
+            position: absolute;
+            bottom: 40px;
+            font-size: 0.5rem;
+            letter-spacing: 2px;
+            opacity: 0.4;
+        }
+
+        #weave-header {
+            z-index: 5;
+            text-align: center;
+            position: absolute;
+            top: 100px;
+            pointer-events: none;
+        }
+
+        #animal-name {
+            color: var(--jade);
+            letter-spacing: 8px;
+            margin: 0;
+        }
+
+        #paxwad-rule-title {
+            color: var(--gold);
+            font-weight: 900;
+        }
+
+        #spark-target {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: var(--jade);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--jade);
+            cursor: pointer;
+        }
+
+        #spark-count {
+            position: absolute;
+            bottom: 50px;
+            color: var(--jade);
+            font-size: 0.8rem;
+            letter-spacing: 4px;
+        }
     </style>
 </head>
 <body>
 
     <div id="screen-home" class="screen active">
-        <h1 style="letter-spacing: 12px; color: var(--jade); font-weight: 900; margin-bottom: 0;">SXT’EKW</h1>
+        <h1 class="home-title">SXT’EKW</h1>
         <p class="phonetic">THE QUIET [ suh-t-ekw ]</p>
 
-        <div style="margin-top: 50px; width: 80%; max-width: 400px;">
-            <button class="menu-btn" onclick="startWeave()" style="background: var(--jade); color: var(--bg); border: none; width: 100%; padding: 20px; border-radius: 20px; font-weight: bold; margin-bottom: 15px;">
-                KW’ÉTL’EN <span class="phonetic" style="display:block; color: var(--bg);">[ THE WEAVE ]</span>
+        <div class="home-subtitle">
+            <button type="button" class="menu-btn menu-btn-primary" onclick="startWeave()">
+                KW’ÉTL’EN <span class="phonetic menu-btn-sub menu-btn-sub-dark">[ THE WEAVE ]</span>
             </button>
-            <button class="menu-btn" onclick="startPaxwad()" style="background: none; border: 1px solid var(--gold); color: var(--gold); width: 100%; padding: 20px; border-radius: 20px; font-weight: bold;">
-                P’ÁX̌WAD <span class="phonetic" style="display:block; color: var(--gold);">[ THE SPARK ]</span>
+            <button type="button" class="menu-btn menu-btn-secondary" onclick="startPaxwad()">
+                P’ÁX̌WAD <span class="phonetic menu-btn-sub menu-btn-sub-gold">[ THE SPARK ]</span>
             </button>
         </div>
-        <div style="position: absolute; bottom: 40px; font-size: 0.5rem; letter-spacing: 2px; opacity: 0.4;">FOR JADE</div>
+        <div class="home-footer">FOR JADE</div>
     </div>
 
     <div id="screen-weave" class="screen">
-        <button class="btn-hilu" onclick="exitToHome()">HÍLU [ DEPART ]</button>
+        <button type="button" class="btn-hilu" onclick="exitToHome()">HÍLU [ DEPART ]</button>
 
-        <div id="weave-header" style="z-index: 5; text-align: center; position: absolute; top: 100px; pointer-events: none;">
-            <h2 id="animal-name" style="color: var(--jade); letter-spacing: 8px; margin: 0;"></h2>
+        <div id="weave-header">
+            <h2 id="animal-name">READY</h2>
             <p id="animal-phonetic" class="phonetic"></p>
         </div>
 
@@ -104,14 +194,14 @@
     </div>
 
     <div id="screen-paxwad" class="screen">
-        <button class="btn-hilu" onclick="exitToHome()">HÍLU [ DEPART ]</button>
+        <button type="button" class="btn-hilu" onclick="exitToHome()">HÍLU [ DEPART ]</button>
 
         <div id="paxwad-instr" class="instr-card">
-            <span style="color: var(--gold); font-weight: 900;">STILLNESS RULE:</span><br>
+            <span id="paxwad-rule-title">STILLNESS RULE:</span><br>
             Keep your head still.<br>Follow the spark with eyes only.
         </div>
-        <div id="spark-target" onclick="hitSpark()" style="position: absolute; width: 40px; height: 40px; background: var(--jade); border-radius: 50%; box-shadow: 0 0 20px var(--jade); cursor: pointer;"></div>
-        <div id="spark-count" style="position: absolute; bottom: 50px; color: var(--jade); font-size: 0.8rem; letter-spacing: 4px;">SYNCS: 0/10</div>
+        <div id="spark-target" onclick="hitSpark()"></div>
+        <div id="spark-count">SYNCS: 0/10</div>
     </div>
 
     <script>
