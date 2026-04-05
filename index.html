@@ -3,921 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SXT’EKW | Neural Weaver</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
-    <meta name="theme-color" content="#020617">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SXT’EKW">
+    <title>SXT’EKW | The Quiet</title>
     <style>
-        :root { --bg: #020617; --teal: #2dd4bf; --jade: #2dd4bf; --text: #f1f5f9; --red: #f43f5e; --card: #1e293b; --gold: #fbbf24; --cedar: #78350f; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        html, body {
-            position: fixed;
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-            -webkit-user-select: none;
-            user-select: none;
-            touch-action: none;
-            overscroll-behavior: none;
+        :root {
+            --bg: #020617; /* Pitch Black for focus */
+            --jade: #00a36c;
+            --teal: #2dd4bf;
+            --text: #f1f5f9;
+            --gold: #fbbf24;
+            --red: #f43f5e;
         }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; margin: 0; text-align: center; }
-        
-        .screen { display: none; height: 100vh; width: 100vw; flex-direction: column; justify-content: center; align-items: center; position: absolute; padding: 30px; z-index: 5; }
-        .active { display: flex; animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .btn { background: var(--teal); color: var(--bg); border: none; padding: 20px; border-radius: 18px; width: 100%; max-width: 360px; font-weight: 900; font-size: 1rem; margin: 8px 0; cursor: pointer; letter-spacing: 2px; text-transform: uppercase; z-index: 20; transition: 0.3s; }
-        .btn:active { transform: scale(0.95); }
-        .emergency { background: var(--red); color: white; box-shadow: 0 0 30px rgba(244, 63, 94, 0.4); }
-        .gold-btn { background: var(--gold); color: var(--bg); border: 2px solid var(--cedar); }
-        .secondary { background: none; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
-        .btn-mini {
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+            touch-action: none; /* Prevents accidental iPad swipes */
+            -webkit-user-select: none;
+        }
+
+        .screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+
+        .active { display: flex; opacity: 1; }
+
+        /* UI ELEMENTS */
+        .btn-hilu {
+            position: absolute; top: 30px; left: 30px;
             background: rgba(0, 163, 108, 0.1);
             border: 1px solid var(--jade);
             color: var(--jade);
-            padding: 8px 15px;
+            padding: 10px 20px;
             border-radius: 50px;
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             letter-spacing: 2px;
+            z-index: 1000;
             cursor: pointer;
-            z-index: 10000;
         }
-        .phonetic { font-style: italic; opacity: 0.75; color: var(--gold); letter-spacing: 2px; font-size: 0.65rem; }
-        .title-row { display: flex; align-items: center; gap: 12px; }
-        .title-pronounce-btn {
-            background: transparent;
-            border: none;
-            color: #64748b;
-            cursor: pointer;
-            font-size: 1.25rem;
-            transition: color 0.25s ease;
-            padding: 0;
+
+        .phonetic { font-size: 0.6rem; opacity: 0.6; letter-spacing: 3px; text-transform: uppercase; margin-top: 5px; }
+
+        .instr-card {
+            background: rgba(0, 163, 108, 0.05);
+            border: 1px solid rgba(0, 163, 108, 0.3);
+            padding: 20px;
+            border-radius: 20px;
+            max-width: 280px;
+            text-align: center;
+            margin-bottom: 20px;
         }
-        .title-pronounce-btn:hover { color: var(--red); }
-        .text-white { color: #ffffff; }
-        .animate-pulse { animation: titlePulse 1.2s ease-in-out infinite; }
-        @keyframes titlePulse {
-            0%, 100% { opacity: 1; text-shadow: 0 0 0 rgba(255, 255, 255, 0); }
-            50% { opacity: 0.7; text-shadow: 0 0 14px rgba(255, 255, 255, 0.35); }
+
+        canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
+
+        #touch-layer {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 2;
         }
-        
-        #logic-input { width: 100%; background: rgba(255,255,255,0.05); border: 2px solid var(--teal); color: white; padding: 15px; border-radius: 12px; text-align: center; font-size: 1.2rem; margin-bottom: 15px; }
-        canvas { position: absolute; top: 0; left: 0; z-index: 1; }
-        #bio-tip { position: absolute; bottom: 30px; width: 80%; opacity: 0.6; font-size: 0.75rem; color: var(--gold); border-top: 1px solid rgba(251, 191, 36, 0.2); padding-top: 15px; pointer-events: none; transition: opacity 1s; }
     </style>
 </head>
 <body>
 
-    <div id="home" class="screen active">
-        <h1 style="color: var(--teal); opacity: 0.1; font-size: 0.7rem; letter-spacing: 5px;">HAWKIN THE HAT</h1>
-        <div class="title-row">
-            <h2 data-spirit="weaver" style="color: #ffffff; font-size: 2.25rem; font-weight: 900; letter-spacing: -0.02em; text-transform: uppercase; margin: 0;">SXT’EKW</h2>
-            <button onclick="playPronunciation('weaver')" class="title-pronounce-btn" aria-label="Play pronunciation">
-                🔊
+    <div id="screen-home" class="screen active">
+        <h1 style="letter-spacing: 12px; color: var(--jade); font-weight: 900; margin-bottom: 0;">SXT’EKW</h1>
+        <p class="phonetic">THE QUIET [ suh-t-ekw ]</p>
+
+        <div style="margin-top: 50px; width: 80%; max-width: 400px;">
+            <button class="menu-btn" onclick="startWeave()" style="background: var(--jade); color: var(--bg); border: none; width: 100%; padding: 20px; border-radius: 20px; font-weight: bold; margin-bottom: 15px;">
+                KW’ÉTL’EN <span class="phonetic" style="display:block; color: var(--bg);">[ THE WEAVE ]</span>
+            </button>
+            <button class="menu-btn" onclick="startPaxwad()" style="background: none; border: 1px solid var(--gold); color: var(--gold); width: 100%; padding: 20px; border-radius: 20px; font-weight: bold;">
+                P’ÁX̌WAD <span class="phonetic" style="display:block; color: var(--gold);">[ THE SPARK ]</span>
             </button>
         </div>
-        <p style="opacity: 0.5; font-size: 0.7rem; margin-bottom: 40px; letter-spacing: 4px;">THE QUIET <span style="font-style: italic;">[ suh-t-ekw ]</span></p>
-        <button class="btn emergency" onclick="playNativeSignal('still'); startProtocol();" style="background: var(--red); border: 3px solid var(--cedar); box-shadow: 0 10px 20px rgba(0,0,0,0.4);">
-            ST’ÉXEM
-            <span style="display: block; font-size: 0.6rem; opacity: 0.9; margin-top: 5px; font-weight: normal;">ST-EH-KHUM [ TO BE STILL ]</span>
-        </button>
-        <button class="btn" onclick="startPaxwad()">P’ÁX̌WAD SACCADES (10)</button>
-        <button class="btn gold-btn" onclick="playNativeSignal('weave'); startWeave();" style="margin-top: 15px;">
-            KW’ÉTL’EN
-            <span style="display: block; font-size: 0.6rem; opacity: 0.8; margin-top: 5px; font-weight: normal;">KW-ETH-LUHN [ TO WEAVE ]</span>
-        </button>
-        <button class="btn secondary" onclick="playNativeSignal('stop'); show('vantage')" style="margin-top: 25px; border: 1px solid var(--teal); color: var(--teal); border-radius: 50px; width: 70%;">
-            KW’ÉLAP
-            <span style="display: block; font-size: 0.5rem; opacity: 0.7; margin-top: 2px; font-weight: normal;">KW-EH-LAHP [ TO STOP ]</span>
-        </button>
-        <div id="audio-settings" style="margin: 20px 0; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; width: 100%; max-width: 360px;">
-            <p style="font-size: 0.7rem; opacity: 0.6; margin-bottom: 10px; letter-spacing: 2px;">AUDIO ENVIRONMENT</p>
-            <div style="display: flex; justify-content: space-around; gap: 10px;">
-                <button id="mode-headphone" class="btn secondary" style="font-size: 0.7rem; padding: 10px;" onclick="setAudioMode('headphone')">🎧 PHONES</button>
-                <button id="mode-speaker" class="btn secondary" style="font-size: 0.7rem; padding: 10px;" onclick="setAudioMode('speaker')">🔊 SPEAKER</button>
-                <button id="mode-silent" class="btn secondary" style="font-size: 0.7rem; padding: 10px;" onclick="setAudioMode('silent')">🔕 SILENT</button>
-            </div>
-            <p id="audio-notice" style="font-size: 0.6rem; color: var(--gold); margin-top: 10px; min-height: 12px; transition: 0.3s;"></p>
-        </div>
-        <div style="margin-top: 40px;"><a href="https://www.buymeacoffee.com/Hawkinthehat" target="_blank" style="color: var(--gold); text-decoration: none; font-size: 0.8rem;">SUPPORT THE FOUNDER ☕</a></div>
+        <div style="position: absolute; bottom: 40px; font-size: 0.5rem; letter-spacing: 2px; opacity: 0.4;">FOR JADE</div>
     </div>
 
-    <div id="logic-tunnel" class="screen">
-        <button class="btn-mini" onclick="exitToHome()" style="position: absolute; top: 20px; left: 20px; border: 1px solid var(--red); color: var(--red); background: rgba(244, 63, 94, 0.05);">
-            HÍLU <span style="font-style: italic; opacity: 0.6;">[ HEE-LOO ]</span>
-        </button>
-        <h2 style="color: var(--red); letter-spacing: 5px;">NEURAL LOCK</h2>
-        <p id="task-counter" style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 20px;">SYNC STATUS: 0/3</p>
-        <div id="task-box" style="background: rgba(255,255,255,0.03); padding: 30px; border-radius: 20px; width: 100%; max-width: 340px;">
-            <div id="task-display" style="font-size: 1.3rem; color: var(--teal); margin-bottom: 20px; min-height: 50px;">Initializing...</div>
-            <input type="text" id="logic-input" placeholder="Answer..." inputmode="text" autocomplete="off">
-            <button class="btn" onclick="checkLogic()">SUBMIT SIGNAL</button>
-        </div>
-        <button id="ready-btn" class="btn gold-btn" style="opacity: 0.15; pointer-events: none; margin-top: 20px;" onclick="attemptProceed()" disabled>LOCKED</button>
-        <div id="bio-tip">VAGAL HUM: Make a low 'Mmm' sound while you solve.</div>
-    </div>
+    <div id="screen-weave" class="screen">
+        <button class="btn-hilu" onclick="exitToHome()">HÍLU [ DEPART ]</button>
 
-    <div id="vantage" class="screen">
-        <div style="background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(8px); padding: 32px; border-radius: 24px; border: 1px solid rgba(45, 212, 191, 0.25); border-bottom: 4px solid rgba(45, 212, 191, 0.3); width: 100%; max-width: 420px; margin-bottom: 16px;">
-            <h2 style="color: #ffffff; font-size: 2.25rem; font-weight: 900; letter-spacing: -0.02em; text-transform: uppercase; margin: 0 0 4px 0;">
-                KW’ÉKW’E
-            </h2>
-            <p style="color: #2dd4bf; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3em; font-weight: 700; margin: 0 0 16px 0;">
-                Osprey Scout: Focus Protocol
-            </p>
-            <p style="color: #64748b; font-size: 11px; font-style: italic; line-height: 1.6; margin: 0;">
-                "The eye that sees through the surface to the logic beneath."
-            </p>
-        </div>
-        <input type="text" id="thought-input" placeholder="Worry Name..." style="background: rgba(255,255,255,0.05); border: 1px solid var(--teal); color: white; padding: 15px; border-radius: 15px; width: 80%; text-align: center; margin: 20px 0;">
-        <button class="btn" onclick="initVantage()">BEGIN OBSERVATION</button>
-        <button class="btn secondary" onclick="show('home')">BACK</button>
-    </div>
-
-    <div id="saccade-room" class="screen">
-        <button class="btn-mini" onclick="exitToHome()" style="position: absolute; top: 20px; left: 20px; border: 1px solid var(--jade); color: var(--jade);">
-            HÍLU <span style="font-style: italic; opacity: 0.6;">[ HEE-LOO ]</span>
-        </button>
-
-        <div style="margin-top: 80px; position: relative; z-index: 10;">
-            <h2 style="color: var(--jade); letter-spacing: 5px;">P’ÁX̌WAD</h2>
-            <p class="phonetic" style="margin-bottom: 20px;">PAH-KHW-AHD [ THE SPARK ]</p>
-
-            <div id="saccade-instr" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin: 0 auto; width: 80%; max-width: 300px; font-size: 0.7rem; line-height: 1.4; border: 1px dashed rgba(0, 163, 108, 0.3);">
-                <span style="color: var(--gold);">FOLLOW THE SPARK:</span><br>
-                Tap P’ÁX̌WAD 10 times.<br>
-                Move only your eyes, stay still.
-            </div>
+        <div id="weave-header" style="z-index: 5; text-align: center; position: absolute; top: 100px; pointer-events: none;">
+            <h2 id="animal-name" style="color: var(--jade); letter-spacing: 8px; margin: 0;"></h2>
+            <p id="animal-phonetic" class="phonetic"></p>
         </div>
 
-        <canvas id="saccade-canvas"></canvas>
-        <div id="saccade-count" style="position: absolute; bottom: 40px; width: 100%; font-size: 0.8rem; color: var(--jade); letter-spacing: 3px; z-index: 10;">
-            SYNCS: 0/10
-        </div>
-    </div>
-
-    <div id="visual" class="screen">
-        <canvas id="canvas"></canvas>
-        <button id="exit-room" class="btn-mini" onclick="exitToHome()" style="position: absolute; top: 20px; left: 20px;">
-            HÍLU <span style="font-style: italic; opacity: 0.6;">[ HEE-LOO ]</span>
-        </button>
-        <div id="vantage-display" style="position: absolute; top: 40%; width: 100%; text-align: center; pointer-events: none; z-index: 10;">
-            <h1 id="floating-thought" style="color: var(--text); font-size: 2rem; letter-spacing: 8px; opacity: 0; transition: 2s; text-transform: uppercase;"></h1>
-        </div>
-        <h3 id="visual-msg" style="position: absolute; bottom: 100px; width: 100%; color: var(--teal);">CATCH THE CLICK</h3>
-        <button class="btn secondary" style="position: absolute; top: 20px; right: 20px; width: 60px; height: 60px; border-radius: 50%;" onclick="exitAll()">✕</button>
-    </div>
-
-    <div id="weave" class="screen">
         <canvas id="weave-canvas"></canvas>
-        <div id="weave-instructions" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80%; pointer-events: none; z-index: 100; transition: 1.5s;">
-            <h2 style="color: var(--teal); letter-spacing: 5px;">THE WEAVE</h2>
-            <p style="color: var(--gold); font-weight: bold;">DRAG THUMB TO CONNECT DOTS<br><small style="font-weight: normal; opacity: 0.7;">Build the basket. Restore the quiet.</small></p>
-        </div>
-        <p id="weave-progress" style="position: absolute; top: 40px; opacity: 0.6;">0% WOVEN</p>
-        <button class="btn secondary" style="position: absolute; bottom: 40px; width: 60%;" onclick="exitAll()">EXIT TO CALM</button>
+        <div id="touch-layer" onmousedown="startLine(event)" onmousemove="drawLine(event)" onmouseup="endLine()" ontouchstart="startLine(event)" ontouchmove="drawLine(event)" ontouchend="endLine()"></div>
     </div>
 
-    <div id="elder-overlay" style="display: none; opacity: 0; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); z-index: 5000; flex-direction: column; justify-content: center; align-items: center; padding: 40px; backdrop-filter: blur(10px); transition: opacity 0.15s ease-out;">
-        <button class="btn-mini" onclick="exitToHome()" style="position: absolute; top: 20px; left: 20px; border: 1px solid var(--gold); color: var(--gold); background: rgba(251, 191, 36, 0.07);">
-            HÍLU <span style="font-style: italic; opacity: 0.6;">[ HEE-LOO ]</span>
-        </button>
-        <div style="border: 1px solid var(--gold); padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 30px rgba(251, 191, 36, 0.1);">
-            <h3 id="elder-title" style="color: var(--teal); letter-spacing: 3px; margin-top: 0;">MESSAGE</h3>
-            <p id="elder-msg" style="line-height: 1.6; color: var(--text); opacity: 0.9; margin: 20px 0;"></p>
-            <div style="width: 28px; height: 2px; margin: 0 auto 16px auto; background: rgba(251, 191, 36, 0.35); border-radius: 2px;"></div>
-            <button class="btn gold-btn" onclick="closeElder()">ACKNOWLEDGE</button>
+    <div id="screen-paxwad" class="screen">
+        <button class="btn-hilu" onclick="exitToHome()">HÍLU [ DEPART ]</button>
+
+        <div id="paxwad-instr" class="instr-card">
+            <span style="color: var(--gold); font-weight: 900;">STILLNESS RULE:</span><br>
+            Keep your head still.<br>Follow the spark with eyes only.
         </div>
+        <div id="spark-target" onclick="hitSpark()" style="position: absolute; width: 40px; height: 40px; background: var(--jade); border-radius: 50%; box-shadow: 0 0 20px var(--jade); cursor: pointer;"></div>
+        <div id="spark-count" style="position: absolute; bottom: 50px; color: var(--jade); font-size: 0.8rem; letter-spacing: 4px;">SYNCS: 0/10</div>
     </div>
 
     <script>
-        const canvas = document.getElementById('canvas'); const ctx = canvas.getContext('2d');
-        const saccadeCanvas = document.getElementById('saccade-canvas'); const sCtx = saccadeCanvas.getContext('2d');
-        const weaveCanvas = document.getElementById('weave-canvas'); const wCtx = weaveCanvas.getContext('2d');
-        let particles = [], weavePoints = [], mouse = { x: null, y: null }, audioCtx;
-        let leftOsc, rightOsc, masterGain, vantageMode = false, shatterPoint = false, weavingActive = false;
-        let featherX = 0, featherY = 0, featherAngle = 0, featherDir = 1;
-        let solvedCount = 0, currentTaskAnswer = "";
-        let saccadeTaps = 0, isSaccadicMode = false;
-        let currentAudioMode = 'headphone';
-        let protocolMode = false;
-        let canProceed = false;
-        let vantageShatterTimer = null;
-        let currentTargetText = "THE NOISE";
-        const rootStyles = getComputedStyle(document.documentElement);
-        const tealColor = rootStyles.getPropertyValue('--teal').trim() || "#2dd4bf";
-        const goldColor = rootStyles.getPropertyValue('--gold').trim() || "#fbbf24";
-        const jadeColor = rootStyles.getPropertyValue('--jade').trim() || tealColor;
-
-        const bioTips = [
-            "OWL EYES: Soften your gaze. See the screen edges without moving your head.",
-            "VAGAL HUM: Make a low 'Mmm' sound. Feel the vibration in your chest.",
-            "PERIPHERAL: Don't stare at the spark. Watch it with your side-vision.",
-            "VAGAL TONE: Take a long, slow exhale through pursed lips."
-        ];
-
-        // --- THE ELDER SYSTEM ---
-        function elderSpeak(title, message) {
-            document.getElementById('elder-title').innerText = title;
-            document.getElementById('elder-msg').innerText = message;
-            const overlay = document.getElementById('elder-overlay');
-            overlay.style.display = 'flex';
-            requestAnimationFrame(() => {
-                overlay.style.opacity = '1';
-            });
-        }
-
-        function closeElder() {
-            const overlay = document.getElementById('elder-overlay');
-            overlay.style.opacity = '0';
-            setTimeout(() => {
-                if (overlay.style.opacity === '0') overlay.style.display = 'none';
-            }, 160);
-        }
-
-        function playPronunciation(spirit) {
-            const title = document.querySelector(`[data-spirit="${spirit}"]`);
-            if (!title) return;
-
-            const audio = new Audio(`./assets/audio/${spirit}_pronunciation.mp3`);
-            title.classList.add('animate-pulse', 'text-white');
-            const clearPulse = () => title.classList.remove('animate-pulse');
-
-            audio.onended = clearPulse;
-            audio.onerror = clearPulse;
-            audio.play().catch(clearPulse);
-        }
-
-        function speakNative(word) {
-            if (!("speechSynthesis" in window)) return false;
-            try {
-                const msg = new SpeechSynthesisUtterance();
-                msg.text = word;
-                msg.rate = 0.8;
-                msg.pitch = 1;
-                window.speechSynthesis.cancel();
-                window.speechSynthesis.speak(msg);
-                return true;
-            } catch (_) {
-                return false;
-            }
-        }
-
-        const nativeAudio = {
-            still: new Audio("./assets/audio/stexem.mp3"),
-            weave: new Audio("./assets/audio/kwetlen.mp3"),
-            stop: new Audio("./assets/audio/kwelap.mp3")
-        };
-
-        const nativeSpeechMap = {
-            still: "St-eh-khum",
-            weave: "Kw-eth-luhn",
-            stop: "Kw-eh-lahp"
-        };
-
-        // Keep built-in voice as primary. Set to false when recorded audio should lead.
-        const preferBuiltInNativeVoice = true;
-
-        function playRecordedNativeAudio(key, fallbackWord) {
-            const sound = nativeAudio[key];
-            if (!sound) return false;
-
-            let fallbackUsed = false;
-            const fallback = () => {
-                if (fallbackUsed || !fallbackWord) return;
-                fallbackUsed = true;
-                speakNative(fallbackWord);
-            };
-
-            sound.volume = 0.6;
-            sound.currentTime = 0;
-            sound.onerror = fallback;
-            const playPromise = sound.play();
-            if (playPromise && typeof playPromise.catch === "function") {
-                playPromise.catch(fallback);
-            }
-            return true;
-        }
-
-        function playNativeSignal(key) {
-            if (currentAudioMode === "silent") return;
-            const word = nativeSpeechMap[key];
-
-            if (preferBuiltInNativeVoice) {
-                if (word && speakNative(word)) return;
-                playRecordedNativeAudio(key, word);
-                return;
-            }
-
-            if (playRecordedNativeAudio(key, word)) return;
-            if (word) speakNative(word);
-        }
-
-        function setAudioMode(mode) {
-            currentAudioMode = mode;
-            document.querySelectorAll('#audio-settings .btn').forEach((btn) => {
-                btn.style.borderColor = 'rgba(255,255,255,0.2)';
-                btn.style.color = 'rgba(255,255,255,0.6)';
-            });
-
-            const activeBtn = document.getElementById(`mode-${mode}`);
-            if (activeBtn) {
-                activeBtn.style.borderColor = tealColor;
-                activeBtn.style.color = tealColor;
-            }
-
-            const notice = document.getElementById('audio-notice');
-            if (!notice) return;
-            if (mode === 'headphone') notice.innerText = "OPTIMAL: Binaural Sync Active.";
-            else if (mode === 'speaker') notice.innerText = "AMBIENT: Best for open rooms.";
-            else notice.innerText = "SILENT: Visual & Haptic focus only.";
-        }
-
-        function stopNeuralAudio() {
-            [leftOsc, rightOsc].forEach((osc) => {
-                if (!osc) return;
-                try { osc.stop(); } catch (_) {}
-                try { osc.disconnect(); } catch (_) {}
-            });
-            if (masterGain) {
-                try { masterGain.disconnect(); } catch (_) {}
-            }
-            leftOsc = null;
-            rightOsc = null;
-            masterGain = null;
-        }
-
-        function playNeuralAudio() {
-            stopNeuralAudio();
-            if (currentAudioMode === 'silent') return;
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-
-            leftOsc = audioCtx.createOscillator();
-            rightOsc = audioCtx.createOscillator();
-            const leftPanner = audioCtx.createStereoPanner();
-            const rightPanner = audioCtx.createStereoPanner();
-            masterGain = audioCtx.createGain();
-            masterGain.gain.value = 0.05;
-
-            leftOsc.frequency.value = 432;
-            if (currentAudioMode === 'headphone') {
-                rightOsc.frequency.value = 438;
-                leftPanner.pan.value = -1;
-                rightPanner.pan.value = 1;
-            } else {
-                rightOsc.frequency.value = 432.5;
-                leftPanner.pan.value = 0;
-                rightPanner.pan.value = 0;
-            }
-
-            leftOsc.connect(leftPanner).connect(masterGain);
-            rightOsc.connect(rightPanner).connect(masterGain);
-            masterGain.connect(audioCtx.destination);
-            leftOsc.start();
-            rightOsc.start();
-        }
+        const screens = ['screen-home', 'screen-weave', 'screen-paxwad'];
 
         function show(id) {
-            if (id !== 'logic-tunnel') closeElder();
-            if (id === 'visual' && !vantageMode && protocolMode && solvedCount < 3) {
-                const taskDisplay = document.getElementById('task-display');
-                if (taskDisplay) taskDisplay.innerText = `Neural lock incomplete: ${solvedCount}/3`;
-                id = 'logic-tunnel';
-            }
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if (id === 'visual') startVisual();
-            if (id === 'home') exitAll();
-        }
-
-        // --- LOGIC TUNNEL ---
-        function startProtocol() {
-            closeElder();
-            solvedCount = 0;
-            protocolMode = true;
-            canProceed = false;
-            shatterPoint = false;
-            vantageMode = false;
-            elderSpeak("ST’ÉXEM", "The noise is high. Let us return to the quiet through the logic of the ancestors.");
-            const btn = document.getElementById('ready-btn');
-            btn.style.opacity = "0.15"; btn.style.pointerEvents = "none"; btn.disabled = true; btn.innerText = "LOCKED";
-            updateCounter(); show('logic-tunnel'); generateTask();
-        }
-
-        function generateTask() {
-            const display = document.getElementById('task-display'); const input = document.getElementById('logic-input');
-            const type = Math.floor(Math.random() * 2); input.value = ""; input.focus();
-            if (type === 0) {
-                const a = Math.floor(Math.random() * 12) + 8; const b = Math.floor(Math.random() * 9) + 4;
-                display.innerText = `Solve: ${a} + ${b}`; currentTaskAnswer = (a + b).toString();
-            } else {
-                const words = ["HAWKS", "SALISH", "CEDAR", "QUIET"];
-                const word = words[Math.floor(Math.random() * words.length)];
-                display.innerText = `Spell Backwards: ${word}`; currentTaskAnswer = word.split('').reverse().join('').toUpperCase();
-            }
-        }
-
-        function checkLogic() {
-            const inputEl = document.getElementById('logic-input');
-            const val = inputEl.value.toUpperCase().trim();
-            if (val && val === currentTaskAnswer) {
-                solvedCount++; if (navigator.vibrate) navigator.vibrate(20); updateCounter();
-                if (solvedCount >= 3) {
-                    const btn = document.getElementById('ready-btn');
-                    canProceed = true;
-                    btn.style.opacity = "1"; btn.style.pointerEvents = "auto"; btn.disabled = false; btn.innerText = "I AM READY TO WEAVE";
-                    if (solvedCount === 3) {
-                        elderSpeak("NEURAL LOCK", "The logic is restored. The Weaver is now open to you.");
-                    }
-                }
-                generateTask();
-            } else {
-                const taskBox = document.getElementById('task-box');
-                if (taskBox) {
-                    taskBox.style.border = "1px solid rgba(244, 63, 94, 0.6)";
-                    setTimeout(() => {
-                        taskBox.style.border = "1px solid rgba(45, 212, 191, 0.2)";
-                    }, 350);
-                }
-                elderSpeak("SYNC INTERRUPTED", "Pause. Breathe once. Then answer again.");
-            }
-            inputEl.value = "";
-            inputEl.focus();
-        }
-
-        function updateCounter() { document.getElementById('task-counter').innerText = `NEURAL SYNC: ${solvedCount}/3 ACHIEVED`; }
-
-        function attemptProceed() {
-            const btn = document.getElementById('ready-btn');
-            if (!protocolMode || solvedCount < 3 || !canProceed || btn.disabled) {
-                if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
-                document.getElementById('task-display').innerText = `Neural lock incomplete: ${solvedCount}/3`;
-                return;
-            }
-            closeElder();
-            shatterPoint = false;
-            vantageMode = false;
-            protocolMode = false;
-            canProceed = false;
-            btn.disabled = true;
-            btn.style.pointerEvents = "none";
-            document.getElementById('visual-msg').innerText = "FOLLOW THE LIGHT";
-            show('visual');
-        }
-
-        function startSaccade() {
-            startPaxwad();
-        }
-
-        function startPaxwad() {
-            saccadeTaps = 0;
-            isSaccadicMode = true;
-            protocolMode = false;
-            vantageMode = false;
-            shatterPoint = false;
-            closeElder();
-            show('saccade-room');
-            saccadeCanvas.width = window.innerWidth;
-            saccadeCanvas.height = window.innerHeight;
-            const instr = document.getElementById('saccade-instr');
-            if (instr) {
-                instr.style.opacity = "1";
-            }
-            document.getElementById('saccade-count').innerText = "SYNCS: 0/10";
-            moveSaccadeFeather();
-            playNeuralAudio();
-            animateSaccadeRoom();
-        }
-
-        function teleportFeather() {
-            const pad = 100;
-            featherX = Math.random() * (canvas.width - pad * 2) + pad;
-            featherY = Math.random() * (canvas.height - pad * 2) + pad;
-            if (navigator.vibrate) navigator.vibrate(15);
-        }
-
-        function moveSaccadeFeather() {
-            const pad = 80;
-            const canvas = document.getElementById('saccade-canvas');
-            if (!canvas) return;
-            featherX = Math.random() * (window.innerWidth - pad * 2) + pad;
-            featherY = Math.random() * (window.innerHeight - pad * 2) + pad;
-            if (navigator.vibrate) navigator.vibrate(20);
-            if (saccadeTaps === 3) {
-                const instr = document.getElementById('saccade-instr');
-                if (instr) {
-                    instr.style.opacity = "0";
-                    instr.style.transition = "opacity 1s";
-                }
-            }
-        }
-
-        function drawFeatherOn(targetCtx, x, y, angle) {
-            targetCtx.save();
-            targetCtx.translate(x, y);
-            targetCtx.rotate(angle);
-
-            targetCtx.strokeStyle = goldColor;
-            targetCtx.lineWidth = 2;
-            targetCtx.beginPath();
-            targetCtx.moveTo(0, -40);
-            targetCtx.lineTo(0, 40);
-            targetCtx.stroke();
-
-            targetCtx.fillStyle = tealColor;
-            targetCtx.globalAlpha = 0.6;
-            targetCtx.beginPath();
-            targetCtx.ellipse(0, 0, 15, 35, 0, 0, Math.PI * 2);
-            targetCtx.fill();
-
-            targetCtx.shadowBlur = 15;
-            targetCtx.shadowColor = tealColor;
-            targetCtx.stroke();
-            targetCtx.restore();
-        }
-
-        function drawFeather(x, y, angle) {
-            drawFeatherOn(ctx, x, y, angle);
-        }
-
-        function animateSaccadeRoom() {
-            if (!isSaccadicMode || !document.getElementById('saccade-room').classList.contains('active')) return;
-            sCtx.globalAlpha = 1;
-            sCtx.fillStyle = 'rgba(2, 6, 23, 0.2)';
-            sCtx.fillRect(0, 0, saccadeCanvas.width, saccadeCanvas.height);
-            featherAngle = Math.sin(Date.now() * 0.003) * 0.15;
-            drawFeatherOn(sCtx, featherX, featherY, featherAngle);
-            requestAnimationFrame(animateSaccadeRoom);
-        }
-
-        function handleSaccadeCatch(x, y) {
-            const inVisual = document.getElementById('visual').classList.contains('active');
-            const inSaccadeRoom = document.getElementById('saccade-room').classList.contains('active');
-            if (!isSaccadicMode || (!inVisual && !inSaccadeRoom)) return;
-            const d = Math.sqrt((x - featherX) ** 2 + (y - featherY) ** 2);
-            if (d < 120) {
-                saccadeTaps++;
-                if (navigator.vibrate) navigator.vibrate([20, 10, 20]);
-                if (saccadeTaps >= 10) {
-                    isSaccadicMode = false;
-                    elderSpeak("SYSTEM SYNCED", "Neural pathways cleared. The 'Quiet' is restored.");
-                    setTimeout(() => exitAll(), 1400);
-                } else {
-                    if (inSaccadeRoom) {
-                        document.getElementById('saccade-count').innerText = `SYNCS: ${saccadeTaps}/10`;
-                        moveSaccadeFeather();
-                    } else {
-                        document.getElementById('visual-msg').innerText = `CATCH P’ÁX̌WAD: ${saccadeTaps}/10`;
-                        teleportFeather();
-                    }
-                }
-            }
-        }
-
-        function seedVantageParticles() {
-            particles = [];
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            for (let i = 0; i < 90; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = 0.4 + Math.random() * 1.1;
-                particles.push({
-                    x: centerX + (Math.random() - 0.5) * 30,
-                    y: centerY + (Math.random() - 0.5) * 30,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed,
-                    life: 1
-                });
-            }
-        }
-
-        // --- ENHANCED KW’ÉLAP VANTAGE ---
-        function animateKwelap() {
-            if (!vantageMode || !document.getElementById('visual').classList.contains('active')) return;
-
-            ctx.globalAlpha = 1;
-            ctx.fillStyle = 'rgba(2, 6, 23, 0.2)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            if (!shatterPoint) {
-                ctx.save();
-                ctx.font = "bold 35px sans-serif";
-                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                const jitterX = (Math.random() - 0.5) * 2;
-                const jitterY = (Math.random() - 0.5) * 2;
-                ctx.fillText(currentTargetText, (canvas.width / 2) + jitterX, (canvas.height / 2) + jitterY);
-                ctx.restore();
-
-                const angle = Date.now() * 0.002;
-                const radius = 120;
-                const fx = (canvas.width / 2) + Math.cos(angle) * radius;
-                const fy = (canvas.height / 2) + Math.sin(angle) * radius;
-                drawFeather(fx, fy, angle + Math.PI / 2);
-            } else {
-                particles = particles.filter((p) => p.life > 0.01);
-                particles.forEach((p) => {
-                    p.x += p.vx * 3;
-                    p.y += p.vy * 3;
-                    ctx.strokeStyle = jadeColor;
-                    ctx.lineWidth = 1;
-                    ctx.globalAlpha = p.life;
-                    ctx.beginPath();
-                    ctx.moveTo(p.x, p.y);
-                    ctx.lineTo(p.x - p.vx * 10, p.y - p.vy * 10);
-                    ctx.stroke();
-                    p.life -= 0.01;
-                });
-                ctx.globalAlpha = 1;
-            }
-            requestAnimationFrame(animateKwelap);
-        }
-
-        // --- VANTAGE & VISUAL ---
-        function initVantage() {
-            const thoughtInput = document.getElementById('thought-input');
-            const thought = (thoughtInput ? thoughtInput.value : "").trim().toUpperCase() || "THE NOISE";
-            const display = document.getElementById('floating-thought');
-            if (!display) return;
-
-            if (vantageShatterTimer) {
-                clearTimeout(vantageShatterTimer);
-                vantageShatterTimer = null;
-            }
-            closeElder();
-            elderSpeak("KW’ÉLAP", "The movement stops here. Look at the signal until it loses its power to move you.");
-
-            vantageShatterTimer = setTimeout(() => {
-                closeElder();
-                vantageMode = true;
-                shatterPoint = false;
-                currentTargetText = thought;
-                show('visual');
-
-                display.innerText = "";
-                display.style.transform = "scale(1)";
-                display.style.filter = "blur(0px)";
-                display.style.opacity = "0";
-                document.getElementById('visual-msg').innerText = "THE SIGNAL IS HALTED";
-
-                vantageShatterTimer = setTimeout(() => {
-                    shatterPoint = true;
-                    seedVantageParticles();
-                    if (navigator.vibrate) navigator.vibrate([150, 100, 150]);
-                    document.getElementById('visual-msg').innerText = "RELEASED TO THE WIND";
-
-                    vantageShatterTimer = setTimeout(() => {
-                        exitAll();
-                    }, 4000);
-                }, 10000);
-            }, 3000);
-        }
-
-        function startVisual() {
-            shatterPoint = false;
-            closeElder();
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            featherX = canvas.width / 2;
-            featherY = canvas.height / 2;
-            featherAngle = 0;
-            featherDir = 1;
-            if (vantageMode) {
-                seedVantageParticles();
-                playNeuralAudio();
-                animateKwelap();
-                return;
-            }
-            particles = [];
-            for (let i = 0; i < 30; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    opacity: Math.random()
-                });
-            }
-            playNeuralAudio();
-            animate();
-        }
-
-        function animate() {
-            if (!document.getElementById('visual').classList.contains('active')) return;
-            if (vantageMode) return;
-            ctx.globalAlpha = 1;
-            ctx.fillStyle = 'rgba(2, 6, 23, 0.2)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            if (!shatterPoint) {
-                if (isSaccadicMode) {
-                    featherAngle = Math.sin(Date.now() * 0.003) * 0.15;
-                    drawFeather(featherX, featherY, featherAngle);
-                } else {
-                    featherX += (5 * featherDir);
-                    featherY = (canvas.height / 2) + Math.sin(Date.now() * 0.002) * 50;
-                    featherAngle = Math.sin(Date.now() * 0.002) * 0.3;
-                    if (featherX >= canvas.width - 60 || featherX <= 60) {
-                        featherDir *= -1;
-                        if (navigator.vibrate) navigator.vibrate(35);
-                    }
-                    drawFeather(featherX, featherY, featherAngle);
-                }
-            } else {
-                particles.forEach(p => {
-                    p.y += 2;
-                    if (p.y > canvas.height) p.y = 0;
-                    ctx.fillStyle = goldColor;
-                    ctx.globalAlpha = p.opacity;
-                    ctx.fillRect(p.x, p.y, 2, 2);
-                });
-            }
-            requestAnimationFrame(animate);
-        }
-
-        // --- WEAVER ---
-        function startWeave() {
-            closeElder();
-            weavingActive = true; show('weave');
-            const instr = document.getElementById('weave-instructions');
-            instr.style.opacity = "1"; setTimeout(() => instr.style.opacity = "0", 3500);
-            weaveCanvas.width = window.innerWidth; weaveCanvas.height = window.innerHeight;
-            weavePoints = []; const cols = 7, rows = 9;
-            for(let i=0; i<cols; i++) for(let j=0; j<rows; j++) weavePoints.push({ x: (weaveCanvas.width / (cols + 1)) * (i + 1), y: (weaveCanvas.height / (rows + 1)) * (j + 1), locked: false });
-            animateWeave();
-        }
-
-        function animateWeave() {
-            if (!weavingActive) return;
-            
-            // Create a "Trailing" effect by not clearing the canvas fully
-            wCtx.fillStyle = 'rgba(2, 6, 23, 0.15)';
-            wCtx.fillRect(0, 0, weaveCanvas.width, weaveCanvas.height);
-            
-            let locked = 0;
-            const time = Date.now() * 0.002; // Used for the "Pulse"
-
-            weavePoints.forEach(p => {
-                // Floating movement (The "Current")
-                if (!p.locked) {
-                    p.x += Math.sin(time + p.y) * 0.5;
-                    p.y += Math.cos(time + p.x) * 0.5;
-                }
-
-                let d = Math.sqrt((mouse.x - p.x)**2 + (mouse.y - p.y)**2);
-                if (d < 55 && !p.locked) {
-                    p.locked = true;
-                    if (navigator.vibrate) navigator.vibrate(10);
-                }
-                
-                if (p.locked) {
-                    locked++;
-                    // Glowing Core
-                    wCtx.shadowBlur = 15;
-                    wCtx.shadowColor = goldColor;
-                    wCtx.fillStyle = goldColor;
-                    wCtx.beginPath(); wCtx.arc(p.x, p.y, 4, 0, Math.PI*2); wCtx.fill();
-                    wCtx.shadowBlur = 0;
-
-                    // Thread Connections
-                    weavePoints.forEach(p2 => {
-                        if (p2.locked && Math.sqrt((p2.x - p.x)**2 + (p2.y - p.y)**2) < 140) {
-                            wCtx.strokeStyle = `rgba(251, 191, 36, ${0.2 + Math.sin(time) * 0.1})`;
-                            wCtx.lineWidth = 2;
-                            wCtx.beginPath(); wCtx.moveTo(p.x, p.y); wCtx.lineTo(p2.x, p2.y); wCtx.stroke();
-                        }
-                    });
-                } else {
-                    // Subtle "Breathing" for uncollected dots
-                    wCtx.fillStyle = `rgba(45, 212, 191, ${0.1 + Math.sin(time) * 0.05})`;
-                    wCtx.beginPath(); wCtx.arc(p.x, p.y, 2, 0, Math.PI*2); wCtx.fill();
-                }
-            });
-
-            let percent = Math.round(locked / weavePoints.length * 100);
-            document.getElementById('weave-progress').innerText = `${percent}% WOVEN`;
-            
-            if (percent >= 100) {
-                document.getElementById('weave-progress').innerText = "NEURAL SYNC COMPLETE";
-                // Flash effect
-                wCtx.fillStyle = "rgba(255, 255, 255, 0.05)";
-                wCtx.fillRect(0, 0, weaveCanvas.width, weaveCanvas.height);
-            }
-            
-            requestAnimationFrame(animateWeave);
-        }
-
-        // --- GLOBAL CONTROLS ---
-        // Prevent browser swipe/back-refresh gestures while weaving.
-        window.addEventListener('touchmove', function(e) {
-            if (weavingActive && e.cancelable) e.preventDefault();
-        }, { passive: false });
-
-        function handleInput(e) {
-            const touch = e.touches && e.touches[0];
-            const clientX = touch ? touch.clientX : e.clientX;
-            const clientY = touch ? touch.clientY : e.clientY;
-            mouse.x = clientX;
-            mouse.y = clientY;
-        }
-
-        window.addEventListener('touchstart', handleInput, { passive: false });
-        window.addEventListener('touchmove', handleInput, { passive: false });
-        window.addEventListener('mousedown', e => { handleInput(e); handleSaccadeCatch(e.clientX, e.clientY); });
-        window.addEventListener('touchend', e => {
-            if (!e.changedTouches || !e.changedTouches[0]) return;
-            handleSaccadeCatch(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-        });
-        document.getElementById('logic-input').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') checkLogic();
-        });
-
-        function exitAll() {
-            weavingActive = false; vantageMode = false; shatterPoint = false;
-            protocolMode = false;
-            canProceed = false;
-            currentTargetText = "THE NOISE";
-            closeElder();
-            isSaccadicMode = false;
-            saccadeTaps = 0;
-            stopNeuralAudio();
-            if (saccadeCanvas && sCtx) {
-                sCtx.clearRect(0, 0, saccadeCanvas.width, saccadeCanvas.height);
-            }
-            const saccadeCountEl = document.getElementById('saccade-count');
-            if (saccadeCountEl) saccadeCountEl.innerText = "SYNCS: 0/10";
-            const saccadeInstr = document.getElementById('saccade-instr');
-            if (saccadeInstr) saccadeInstr.style.opacity = "1";
-            if (vantageShatterTimer) {
-                clearTimeout(vantageShatterTimer);
-                vantageShatterTimer = null;
-            }
-            const display = document.getElementById('floating-thought');
-            if (display) {
-                display.style.opacity = "0";
-                display.style.transform = "scale(1)";
-                display.style.filter = "blur(0px)";
-                display.innerText = "";
-            }
-            document.getElementById('visual-msg').innerText = "CATCH THE CLICK";
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('home').classList.add('active');
+            screens.forEach((s) => document.getElementById(s).classList.remove('active'));
+            const target = document.getElementById(id);
+            target.classList.add('active');
         }
 
         function exitToHome() {
-            closeElder();
-            const activeScreen = document.querySelector('.screen.active');
-            if (activeScreen) {
-                activeScreen.style.transition = 'opacity 0.8s ease';
-                activeScreen.style.opacity = '0';
-            }
-
-            if (navigator.vibrate) navigator.vibrate(30);
-
-            if (audioCtx && masterGain) {
-                try {
-                    const now = audioCtx.currentTime;
-                    const startGain = Math.max(masterGain.gain.value || 0.05, 0.0001);
-                    masterGain.gain.cancelScheduledValues(now);
-                    masterGain.gain.setValueAtTime(startGain, now);
-                    masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
-                } catch (_) {}
-
-                setTimeout(() => {
-                    stopNeuralAudio();
-                    try { audioCtx.close(); } catch (_) {}
-                    audioCtx = null;
-                }, 600);
-            }
-
-            setTimeout(() => {
-                solvedCount = 0;
-                currentTaskAnswer = "";
-                saccadeTaps = 0;
-                const input = document.getElementById('logic-input');
-                if (input) input.value = "";
-                show('home');
-                if (activeScreen) {
-                    activeScreen.style.opacity = '1';
-                    activeScreen.style.transition = '';
-                }
-            }, 800);
+            if (navigator.vibrate) navigator.vibrate(20);
+            show('screen-home');
         }
 
-        // Rotating Tips
-        let tipIdx = 0;
-        setInterval(() => {
-            const tip = document.getElementById('bio-tip');
-            if(tip) { tip.style.opacity = "0"; setTimeout(() => { tipIdx = (tipIdx + 1) % bioTips.length; tip.innerText = bioTips[tipIdx]; tip.style.opacity = "0.6"; }, 1000); }
-        }, 10000);
+        // --- WEAVING LOGIC (STARS) ---
+        const constellationData = [
+            { name: "SQUWAL'QUW", phon: "SK-WALL-KW", stars: [{ x: 0.5, y: 0.3 }, { x: 0.4, y: 0.5 }, { x: 0.6, y: 0.5 }, { x: 0.5, y: 0.7 }] },
+            { name: "STIQÍYU’", phon: "STEE-KEE-YOO", stars: [{ x: 0.2, y: 0.4 }, { x: 0.4, y: 0.3 }, { x: 0.6, y: 0.3 }, { x: 0.8, y: 0.4 }, { x: 0.5, y: 0.6 }] }
+        ];
 
-        setAudioMode(currentAudioMode);
+        let currentLevel = 0;
+        const canvas = document.getElementById('weave-canvas');
+        const ctx = canvas.getContext('2d');
+        const jadeColor = getComputedStyle(document.documentElement).getPropertyValue('--jade').trim() || '#00a36c';
+        let drawing = false;
+        let lastPoint = null;
+
+        function startWeave() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            updateAnimalText();
+            show('screen-weave');
+            requestAnimationFrame(animateStars);
+        }
+
+        function updateAnimalText() {
+            const data = constellationData[currentLevel];
+            document.getElementById('animal-name').innerText = data.name;
+            document.getElementById('animal-phonetic').innerText = data.phon;
+        }
+
+        function animateStars() {
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Subtle Twinkle Logic
+            const time = Date.now() * 0.002;
+            const data = constellationData[currentLevel];
+
+            data.stars.forEach((s) => {
+                const x = s.x * canvas.width;
+                const y = s.y * canvas.height;
+                const twinkle = Math.sin(time + x) * 0.3 + 0.7;
+
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(0, 163, 108, ${twinkle})`;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = jadeColor;
+                ctx.fill();
+            });
+
+            if (document.getElementById('screen-weave').classList.contains('active')) {
+                requestAnimationFrame(animateStars);
+            }
+        }
+
+        function getEventPoint(event) {
+            const touch = event.touches && event.touches[0];
+            if (touch) return { x: touch.clientX, y: touch.clientY };
+            return { x: event.clientX, y: event.clientY };
+        }
+
+        function startLine(event) {
+            if (event.cancelable) event.preventDefault();
+            drawing = true;
+            lastPoint = getEventPoint(event);
+        }
+
+        function drawLine(event) {
+            if (!drawing) return;
+            if (event.cancelable) event.preventDefault();
+            const nextPoint = getEventPoint(event);
+            if (!lastPoint || !nextPoint) return;
+            ctx.beginPath();
+            ctx.moveTo(lastPoint.x, lastPoint.y);
+            ctx.lineTo(nextPoint.x, nextPoint.y);
+            ctx.strokeStyle = `rgba(251, 191, 36, 0.85)`;
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#fbbf24';
+            ctx.stroke();
+            lastPoint = nextPoint;
+        }
+
+        function endLine() {
+            drawing = false;
+            lastPoint = null;
+        }
+
+        // --- SPARK LOGIC (PAXWAD) ---
+        let count = 0;
+        function startPaxwad() {
+            count = 0;
+            updateSparkCount();
+            moveSpark();
+            show('screen-paxwad');
+            document.getElementById('paxwad-instr').style.opacity = 1;
+        }
+
+        function hitSpark() {
+            count++;
+            updateSparkCount();
+            if (navigator.vibrate) navigator.vibrate(30);
+            if (count >= 3) document.getElementById('paxwad-instr').style.opacity = 0;
+
+            if (count >= 10) {
+                exitToHome();
+            } else {
+                moveSpark();
+            }
+        }
+
+        function moveSpark() {
+            const target = document.getElementById('spark-target');
+            const x = Math.random() * (window.innerWidth - 100) + 50;
+            const y = Math.random() * (window.innerHeight - 100) + 50;
+            target.style.left = x + 'px';
+            target.style.top = y + 'px';
+        }
+
+        function updateSparkCount() {
+            document.getElementById('spark-count').innerText = `SYNCS: ${count}/10`;
+        }
+
+        // Resize handler for iPad rotation
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
     </script>
 </body>
 </html>
