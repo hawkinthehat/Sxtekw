@@ -28,10 +28,22 @@
         .phonetic { font-size: 0.5rem; letter-spacing: 3px; color: var(--text); opacity: 0.5; margin-top: 4px; text-transform: uppercase; }
 
         /* NEURAL HIJACK */
-        #logic-q { font-size: 1.6rem; color: var(--gold); margin-bottom: 20px; min-height: 1.5em; text-align: center; }
-        #logic-input { background: none; border-bottom: 2px solid var(--gold); border-top: none; border-left: none; border-right: none; color: white; width: 100%; text-align: center; font-size: 2rem; outline: none; text-transform: uppercase; }
-        #prog-dots { font-size: 1.5rem; letter-spacing: 15px; color: var(--red); margin-top: 30px; opacity: 0.2; }
-        #refocus-msg { font-size: 0.6rem; letter-spacing: 2px; color: var(--red); opacity: 0; margin-top: 16px; transition: opacity 0.3s ease; }
+        #logic-q { font-size: 1.4rem; color: var(--gold); margin-bottom: 20px; min-height: 1.5em; text-align: center; line-height: 1.4; }
+        #prog-dots { font-size: 1.5rem; letter-spacing: 15px; color: var(--gold); margin-top: 30px; opacity: 0.9; }
+        #refocus-msg { font-size: 0.6rem; letter-spacing: 2px; color: var(--gold); opacity: 0.85; margin-top: 16px; transition: opacity 0.3s ease; }
+        #spark-next { background: none; border: 1px solid var(--gold); color: var(--gold); padding: 10px 24px; letter-spacing: 3px; font-size: 0.6rem; cursor: pointer; }
+        #spark-next:active { background: rgba(251, 191, 36, 0.1); }
+        #halt-thought {
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            width: 80%;
+            height: 100px;
+            padding: 15px;
+            text-align: center;
+            outline: none;
+        }
+        #halt-thought::placeholder { color: rgba(251, 191, 36, 0.75); }
 
         /* EMDR FEATHER */
         #feather {
@@ -76,13 +88,13 @@
         <div id="hijack-layer" style="text-align: center; width: 80%;">
             <p style="font-size: 0.5rem; color: var(--gold); letter-spacing: 5px;">ST’ÉXEM [ STILL ]</p>
             <div id="logic-q"></div>
-            <input type="text" id="logic-input" autocomplete="off" oninput="checkLogic()">
+            <button id="spark-next" onclick="advanceSparkPrompt()">NEXT</button>
             <div id="prog-dots">● ● ●</div>
-            <div id="refocus-msg">REFOCUS</div>
+            <div id="refocus-msg">FOLLOW THE LEAD-IN</div>
         </div>
 
         <div id="feather" onclick="hitFeather()"></div>
-        <div id="spark-count" style="position: absolute; bottom: 50px; color: #111; letter-spacing: 8px; font-size: 0.7rem;">0 / 10</div>
+        <div id="spark-count" style="position: absolute; bottom: 50px; color: var(--gold); letter-spacing: 8px; font-size: 0.7rem;">0 / 10</div>
     </div>
 
     <div id="screen-weave" class="screen">
@@ -98,25 +110,46 @@
     <div id="screen-kwelap" class="screen">
         <button class="btn-hilu" onclick="exitToHome()">HÍLU</button>
         <div style="text-align: center; width: 100%; z-index: 20;">
-            <p class="phonetic" style="margin-bottom: 20px;">NAME THE THOUGHT</p>
-            <textarea id="halt-thought" placeholder="..." onkeypress="handleHalt(event)" style="background: none; border: 1px solid #111; color: white; width: 80%; height: 100px; padding: 15px; text-align: center;"></textarea>
-            <p style="font-size: 0.5rem; color: var(--red); opacity: 0.3; letter-spacing: 2px; margin-top: 20px;">ENTER TO UNWEAVE</p>
+            <p class="phonetic" style="margin-bottom: 20px; color: var(--gold); opacity: 0.9;">NAME THE THOUGHT</p>
+            <textarea id="halt-thought" placeholder="NAME IT. RELEASE IT." onkeypress="handleHalt(event)"></textarea>
+            <p style="font-size: 0.5rem; color: var(--gold); opacity: 0.85; letter-spacing: 2px; margin-top: 20px;">ENTER TO UNWEAVE</p>
         </div>
     </div>
 
     <script>
         const totems = [
-            { name: "SQUWAL'QUW", phonetic: "[ sk-wahl-koo ] RAVEN", points: [{x: 0.5, y: 0.2}, {x: 0.3, y: 0.5}, {x: 0.7, y: 0.5}, {x: 0.5, y: 0.8}, {x: 0.5, y: 0.2}] },
-            { name: "STIQÍYU’", phonetic: "[ stee-kee-yoo ] WOLF", points: [{x: 0.1, y: 0.4}, {x: 0.5, y: 0.3}, {x: 0.9, y: 0.4}, {x: 0.5, y: 0.8}, {x: 0.1, y: 0.4}] }
+            {
+                name: "SQUWAL'QUW",
+                phonetic: "[ sk-wahl-koo ] RAVEN",
+                points: [
+                    {x: 0.2, y: 0.58}, {x: 0.36, y: 0.45}, {x: 0.5, y: 0.34}, {x: 0.64, y: 0.43},
+                    {x: 0.78, y: 0.56}, {x: 0.62, y: 0.62}, {x: 0.54, y: 0.73}, {x: 0.4, y: 0.71}, {x: 0.28, y: 0.62}
+                ],
+                links: [[0,1], [1,2], [2,3], [3,4], [4,5], [5,6], [6,7], [7,8], [8,0], [1,5], [2,6], [3,7]]
+            },
+            {
+                name: "STIQÍYU’",
+                phonetic: "[ stee-kee-yoo ] WOLF",
+                points: [
+                    {x: 0.14, y: 0.62}, {x: 0.24, y: 0.49}, {x: 0.35, y: 0.42}, {x: 0.48, y: 0.4},
+                    {x: 0.63, y: 0.42}, {x: 0.76, y: 0.5}, {x: 0.86, y: 0.62}, {x: 0.7, y: 0.69}, {x: 0.5, y: 0.73}, {x: 0.3, y: 0.7}
+                ],
+                links: [[0,1], [1,2], [2,3], [3,4], [4,5], [5,6], [6,7], [7,8], [8,9], [9,0], [2,7], [3,8], [4,9]]
+            }
         ];
 
         let currentLevel = 0;
         let isDrawing = false;
         let userPath = [];
-        let correctCount = 0;
-        let currentAns = "";
+        let promptIndex = 0;
         let sparkCount = 0;
         let fSide = 0;
+        const sparkPrompts = [
+            "SET YOUR SHOULDERS LOW. BREATHE IN FOR 4.",
+            "HOLD STILL. TRACK ONLY THE SPARK.",
+            "EXHALE SLOWLY. LET THE THOUGHT PASS.",
+            "YOU ARE READY FOR P’ÁX̌WAD."
+        ];
 
         function startSection(type) {
             const targetScreen = document.getElementById(`screen-${type}`);
@@ -136,52 +169,30 @@
         }
 
         /* --- ST’ÉXEM / PAXWAD --- */
-        const logicTasks = [
-            { q: () => { const a = Math.floor(Math.random() * 9) + 2; const b = Math.floor(Math.random() * 8) + 3; return { txt: `${a} x ${b}`, ans: (a * b).toString() }; } },
-            { q: () => { const words = ["RAVEN", "WOLF", "ELK", "CEDAR", "SALMON"]; const w = words[Math.floor(Math.random() * words.length)]; return { txt: `REVERSE: ${w}`, ans: w.split('').reverse().join('') }; } },
-            { q: () => { const n = Math.floor(Math.random() * 6) + 4; return { txt: "● ".repeat(n), ans: n.toString() }; } }
-        ];
-
         function initHijack() {
-            correctCount = 0;
+            promptIndex = 0;
             document.getElementById('hijack-layer').style.display = 'block';
-            document.getElementById('logic-input').style.display = 'block';
-            document.getElementById('refocus-msg').style.opacity = 0;
+            document.getElementById('spark-next').style.display = 'inline-block';
+            document.getElementById('refocus-msg').style.opacity = 0.85;
             document.getElementById('feather').style.display = 'none';
-            document.getElementById('prog-dots').style.opacity = 0.2;
-            nextTask();
+            showSparkPrompt();
         }
 
-        function nextTask() {
-            const t = logicTasks[Math.floor(Math.random() * logicTasks.length)].q();
-            document.getElementById('logic-q').innerText = t.txt;
-            currentAns = t.ans;
-            document.getElementById('logic-input').value = "";
-            document.getElementById('logic-input').focus();
+        function showSparkPrompt() {
+            const dots = sparkPrompts.map((_, i) => i <= promptIndex ? "●" : "○").join(" ");
+            document.getElementById('logic-q').innerText = sparkPrompts[promptIndex];
+            document.getElementById('prog-dots').innerText = dots;
+            document.getElementById('spark-next').innerText = promptIndex >= sparkPrompts.length - 1 ? "BEGIN SPARK" : "NEXT";
         }
 
-        function checkLogic() {
-            const val = document.getElementById('logic-input').value.toUpperCase();
-            if (val === currentAns) {
-                correctCount++;
-                if (navigator.vibrate) navigator.vibrate(40);
-
-                if (correctCount >= 3) {
-                    document.getElementById('logic-q').innerText = "STABILIZED";
-                    document.getElementById('logic-input').style.display = "none";
-                    setTimeout(startFeather, 800);
-                } else {
-                    document.getElementById('prog-dots').style.opacity = (correctCount / 3);
-                    setTimeout(nextTask, 250);
-                }
-            } else if (val.length >= currentAns.length && val !== currentAns) {
-                correctCount = 0;
-                document.getElementById('prog-dots').style.opacity = 0.2;
-                const msg = document.getElementById('refocus-msg');
-                msg.style.opacity = 1;
-                if (navigator.vibrate) navigator.vibrate([20, 50, 20]);
-                setTimeout(() => { msg.style.opacity = 0; nextTask(); }, 1200);
+        function advanceSparkPrompt() {
+            if (navigator.vibrate) navigator.vibrate(25);
+            promptIndex++;
+            if (promptIndex >= sparkPrompts.length) {
+                startFeather();
+                return;
             }
+            showSparkPrompt();
         }
 
         function startFeather() {
@@ -235,10 +246,39 @@
 
             ctx.setLineDash([]);
             const totem = totems[currentLevel];
-            totem.points.forEach(p => {
+            const pxPoints = totem.points.map(p => ({ x: p.x * canvas.width, y: p.y * canvas.height }));
+
+            // Draw interlocking weave strands between constellation dots.
+            totem.links.forEach((link, i) => {
+                const a = pxPoints[link[0]];
+                const b = pxPoints[link[1]];
+                const pulse = Math.sin(Date.now() * 0.004 + i) * 0.15 + 0.45;
+
+                ctx.strokeStyle = `rgba(251, 191, 36, ${pulse})`;
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y);
+                ctx.lineTo(b.x, b.y);
+                ctx.stroke();
+
+                const mx = (a.x + b.x) / 2;
+                const my = (a.y + b.y) / 2;
+                if (i % 2 === 1) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.95)';
+                    ctx.beginPath();
+                    ctx.arc(mx, my, 3.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.fillStyle = 'rgba(251, 191, 36, 0.95)';
+                ctx.beginPath();
+                ctx.arc(mx, my, 2.1, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            totem.points.forEach((p, i) => {
                 const twinkle = Math.sin(Date.now() * 0.003 + p.x) * 0.3 + 0.7;
                 ctx.beginPath();
-                ctx.arc(p.x * canvas.width, p.y * canvas.height, 5, 0, Math.PI * 2);
+                ctx.arc(pxPoints[i].x, pxPoints[i].y, 5.5, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(251, 191, 36, ${twinkle})`;
                 ctx.fill();
             });
@@ -273,7 +313,7 @@
                     box.style.opacity = '1';
                     box.style.transform = 'none';
                     box.style.transition = 'none';
-                    box.style.color = 'white';
+                    box.style.color = 'var(--gold)';
                     exitToHome();
                 }, 2600);
             }
