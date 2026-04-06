@@ -85,6 +85,11 @@
 
         let currentLevel = 0;
         let sparkCount = 0;
+        let activePath = [];
+        let completedPaths = [];
+        let isDrawing = false;
+        let weaveInputBound = false;
+        let lastSnappedStar = -1;
 
         function startSection(type) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -98,26 +103,117 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-home').classList.add('active');
             document.getElementById('spark-target').style.display = 'none';
+            isDrawing = false;
+            activePath = [];
         }
 
         function initWeave() {
             const canvas = document.getElementById('weave-canvas');
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            completedPaths = [];
+            activePath = [];
+            isDrawing = false;
+            lastSnappedStar = -1;
             document.getElementById('animal-name').innerText = constellations[currentLevel].name;
+            bindWeaveInput();
             renderStars();
         }
 
+        function bindWeaveInput() {
+            if (weaveInputBound) return;
+            weaveInputBound = true;
+            window.addEventListener('mousedown', startPath);
+            window.addEventListener('mousemove', movePath);
+            window.addEventListener('mouseup', endPath);
+            window.addEventListener('touchstart', startPath, { passive: false });
+            window.addEventListener('touchmove', movePath, { passive: false });
+            window.addEventListener('touchend', endPath);
+        }
+
+        function startPath(e) {
+            if (!document.getElementById('screen-weave').classList.contains('active')) return;
+            if (e.cancelable) e.preventDefault();
+            isDrawing = true;
+            activePath = [getPos(e)];
+        }
+
+        function movePath(e) {
+            if (!isDrawing || !document.getElementById('screen-weave').classList.contains('active')) return;
+            if (e.cancelable) e.preventDefault();
+            const pos = getPos(e);
+            activePath.push(pos);
+
+            const canvas = document.getElementById('weave-canvas');
+            if (!canvas) return;
+            const data = constellations[currentLevel];
+            let snappedTo = -1;
+
+            data.stars.forEach((s, idx) => {
+                const sx = s.x * canvas.width;
+                const sy = s.y * canvas.height;
+                const dist = Math.hypot(pos.x - sx, pos.y - sy);
+                if (dist < 30) snappedTo = idx;
+            });
+
+            if (snappedTo !== -1 && snappedTo !== lastSnappedStar) {
+                if (navigator.vibrate) navigator.vibrate(10);
+                lastSnappedStar = snappedTo;
+            } else if (snappedTo === -1) {
+                lastSnappedStar = -1;
+            }
+        }
+
+        function endPath() {
+            if (isDrawing && activePath.length > 0) {
+                completedPaths.push([...activePath]);
+            }
+            isDrawing = false;
+            activePath = [];
+            lastSnappedStar = -1;
+        }
+
+        function getPos(e) {
+            const touch = e.touches?.[0] || e.changedTouches?.[0];
+            const point = touch || e;
+            return { x: point.clientX, y: point.clientY };
+        }
+
         function renderStars() {
-            const ctx = document.getElementById('weave-canvas').getContext('2d');
+            const canvas = document.getElementById('weave-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#020617';
-            ctx.fillRect(0,0,innerWidth,innerHeight);
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+
+            ctx.strokeStyle = 'rgba(0, 163, 108, 0.4)';
+            ctx.lineWidth = 2;
+            completedPaths.forEach(path => {
+                if (path.length === 0) return;
+                ctx.beginPath();
+                path.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+                ctx.stroke();
+            });
+
+            if (isDrawing && activePath.length > 0) {
+                ctx.strokeStyle = 'rgba(0, 163, 108, 0.9)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                activePath.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+                ctx.stroke();
+            }
+
             const data = constellations[currentLevel];
             data.stars.forEach(s => {
                 const twinkle = Math.sin(Date.now() * 0.002 + s.x * 1000) * 0.3 + 0.7;
                 ctx.beginPath();
-                ctx.arc(s.x * innerWidth, s.y * innerHeight, 6, 0, Math.PI*2);
+                ctx.arc(s.x * canvas.width, s.y * canvas.height, 6, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(0, 163, 108, ${twinkle})`;
-                ctx.shadowBlur = 15; ctx.shadowColor = "var(--jade)";
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#00A36C';
                 ctx.fill();
             });
             if (document.getElementById('screen-weave').classList.contains('active')) requestAnimationFrame(renderStars);
