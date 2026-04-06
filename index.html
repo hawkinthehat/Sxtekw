@@ -3,259 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SXT’EKW | The Quiet</title>
+    <title>SXT’EKW | Warrior Edition</title>
     <style>
-        :root { --bg: #020617; --jade: #00A36C; --gold: #fbbf24; --text: #f1f5f9; }
+        :root { --bg: #000; --jade: #00A36C; --gold: #fbbf24; --text: #f1f5f9; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; touch-action: none; -webkit-user-select: none; }
-        
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.8s ease; z-index: 10; }
-        .active { display: flex; opacity: 1; }
 
-        .btn-hilu { position: absolute; top: 30px; left: 30px; background: rgba(0, 163, 108, 0.1); border: 1px solid var(--jade); color: var(--jade); padding: 10px 20px; border-radius: 50px; font-size: 0.7rem; letter-spacing: 2px; z-index: 1000; cursor: pointer; }
-        
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 90%; max-width: 500px; margin-top: 40px; }
-        .menu-btn { background: rgba(255,255,255,0.03); border: 1px solid rgba(0, 163, 108, 0.3); color: var(--text); padding: 25px 10px; border-radius: 20px; font-weight: bold; cursor: pointer; text-align: center; }
-        .menu-btn:hover { border-color: var(--jade); background: rgba(0, 163, 108, 0.05); }
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
+        .active { display: flex; }
 
-        .instr-card { background: rgba(0, 163, 108, 0.05); border: 2px solid var(--jade); padding: 20px; border-radius: 20px; max-width: 280px; text-align: center; z-index: 20; }
-        
+        /* KINETIC LOGO PULSE */
+        @keyframes beat {
+            0% { transform: scale(1); filter: brightness(1); }
+            10% { transform: scale(1.1); filter: brightness(1.5); box-shadow: 0 0 40px var(--jade); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+        .pulse-active { animation: beat 0.468s infinite; } /* 128 BPM Sync */
+
+        /* BUTTONS */
+        .launch-btn { width: 280px; padding: 20px; margin: 10px 0; border: 1px solid #111; background: #050505; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .btn-title { font-size: 1rem; letter-spacing: 6px; font-weight: 900; color: var(--jade); }
+        .phonetic { font-size: 0.5rem; letter-spacing: 3px; color: var(--gold); opacity: 0.6; margin: 4px 0; }
+
+        .btn-hilu { position: absolute; top: 30px; left: 30px; background: none; border: 1px solid #222; color: #444; padding: 8px 15px; border-radius: 4px; font-size: 0.55rem; letter-spacing: 2px; z-index: 1000; }
+
         canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
-        #spark-target { position: absolute; width: 50px; height: 50px; background: var(--jade); border-radius: 50%; box-shadow: 0 0 30px var(--jade); cursor: pointer; z-index: 30; display: none; }
-        
-        input, textarea { background: none; border: 1px solid #333; color: white; border-radius: 10px; padding: 10px; outline: none; }
-        input:focus, textarea:focus { border-color: var(--jade); }
+        #touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
     </style>
 </head>
 <body>
 
     <div id="screen-home" class="screen active">
-        <h1 style="letter-spacing: 12px; color: var(--jade); font-weight: 900;">SXT’EKW</h1>
-        <div class="menu-grid">
-            <div class="menu-btn" onclick="startSection('weave')">KW’ÉTL’EN<br><small style="opacity:0.5; letter-spacing:2px;">WEAVE</small></div>
-            <div class="menu-btn" onclick="startSection('paxwad')">P’ÁX̌WAD<br><small style="opacity:0.5; letter-spacing:2px;">SPARK</small></div>
-            <div class="menu-btn" onclick="startSection('stexem')">ST’ÉXEM<br><small style="opacity:0.5; letter-spacing:2px;">STILL</small></div>
-            <div class="menu-btn" onclick="startSection('kwelap')">KW’ÉLAP<br><small style="opacity:0.5; letter-spacing:2px;">HALT</small></div>
+        <div id="logo-container" class="pulse-active" style="margin-bottom: 50px; text-align: center; border: 2px solid var(--jade); border-radius: 50%; padding: 20px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+            <span style="color: var(--gold); font-weight: 900; font-size: 1.5rem;">JA</span>
         </div>
-        <div style="position: absolute; bottom: 30px; font-size: 0.5rem; opacity: 0.3; letter-spacing: 2px;">JADE EDITION</div>
+        <h1 style="letter-spacing: 12px; color: var(--jade); font-weight: 900; margin: 0;">SXT’EKW</h1>
+        <div class="phonetic" style="margin-bottom: 40px;">[ suh-t-ekw ]</div>
+
+        <div class="launch-btn" onclick="startSection('weave')">
+            <span class="btn-title">KW’ÉTL’EN</span>
+            <span class="phonetic">[ kw-et-lun ]</span>
+        </div>
+        <div class="launch-btn" onclick="startSection('paxwad')">
+            <span class="btn-title" style="color: var(--gold);">P’ÁX̌WAD</span>
+            <span class="phonetic">[ pah-hwah-d ]</span>
+        </div>
     </div>
 
     <div id="screen-weave" class="screen">
         <button class="btn-hilu" onclick="exitToHome()">HÍLU</button>
         <div style="z-index: 100; text-align: center; position: absolute; top: 100px; pointer-events: none;">
-            <h2 id="animal-name" style="color: var(--jade); letter-spacing: 8px;"></h2>
+            <h2 id="animal-name" style="color: var(--gold); letter-spacing: 6px; margin:0;"></h2>
+            <div id="animal-phonetic" class="phonetic"></div>
         </div>
         <canvas id="weave-canvas"></canvas>
-    </div>
-
-    <div id="screen-paxwad" class="screen">
-        <button class="btn-hilu" onclick="exitToHome()">HÍLU</button>
-        <div id="paxwad-instr" class="instr-card">
-            <span style="color: var(--gold); font-weight: 900;">STILLNESS RULE:</span><br>
-            Keep head still. Follow with eyes only.
-        </div>
-        <div id="spark-target" onclick="hitSpark()"></div>
-        <div id="spark-count" style="position: absolute; bottom: 50px; color: var(--jade); letter-spacing: 4px;">0 / 10</div>
-    </div>
-
-    <div id="screen-stexem" class="screen">
-        <button class="btn-hilu" onclick="exitToHome()">HÍLU</button>
-        <div class="instr-card" style="border-color: var(--gold);">
-            <p id="logic-question" style="font-size: 1.8rem; color: var(--gold); margin: 0;"></p>
-            <input type="number" id="logic-answer" pattern="[0-9]*" inputmode="numeric" style="width: 80px; margin-top: 15px; text-align: center; font-size: 1.5rem;">
-            <button onclick="checkLogic()" style="display: block; margin: 20px auto 0; background: var(--gold); color: black; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold;">SUBMIT</button>
-        </div>
-    </div>
-
-    <div id="screen-kwelap" class="screen">
-        <button class="btn-hilu" onclick="exitToHome()">HÍLU</button>
-        <div class="instr-card" style="border-color: var(--text); width: 80%;">
-            <p style="opacity: 0.7; font-size: 0.8rem;">NAME THE THOUGHT</p>
-            <textarea id="halt-thought" placeholder="..." style="width: 100%; height: 100px;"></textarea>
-            <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 10px;">Watch it dissolve.</p>
-        </div>
+        <div id="touch-layer"></div>
     </div>
 
     <script>
-        const constellations = [
-            { name: "SQUWAL'QUW", stars: [{x:0.5, y:0.2}, {x:0.3, y:0.5}, {x:0.7, y:0.5}, {x:0.5, y:0.8}] },
-            { name: "STIQÍYU’", stars: [{x:0.2, y:0.5}, {x:0.4, y:0.3}, {x:0.6, y:0.3}, {x:0.8, y:0.5}, {x:0.5, y:0.7}] },
-            { name: "QW’ULH-LÚ-MUCW", stars: [{x:0.3, y:0.6}, {x:0.5, y:0.2}, {x:0.7, y:0.6}, {x:0.5, y:0.8}] },
-            { name: "YÍXWULA", stars: [{x:0.5, y:0.4}, {x:0.1, y:0.2}, {x:0.9, y:0.2}, {x:0.5, y:0.8}] }
+        const totems = [
+            { name: "SQUWAL'QUW", phonetic: "[ sk-wahl-koo ]", points: [{x:0.5, y:0.2}, {x:0.3, y:0.5}, {x:0.7, y:0.5}, {x:0.5, y:0.8}, {x:0.5, y:0.2}] },
+            { name: "STIQÍYU’", phonetic: "[ stee-kee-yoo ]", points: [{x:0.2, y:0.5}, {x:0.4, y:0.3}, {x:0.6, y:0.3}, {x:0.8, y:0.5}, {x:0.5, y:0.8}] }
         ];
 
-        let currentLevel = 0;
-        let sparkCount = 0;
-        let activePath = [];
-        let completedPaths = [];
-        let isDrawing = false;
-        let weaveInputBound = false;
-        let lastSnappedStar = -1;
+        let currentLevel = 0, isDrawing = false, userPath = [];
+        const rootStyle = getComputedStyle(document.documentElement);
+        const goldColor = rootStyle.getPropertyValue('--gold').trim() || '#fbbf24';
 
         function startSection(type) {
+            const targetScreen = document.getElementById(`screen-${type}`);
+            if (!targetScreen) return;
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(`screen-${type}`).classList.add('active');
+            targetScreen.classList.add('active');
             if(type === 'weave') initWeave();
-            if(type === 'paxwad') initSpark();
-            if(type === 'stexem') initLogic();
         }
 
         function exitToHome() {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-home').classList.add('active');
-            document.getElementById('spark-target').style.display = 'none';
             isDrawing = false;
-            activePath = [];
+            userPath = [];
         }
 
         function initWeave() {
             const canvas = document.getElementById('weave-canvas');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            completedPaths = [];
-            activePath = [];
-            isDrawing = false;
-            lastSnappedStar = -1;
-            document.getElementById('animal-name').innerText = constellations[currentLevel].name;
-            bindWeaveInput();
-            renderStars();
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            document.getElementById('animal-name').innerText = totems[currentLevel].name;
+            document.getElementById('animal-phonetic').innerText = totems[currentLevel].phonetic;
+
+            const layer = document.getElementById('touch-layer');
+            layer.onpointerdown = (e) => { isDrawing = true; userPath = [{x: e.clientX, y: e.clientY}]; };
+            layer.onpointermove = (e) => { if(isDrawing) userPath.push({x: e.clientX, y: e.clientY}); };
+            layer.onpointerup = () => { isDrawing = false; };
+            layer.onpointercancel = () => { isDrawing = false; };
+            renderWeave();
         }
 
-        function bindWeaveInput() {
-            if (weaveInputBound) return;
-            weaveInputBound = true;
-            window.addEventListener('mousedown', startPath);
-            window.addEventListener('mousemove', movePath);
-            window.addEventListener('mouseup', endPath);
-            window.addEventListener('touchstart', startPath, { passive: false });
-            window.addEventListener('touchmove', movePath, { passive: false });
-            window.addEventListener('touchend', endPath);
-        }
-
-        function startPath(e) {
-            if (!document.getElementById('screen-weave').classList.contains('active')) return;
-            if (e.cancelable) e.preventDefault();
-            isDrawing = true;
-            activePath = [getPos(e)];
-        }
-
-        function movePath(e) {
-            if (!isDrawing || !document.getElementById('screen-weave').classList.contains('active')) return;
-            if (e.cancelable) e.preventDefault();
-            const pos = getPos(e);
-            activePath.push(pos);
-
+        function renderWeave() {
             const canvas = document.getElementById('weave-canvas');
-            if (!canvas) return;
-            const data = constellations[currentLevel];
-            let snappedTo = -1;
-
-            data.stars.forEach((s, idx) => {
-                const sx = s.x * canvas.width;
-                const sy = s.y * canvas.height;
-                const dist = Math.hypot(pos.x - sx, pos.y - sy);
-                if (dist < 30) snappedTo = idx;
-            });
-
-            if (snappedTo !== -1 && snappedTo !== lastSnappedStar) {
-                if (navigator.vibrate) navigator.vibrate(10);
-                lastSnappedStar = snappedTo;
-            } else if (snappedTo === -1) {
-                lastSnappedStar = -1;
-            }
-        }
-
-        function endPath() {
-            if (isDrawing && activePath.length > 0) {
-                completedPaths.push([...activePath]);
-            }
-            isDrawing = false;
-            activePath = [];
-            lastSnappedStar = -1;
-        }
-
-        function getPos(e) {
-            const touch = e.touches?.[0] || e.changedTouches?.[0];
-            const point = touch || e;
-            return { x: point.clientX, y: point.clientY };
-        }
-
-        function renderStars() {
-            const canvas = document.getElementById('weave-canvas');
-            if (!canvas) return;
+            if(!canvas || !document.getElementById('screen-weave').classList.contains('active')) return;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#020617';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.shadowBlur = 0;
-            ctx.shadowColor = 'transparent';
+            // Subtle "Pulse" fade on the background
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
 
-            ctx.strokeStyle = 'rgba(0, 163, 108, 0.4)';
-            ctx.lineWidth = 2;
-            completedPaths.forEach(path => {
-                if (path.length === 0) return;
+            if(isDrawing && userPath.length > 1) {
+                // Glow follows the "beat" logic
+                const pulse = Math.sin(Date.now() * 0.013) * 5 + 15;
+                ctx.strokeStyle = goldColor;
+                ctx.lineWidth = 4;
+                ctx.shadowBlur = pulse;
+                ctx.shadowColor = goldColor;
                 ctx.beginPath();
-                path.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+                userPath.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
                 ctx.stroke();
-            });
-
-            if (isDrawing && activePath.length > 0) {
-                ctx.strokeStyle = 'rgba(0, 163, 108, 0.9)';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                activePath.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
-                ctx.stroke();
+                ctx.shadowBlur = 0;
             }
-
-            const data = constellations[currentLevel];
-            data.stars.forEach(s => {
-                const twinkle = Math.sin(Date.now() * 0.002 + s.x * 1000) * 0.3 + 0.7;
-                ctx.beginPath();
-                ctx.arc(s.x * canvas.width, s.y * canvas.height, 6, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(0, 163, 108, ${twinkle})`;
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = '#00A36C';
-                ctx.fill();
-            });
-            if (document.getElementById('screen-weave').classList.contains('active')) requestAnimationFrame(renderStars);
-        }
-
-        function initSpark() {
-            sparkCount = 0;
-            document.getElementById('spark-count').innerText = "0 / 10";
-            document.getElementById('paxwad-instr').style.opacity = 1;
-            document.getElementById('spark-target').style.display = 'block';
-            moveSpark();
-        }
-
-        function hitSpark() {
-            sparkCount++;
-            document.getElementById('spark-count').innerText = `${sparkCount} / 10`;
-            if (navigator.vibrate) navigator.vibrate(20);
-            if (sparkCount >= 3) document.getElementById('paxwad-instr').style.opacity = 0;
-            if (sparkCount >= 10) exitToHome(); else moveSpark();
-        }
-
-        function moveSpark() {
-            const t = document.getElementById('spark-target');
-            t.style.left = (Math.random() * (innerWidth-100)+50) + 'px';
-            t.style.top = (Math.random() * (innerHeight-100)+50) + 'px';
-        }
-
-        function initLogic() {
-            const a = Math.floor(Math.random() * 12) + 1;
-            const b = Math.floor(Math.random() * 12) + 1;
-            document.getElementById('logic-question').innerText = `${a} x ${b}`;
-            window.correctResult = a * b;
-            document.getElementById('logic-answer').value = "";
-            document.getElementById('logic-answer').focus();
-        }
-
-        function checkLogic() {
-            const ans = parseInt(document.getElementById('logic-answer').value);
-            if(ans === window.correctResult) {
-                if (navigator.vibrate) navigator.vibrate(30);
-                initLogic();
-            }
+            requestAnimationFrame(renderWeave);
         }
     </script>
 </body>
