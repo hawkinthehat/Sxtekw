@@ -96,8 +96,27 @@
             { name: "YÍXWULA", points: [{x:0.1, y:0.3}, {x:0.5, y:0.5}, {x:0.9, y:0.3}, {x:0.5, y:0.8}, {x:0.1, y:0.3}] }
         ];
 
+        const logicStyles = [
+            { type: 'math', get: () => {
+                const a = Math.floor(Math.random() * 12) + 2;
+                const b = Math.floor(Math.random() * 9) + 2;
+                return { q: `${a} x ${b}`, a: a * b };
+            }},
+            { type: 'spatial', get: () => {
+                const count = Math.floor(Math.random() * 7) + 3;
+                return { q: "● ".repeat(count), a: count };
+            }},
+            { type: 'vowel', get: () => {
+                const words = ["SQUWAL'QUW", "STIQÍYU’", "YÍXWULA", "SXT’EKW"];
+                const word = words[Math.floor(Math.random() * words.length)];
+                const count = (word.match(/[AEIOU]/gi) || []).length;
+                return { q: `Vowels in: ${word}`, a: count };
+            }}
+        ];
+
         let currentLevel = 0;
         let sparkCount = 0;
+        let featherPos = { x: 50, y: 50 };
         let isDrawing = false;
         let userPath = [];
         let completedLines = [];
@@ -232,32 +251,49 @@
         }
 
         function initSpark() {
+            initFeather();
+        }
+
+        function initFeather() {
             sparkCount = 0;
             document.getElementById('spark-count').innerText = "0 / 10";
             document.getElementById('paxwad-instr').style.opacity = 1;
-            document.getElementById('spark-target').style.display = 'block';
-            moveSpark();
+            const feather = document.getElementById('spark-target');
+            feather.style.display = 'block';
+            feather.style.borderRadius = '50% 50% 10% 50%';
+            feather.style.transform = 'rotate(45deg)';
+            feather.style.transition = 'all 1.2s ease-in-out';
+            moveFeather();
+        }
+
+        function moveFeather() {
+            const t = document.getElementById('spark-target');
+            featherPos.x = (featherPos.x === 10) ? 90 : 10;
+            featherPos.y = Math.random() * 40 + 30;
+            t.style.left = featherPos.x + '%';
+            t.style.top = featherPos.y + '%';
+        }
+
+        function hitFeather() {
+            sparkCount++;
+            document.getElementById('spark-count').innerText = `${sparkCount} / 10`;
+            if (navigator.vibrate) navigator.vibrate(30);
+            if (sparkCount >= 10) {
+                exitToHome();
+            } else {
+                moveFeather();
+            }
         }
 
         function hitSpark() {
-            sparkCount++;
-            document.getElementById('spark-count').innerText = `${sparkCount} / 10`;
-            if (navigator.vibrate) navigator.vibrate(20);
-            if (sparkCount >= 3) document.getElementById('paxwad-instr').style.opacity = 0;
-            if (sparkCount >= 10) exitToHome(); else moveSpark();
-        }
-
-        function moveSpark() {
-            const t = document.getElementById('spark-target');
-            t.style.left = (Math.random() * (innerWidth-100)+50) + 'px';
-            t.style.top = (Math.random() * (innerHeight-100)+50) + 'px';
+            hitFeather();
         }
 
         function initLogic() {
-            const a = Math.floor(Math.random() * 12) + 1;
-            const b = Math.floor(Math.random() * 12) + 1;
-            document.getElementById('logic-question').innerText = `${a} x ${b}`;
-            window.correctResult = a * b;
+            const style = logicStyles[Math.floor(Math.random() * logicStyles.length)];
+            const task = style.get();
+            document.getElementById('logic-question').innerText = task.q;
+            window.correctResult = task.a;
             document.getElementById('logic-answer').value = "";
             document.getElementById('logic-answer').focus();
         }
