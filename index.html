@@ -119,8 +119,10 @@
         let fSide = 0;
 
         function startSection(type) {
+            const targetScreen = document.getElementById(`screen-${type}`);
+            if (!targetScreen) return;
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(`screen-${type}`).classList.add('active');
+            targetScreen.classList.add('active');
             if (type === 'paxwad') initHijack();
             if (type === 'weave') initWeave();
         }
@@ -129,6 +131,8 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-home').classList.add('active');
             document.getElementById('feather').style.display = 'none';
+            isDrawing = false;
+            userPath = [];
         }
 
         /* --- ST’ÉXEM / PAXWAD --- */
