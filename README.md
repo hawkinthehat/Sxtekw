@@ -1,25 +1,37 @@
-SXT’EKW | Neural Weaver (v2.2)
-Ancestral Wisdom x High-Performance Haptics
-SXT’EKW (Lushootseed for "The Quiet") is a specialized Progressive Web App (PWA) designed to manually override the "Neural Hijack" of high-anxiety states. Developed in the Pacific Northwest, it bridges 26 years of game design logic with Coast Salish grounding traditions and modern EMDR protocols.
-🧬 The Triple-Shield Protocol
-SXT’EKW replaces passive meditation with Active Cognitive Intervention. It uses a tiered biological approach to return the nervous system to homeostasis:
-1. System Red: Pulse Sync (Haptic EMDR)
-Instead of traditional breathing rings, SXT’EKW utilizes a Bilateral Haptic Metronome. A high-contrast "Spark" moves horizontally across the screen, triggering sharp tactile pulses (navigator.vibrate) at each boundary. This forces the brain to anticipate and track external stimuli, breaking the internal panic loop.
-2. The Vantage: Shatterpoint (Metacognition)
-A psychological labeling engine. Users input a specific intrusive thought, observe it as a digital object, and then trigger a high-velocity physics "Shatter." This creates a visual metaphor for cognitive defusion—separating the self from the thought.
-3. The Neural Weaver (Recovery)
-A standalone meditative mode where users manually "weave" shattered fragments into a cohesive, glowing grid. Inspired by the rhythmic focus of traditional cedar weaving, this mode stimulates fine motor control and neuroplasticity to "weave the quiet" back into the mind.
-🛠 Technical Features
-• Vercel Pro Optimized: High-speed edge deployment for zero-latency response.
-• 432Hz Binaural Landscapes: Native Web Audio API synthesis for endocrine regulation.
-• Privacy-First: Zero-knowledge architecture. No tracking, no cookies, no data collection.
-• Pulse Sync Technology: Engineered for high-noise environments (casinos, stadiums, transit) where audio-only tools fail.
-🚀 Installation
-SXT’EKW is a PWA and should be installed for the best experience:
-1.	Navigate to your live Vercel URL.
-2.	iOS: Tap 'Share' -> 'Add to Home Screen'.
-3.	Android: Tap 'Menu' -> 'Install App'.
-This enables standalone mode, haptic feedback, and offline functionality.
-🌲 Support the Spirit Path
-This project is maintained by Joe Ancheta Jr. (Hawkinthehat). If this tool has helped you find your quiet, consider supporting the continued development of the Spirit Path and the upcoming Momentum productivity engine.
-👉 Support Hawkinthehat on Buy Me A Coffee
+<img width="482" height="488" alt="image" src="https://github.com/user-attachments/assets/37a48a69-9ac0-4334-8f27-67a6cce0d9af" />
+
+SXT’EKW | The Quiet
+SXT’EKW (pronounced suh-t-ekw) is a high-performance, neuro-protective web application designed for immediate anxiety intervention. It combines Coast Salish cultural motifs with proven neurological protocols to break acute stress loops through a "Digital Longhouse" interface.
+🛡️ The Four Protocols
+The application is divided into four distinct modules, each targeting a specific area of the brain to restore the Locus of Control.
+1. KW’ÉTL’EN (The Weave)
+• Neural Target: Parietal Lobe & Hippocampus (Spatial Navigation).
+• Mechanism: A celestial star-mapping interface. The user weaves Jade-colored filaments between pulsing stars to complete ancestral totems.
+• Progression:
+• Raven (SQUWAL'QUW): Grounding and initial focus.
+• Wolf (STIQÍYU’): Rhythmic protection and steady pacing.
+• Orca (QW’ULH-LÚ-MUCW): Fluidity and complex movement.
+• Eagle (YÍXWULA): Wide-angle vision and perspective.
+2. P’ÁX̌WAD (The Spark)
+• Neural Target: Superior Colliculus & Visual Cortex.
+• Mechanism: Saccadic eye-movement therapy. A high-contrast "Spark" teleports across a pitch-black field.
+• The Rule: The head must remain still while the eyes follow the spark. This physical strain occupies the brain's tracking system, overwriting the capacity to maintain a worry loop.
+3. ST’ÉXEM (The Stillness)
+• Neural Target: Prefrontal Cortex (Executive Function).
+• Mechanism: A logic-based pattern interrupter. Requires the user to solve non-aggressive math problems to "unlock" the brain from an emotional state and return it to a logical, grounded state.
+4. KW’ÉLAP (The Halt)
+• Neural Target: Amygdala (Emotional Regulation).
+• Mechanism: Cognitive distancing. Users "name the thought," entering it into a container, and then watch it dissolve into the black background, simulating the "unweaving" of a stressor.
+🛠️ Technical Specifications
+• Architecture: Vanilla HTML5/JavaScript Single Page Application (SPA).
+• Visual Design: OLED-optimized pitch black (#020617) for zero visual noise and significant eye-strain reduction.
+• Tactile Feedback: Integrated Haptic Feedback (Vibration API) for "Micro-Win" confirmation.
+• UX Guardrails: * HÍLU (Depart): A persistent escape hatch in every room to ensure user agency.
+• Anti-Friction: Disabled "Pull-to-Refresh" and "System Swipes" via CSS touch-action to prevent accidental app exits.
+🌲 Cultural Connection
+This project utilizes the Lushootseed language of the Coast Salish people. By replacing clinical terms with ancestral ones, the app provides a sense of sanctuary and "Home" that standard technical terms cannot replicate.
+🚀 Deployment
+1.	Clone the repository.
+2.	Open index.html in any modern mobile or desktop browser.
+3.	Optimized for high-contrast mobile displays (OLED/AMOLED).
+SXT’EKW. Built to bring the quiet back.
