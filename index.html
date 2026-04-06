@@ -192,14 +192,21 @@
         }
 
         function handleHalt(e) {
+            // Trigger on 'Enter' key
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const box = document.getElementById('halt-thought');
+
+                // 1. Start the Dissolve
                 box.classList.add('dissolve');
                 if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+
+                // 2. Wait for animation to finish, then clear and reset
                 setTimeout(() => {
                     box.value = "";
                     box.classList.remove('dissolve');
+                    // Optional: Auto-exit to home after a successful unweave
+                    // exitToHome();
                 }, 2100);
             }
         }
