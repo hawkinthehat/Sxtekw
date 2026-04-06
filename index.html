@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>SXT’EKW | The Quiet</title>
     <style>
         :root { --bg: #000; --jade: #00A36C; --gold: #fbbf24; --text: #f1f5f9; }
@@ -23,7 +26,7 @@
         /* UI ELEMENTS */
         .btn-hilu { position: absolute; top: 30px; left: 30px; background: none; border: 1px solid #222; color: #444; padding: 8px 15px; border-radius: 4px; font-size: 0.55rem; letter-spacing: 2px; z-index: 1000; cursor: pointer; }
         canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
-        #touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+        #touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; touch-action: none; }
 
         /* EMDR FEATHER */
         #feather-target { 
@@ -37,6 +40,7 @@
 
         input { background: none; border-bottom: 2px solid var(--gold); border-top:none; border-left:none; border-right:none; color: white; width: 120px; text-align: center; font-size: 2rem; outline: none; margin-top: 15px; }
         textarea { background: none; border: 1px solid #222; color: white; width: 80%; height: 100px; padding: 15px; outline: none; font-size: 1rem; text-align: center; }
+        .build-tag { position: absolute; bottom: 18px; font-size: 0.45rem; opacity: 0.25; letter-spacing: 2px; color: #8a8a8a; }
     </style>
 </head>
 <body>
@@ -70,6 +74,7 @@
             <div class="phonetic-guide" style="font-size: 0.45rem;">[ kw-ay-lap ]</div>
             <span class="btn-sub">HALT</span>
         </div>
+        <div class="build-tag">BUILD PHONETIC-02</div>
     </div>
 
     <div id="screen-weave" class="screen">
@@ -110,7 +115,17 @@
             { name: "STIQÍYU’", phonetic: "[ stee-kee-yoo ]", points: [{x:0.1, y:0.4}, {x:0.9, y:0.4}, {x:0.5, y:0.8}, {x:0.1, y:0.4}] }
         ];
 
-        let currentLevel = 0, isDrawing = false, userPath = [], sparkCount = 0;
+        let currentLevel = 0, isDrawing = false, userPath = [], completedPaths = [], sparkCount = 0;
+
+        function showHomeScreen() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-home').classList.add('active');
+            const feather = document.getElementById('feather-target');
+            if (feather) feather.style.display = 'none';
+            isDrawing = false;
+            userPath = [];
+            completedPaths = [];
+        }
 
         function startSection(type) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -121,9 +136,7 @@
         }
 
         function exitToHome() {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('screen-home').classList.add('active');
-            document.getElementById('feather-target').style.display = 'none';
+            showHomeScreen();
         }
 
         /* --- WEAVE --- */
@@ -132,10 +145,25 @@
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             document.getElementById('animal-name').innerText = totems[currentLevel].name;
             document.getElementById('animal-phonetic').innerText = totems[currentLevel].phonetic;
+            isDrawing = false;
+            userPath = [];
+            completedPaths = [];
             const layer = document.getElementById('touch-layer');
-            layer.onpointerdown = (e) => { isDrawing = true; userPath = [{x: e.clientX, y: e.clientY}]; };
-            layer.onpointermove = (e) => { if(isDrawing) userPath.push({x: e.clientX, y: e.clientY}); };
-            layer.onpointerup = () => { isDrawing = false; };
+            layer.onpointerdown = (e) => {
+                e.preventDefault();
+                isDrawing = true;
+                userPath = [{x: e.clientX, y: e.clientY}];
+            };
+            layer.onpointermove = (e) => {
+                if(isDrawing) userPath.push({x: e.clientX, y: e.clientY});
+            };
+            layer.onpointerup = () => {
+                if (isDrawing && userPath.length > 1) completedPaths.push([...userPath]);
+                isDrawing = false;
+                userPath = [];
+            };
+            layer.onpointercancel = layer.onpointerup;
+            layer.onpointerleave = layer.onpointerup;
             renderWeave();
         }
 
@@ -144,6 +172,16 @@
             if(!canvas || !document.getElementById('screen-weave').classList.contains('active')) return;
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.28)';
+            ctx.lineWidth = 2;
+            completedPaths.forEach(path => {
+                if (path.length < 2) return;
+                ctx.beginPath();
+                path.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+                ctx.stroke();
+            });
+
             if(isDrawing && userPath.length > 1) {
                 ctx.strokeStyle = 'var(--gold)'; ctx.lineWidth = 4; ctx.beginPath();
                 userPath.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
@@ -202,6 +240,9 @@
                 setTimeout(() => { box.value = ""; box.style.transform = ""; box.style.opacity = "1"; box.style.transition = ""; }, 1600);
             }
         }
+
+        window.addEventListener('DOMContentLoaded', showHomeScreen);
+        window.addEventListener('pageshow', showHomeScreen);
     </script>
 </body>
 </html>
