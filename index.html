@@ -5,247 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SXT’EKW | The Quiet</title>
     <style>
-        :root {
-            --bg: #020617; /* Pitch Black for focus */
-            --jade: #00a36c;
-            --teal: #2dd4bf;
-            --text: #f1f5f9;
-            --gold: #fbbf24;
-            --red: #f43f5e;
-        }
-
-        body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            background: var(--bg);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            overflow: hidden;
-            touch-action: none; /* Prevents accidental iPad swipes */
-            -webkit-user-select: none;
-        }
-
-        .screen {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.8s ease;
-        }
-
+        :root { --bg: #020617; --jade: #00A36C; --gold: #fbbf24; --text: #f1f5f9; --red: #f43f5e; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; touch-action: none; -webkit-user-select: none; }
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.8s ease; }
         .active { display: flex; opacity: 1; }
-
-        /* UI ELEMENTS */
-        .btn-hilu {
-            position: absolute; top: 30px; left: 30px;
-            background: rgba(0, 163, 108, 0.1);
-            border: 1px solid var(--jade);
-            color: var(--jade);
-            padding: 10px 20px;
-            border-radius: 50px;
-            font-size: 0.7rem;
-            letter-spacing: 2px;
-            z-index: 1000;
-            cursor: pointer;
-        }
-
+        .btn-hilu { position: absolute; top: 30px; left: 30px; background: rgba(0, 163, 108, 0.1); border: 1px solid var(--jade); color: var(--jade); padding: 10px 20px; border-radius: 50px; font-size: 0.7rem; letter-spacing: 2px; z-index: 1000; cursor: pointer; }
         .phonetic { font-size: 0.6rem; opacity: 0.6; letter-spacing: 3px; text-transform: uppercase; margin-top: 5px; }
-
-        .instr-card {
-            background: rgba(0, 163, 108, 0.05);
-            border: 1px solid rgba(0, 163, 108, 0.3);
-            padding: 20px;
-            border-radius: 20px;
-            max-width: 280px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
+        .menu-btn { background: var(--jade); color: var(--bg); border: none; width: 280px; padding: 20px; border-radius: 20px; font-weight: bold; margin-bottom: 15px; cursor: pointer; }
+        .instr-card { background: rgba(0, 163, 108, 0.05); border: 2px solid var(--jade); padding: 20px; border-radius: 20px; max-width: 280px; text-align: center; }
         canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
-
-        #touch-layer {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 2;
-        }
+        #touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
     </style>
 </head>
 <body>
 
     <div id="screen-home" class="screen active">
-        <h1 style="letter-spacing: 12px; color: var(--jade); font-weight: 900; margin-bottom: 0;">SXT’EKW</h1>
+        <h1 style="letter-spacing: 12px; color: var(--jade); font-weight: 900;">SXT’EKW</h1>
         <p class="phonetic">THE QUIET [ suh-t-ekw ]</p>
-
-        <div style="margin-top: 50px; width: 80%; max-width: 400px;">
-            <button class="menu-btn" onclick="startWeave()" style="background: var(--jade); color: var(--bg); border: none; width: 100%; padding: 20px; border-radius: 20px; font-weight: bold; margin-bottom: 15px;">
-                KW’ÉTL’EN <span class="phonetic" style="display:block; color: var(--bg);">[ THE WEAVE ]</span>
-            </button>
-            <button class="menu-btn" onclick="startPaxwad()" style="background: none; border: 1px solid var(--gold); color: var(--gold); width: 100%; padding: 20px; border-radius: 20px; font-weight: bold;">
-                P’ÁX̌WAD <span class="phonetic" style="display:block; color: var(--gold);">[ THE SPARK ]</span>
-            </button>
+        <div style="margin-top: 40px;">
+            <button class="menu-btn" onclick="startWeave()">KW’ÉTL’EN <span class="phonetic" style="display:block; color:var(--bg)">[ THE WEAVE ]</span></button>
+            <button class="menu-btn" onclick="startPaxwad()" style="background:none; border:1px solid var(--gold); color:var(--gold)">P’ÁX̌WAD <span class="phonetic" style="display:block; color:var(--gold)">[ THE SPARK ]</span></button>
         </div>
-        <div style="position: absolute; bottom: 40px; font-size: 0.5rem; letter-spacing: 2px; opacity: 0.4;">FOR JADE</div>
+        <div style="position: absolute; bottom: 30px; font-size: 0.5rem; opacity: 0.4;">FOR JADE</div>
     </div>
 
     <div id="screen-weave" class="screen">
         <button class="btn-hilu" onclick="exitToHome()">HÍLU [ DEPART ]</button>
-
-        <div id="weave-header" style="z-index: 5; text-align: center; position: absolute; top: 100px; pointer-events: none;">
-            <h2 id="animal-name" style="color: var(--jade); letter-spacing: 8px; margin: 0;"></h2>
+        <div style="z-index: 5; text-align: center; position: absolute; top: 100px;">
+            <h2 id="animal-name" style="color: var(--jade); letter-spacing: 8px;"></h2>
             <p id="animal-phonetic" class="phonetic"></p>
         </div>
-
         <canvas id="weave-canvas"></canvas>
-        <div id="touch-layer" onmousedown="startLine(event)" onmousemove="drawLine(event)" onmouseup="endLine()" ontouchstart="startLine(event)" ontouchmove="drawLine(event)" ontouchend="endLine()"></div>
+        <div id="touch-layer"></div>
     </div>
 
     <div id="screen-paxwad" class="screen">
         <button class="btn-hilu" onclick="exitToHome()">HÍLU [ DEPART ]</button>
-
         <div id="paxwad-instr" class="instr-card">
             <span style="color: var(--gold); font-weight: 900;">STILLNESS RULE:</span><br>
-            Keep your head still.<br>Follow the spark with eyes only.
+            Keep head still. Follow with eyes only.
         </div>
-        <div id="spark-target" onclick="hitSpark()" style="position: absolute; width: 40px; height: 40px; background: var(--jade); border-radius: 50%; box-shadow: 0 0 20px var(--jade); cursor: pointer;"></div>
-        <div id="spark-count" style="position: absolute; bottom: 50px; color: var(--jade); font-size: 0.8rem; letter-spacing: 4px;">SYNCS: 0/10</div>
+        <div id="spark-target" onclick="hitSpark()" style="position: absolute; width: 40px; height: 40px; background: var(--jade); border-radius: 50%; box-shadow: 0 0 20px var(--jade); display: none;"></div>
+        <div id="spark-count" style="position: absolute; bottom: 50px; color: var(--jade); letter-spacing: 4px;">SYNCS: 0/10</div>
     </div>
 
     <script>
-        const canvas = document.getElementById('canvas'); const ctx = canvas.getContext('2d');
-        const saccadeCanvas = document.getElementById('saccade-canvas'); const sCtx = saccadeCanvas.getContext('2d');
-        const weaveCanvas = document.getElementById('weave-canvas'); const wCtx = weaveCanvas.getContext('2d');
-        let particles = [], weavePoints = [], weavePaths = [], mouse = { x: null, y: null }, audioCtx;
-        let particles = [], mouse = { x: null, y: null }, audioCtx;
-        let leftOsc, rightOsc, masterGain, vantageMode = false, shatterPoint = false, weavingActive = false;
-        let featherX = 0, featherY = 0, featherAngle = 0, featherDir = 1;
-        let solvedCount = 0, currentTaskAnswer = "";
-        let saccadeTaps = 0, isSaccadicMode = false;
-        let weaveStars = [];
-        let wovenPathKeys = new Set();
-        let activeWeaveStar = null;
-        let isPointerDown = false;
-        let weaveCompleteAnnounced = false;
-        let currentAudioMode = 'headphone';
-        let protocolMode = false;
-        let canProceed = false;
-        let vantageShatterTimer = null;
-        let currentTargetText = "THE NOISE";
-        const rootStyles = getComputedStyle(document.documentElement);
-        const tealColor = rootStyles.getPropertyValue('--teal').trim() || "#2dd4bf";
-        const goldColor = rootStyles.getPropertyValue('--gold').trim() || "#fbbf24";
-        const jadeColor = rootStyles.getPropertyValue('--jade').trim() || tealColor;
-
-        // STAR-MAP DATA: WOLF CONSTELLATION (STIQÍYU’)
-        const wolfLevel = {
-            name: "STIQÍYU’",
-            phonetic: "STEE-KEE-YOO",
-            meaning: "THE WOLF",
-            stars: [
-                { x: 80, y: 20, size: 3 }, // Ear tip
-                { x: 70, y: 30, size: 2 }, // Head top
-                { x: 85, y: 40, size: 2 }, // Snout
-                { x: 60, y: 45, size: 4 }, // Shoulder (Heart star)
-                { x: 40, y: 40, size: 2 }, // Back
-                { x: 20, y: 30, size: 3 }, // Tail tip
-                { x: 55, y: 70, size: 2 }, // Front Paw
-                { x: 35, y: 75, size: 2 }  // Back Paw
-            ],
-            // The "Protective" Weave
-            paths: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [3, 6], [4, 7]]
-        };
-        // INDIVIDUAL STAR LOGIC
-        class Star {
-            constructor(x, y, size) {
-                this.x = x;
-                this.y = y;
-                this.size = size;
-                this.baseOpacity = 0.3 + Math.random() * 0.4;
-                this.pulseSpeed = 0.02 + Math.random() * 0.03;
-                this.phase = Math.random() * Math.PI * 2;
-                this.isLit = false; // Becomes true once Jade "weaves" it
-            }
-
-            draw(targetCtx) {
-                // Calculate the "Twinkle"
-                const opacity = this.isLit
-                    ? 1.0
-                    : this.baseOpacity + Math.sin(Date.now() * this.pulseSpeed + this.phase) * 0.2;
-
-                targetCtx.save();
-                targetCtx.shadowBlur = this.isLit ? 15 : 5;
-                targetCtx.shadowColor = this.isLit ? goldColor : jadeColor;
-                targetCtx.fillStyle = `rgba(45, 212, 191, ${Math.max(0.1, Math.min(1, opacity))})`; // Jade stars
-
-                targetCtx.beginPath();
-                targetCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                targetCtx.fill();
-                targetCtx.restore();
-            }
-        }
-
-        // STAR-MAP DATA: ORCA CONSTELLATION
-        const orcaLevel = {
-            name: "QW’ULH-LÚ-MUCW",
-            phonetic: "KW-UHL-LOO-MUKW",
-            meaning: "THE ORCA",
-            stars: [
-                { x: 20, y: 50, size: 3 }, // Nose
-                { x: 40, y: 35, size: 2 }, // Blowhole
-                { x: 60, y: 15, size: 4 }, // Fin Tip (The high point)
-                { x: 70, y: 40, size: 2 }, // Back
-                { x: 90, y: 50, size: 3 }, // Tail top
-                { x: 90, y: 70, size: 3 }, // Tail bottom
-                { x: 60, y: 75, size: 2 }, // Belly
-                { x: 40, y: 65, size: 2 }  // Flipper
-            ],
-            // The "Fluid" Weave
-            paths: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 0]]
-        };
-        const orcaPathSet = new Set(orcaLevel.paths.map(([a, b]) => getPathKey(a, b)));
-
-        const bioTips = [
-            "OWL EYES: Soften your gaze. See the screen edges without moving your head.",
-            "VAGAL HUM: Make a low 'Mmm' sound. Feel the vibration in your chest.",
-            "PERIPHERAL: Don't stare at the spark. Watch it with your side-vision.",
-            "VAGAL TONE: Take a long, slow exhale through pursed lips."
-        ];
-      
-        const screens = ['screen-home', 'screen-weave', 'screen-paxwad'];
-
-        function show(id) {
-            screens.forEach((s) => document.getElementById(s).classList.remove('active'));
-            const target = document.getElementById(id);
-            target.classList.add('active');
-        }
-
-        function exitToHome() {
-            if (navigator.vibrate) navigator.vibrate(20);
-            show('screen-home');
-        }
-
-        // --- WEAVING LOGIC (STARS) ---
         const constellationData = [
-            { name: "SQUWAL'QUW", phon: "SK-WALL-KW", stars: [{ x: 0.5, y: 0.3 }, { x: 0.4, y: 0.5 }, { x: 0.6, y: 0.5 }, { x: 0.5, y: 0.7 }] },
-            { name: "STIQÍYU’", phon: "STEE-KEE-YOO", stars: [{ x: 0.2, y: 0.4 }, { x: 0.4, y: 0.3 }, { x: 0.6, y: 0.3 }, { x: 0.8, y: 0.4 }, { x: 0.5, y: 0.6 }] }
+            { name: "SQUWAL'QUW", phon: "SK-WALL-KW [RAVEN]", stars: [{x:0.5, y:0.25}, {x:0.3, y:0.5}, {x:0.7, y:0.5}, {x:0.5, y:0.75}] },
+            { name: "STIQÍYU’", phon: "STEE-KEE-YOO [WOLF]", stars: [{x:0.2, y:0.5}, {x:0.4, y:0.3}, {x:0.6, y:0.3}, {x:0.8, y:0.5}, {x:0.5, y:0.7}] },
+            { name: "QW’ULH-LÚ-MUCW", phon: "KW-UHL-LOO-MUKW [ORCA]", stars: [{x:0.3, y:0.6}, {x:0.5, y:0.2}, {x:0.7, y:0.6}, {x:0.5, y:0.8}] },
+            { name: "YÍXWULA", phon: "YEE-KH-WUH-LAH [EAGLE]", stars: [{x:0.5, y:0.4}, {x:0.1, y:0.2}, {x:0.9, y:0.2}, {x:0.5, y:0.8}] }
         ];
 
         let currentLevel = 0;
-        const canvas = document.getElementById('weave-canvas');
-        const ctx = canvas.getContext('2d');
-        const jadeColor = getComputedStyle(document.documentElement).getPropertyValue('--jade').trim() || '#00a36c';
-        let drawing = false;
-        let lastPoint = null;
+        let count = 0;
+
+        function show(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function exitToHome() { show('screen-home'); }
 
         function startWeave() {
+            const canvas = document.getElementById('weave-canvas');
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             updateAnimalText();
             show('screen-weave');
-            requestAnimationFrame(animateStars);
+            animateStars();
         }
 
         function updateAnimalText() {
@@ -255,441 +83,43 @@
         }
 
         function animateStars() {
+            const ctx = document.getElementById('weave-canvas').getContext('2d');
             ctx.fillStyle = '#020617';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Subtle Twinkle Logic
-            const time = Date.now() * 0.002;
+            ctx.fillRect(0, 0, innerWidth, innerHeight);
             const data = constellationData[currentLevel];
-
-            data.stars.forEach((s) => {
-                const x = s.x * canvas.width;
-                const y = s.y * canvas.height;
-                const twinkle = Math.sin(time + x) * 0.3 + 0.7;
-
+            data.stars.forEach(s => {
+                const twinkle = Math.sin(Date.now() * 0.002 + s.x * 1000) * 0.3 + 0.7;
                 ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.arc(s.x * innerWidth, s.y * innerHeight, 5, 0, Math.PI*2);
                 ctx.fillStyle = `rgba(0, 163, 108, ${twinkle})`;
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = jadeColor;
                 ctx.fill();
             });
-
-            if (document.getElementById('screen-weave').classList.contains('active')) {
-                requestAnimationFrame(animateStars);
-            }
+            if (document.getElementById('screen-weave').classList.contains('active')) requestAnimationFrame(animateStars);
         }
 
-        function getEventPoint(event) {
-            const touch = event.touches && event.touches[0];
-            if (touch) return { x: touch.clientX, y: touch.clientY };
-            return { x: event.clientX, y: event.clientY };
-        }
-
-        function startLine(event) {
-            if (event.cancelable) event.preventDefault();
-            drawing = true;
-            lastPoint = getEventPoint(event);
-        }
-
-        function drawLine(event) {
-            if (!drawing) return;
-            if (event.cancelable) event.preventDefault();
-            const nextPoint = getEventPoint(event);
-            if (!lastPoint || !nextPoint) return;
-            ctx.beginPath();
-            ctx.moveTo(lastPoint.x, lastPoint.y);
-            ctx.lineTo(nextPoint.x, nextPoint.y);
-            ctx.strokeStyle = `rgba(251, 191, 36, 0.85)`;
-            ctx.lineWidth = 2;
-            ctx.shadowBlur = 8;
-            ctx.shadowColor = '#fbbf24';
-            ctx.stroke();
-            lastPoint = nextPoint;
-        }
-
-        function endLine() {
-            drawing = false;
-            lastPoint = null;
-        }
-
-        // --- SPARK LOGIC (PAXWAD) ---
-        let count = 0;
         function startPaxwad() {
             count = 0;
             updateSparkCount();
+            document.getElementById('spark-target').style.display = 'block';
+            document.getElementById('paxwad-instr').style.opacity = 1;
             moveSpark();
             show('screen-paxwad');
-            document.getElementById('paxwad-instr').style.opacity = 1;
         }
 
         function hitSpark() {
             count++;
             updateSparkCount();
-            if (navigator.vibrate) navigator.vibrate(30);
             if (count >= 3) document.getElementById('paxwad-instr').style.opacity = 0;
-
-            if (count >= 10) {
-                exitToHome();
-            } else {
-                moveSpark();
-            }
+            if (count >= 10) exitToHome(); else moveSpark();
         }
 
-        // --- WEAVER ---
-        function getPathKey(a, b) {
-            return a < b ? `${a}-${b}` : `${b}-${a}`;
-        }
-
-        function buildOrcaConstellation() {
-            const constellationWidth = weaveCanvas.width * 0.72;
-            const constellationHeight = weaveCanvas.height * 0.62;
-            const offsetX = (weaveCanvas.width - constellationWidth) / 2;
-            const offsetY = (weaveCanvas.height - constellationHeight) / 2;
-            const starScale = Math.max(1.8, Math.min(4.8, Math.min(weaveCanvas.width, weaveCanvas.height) / 280));
-
-            weaveStars = orcaLevel.stars.map((star) => {
-                const starX = offsetX + (star.x / 100) * constellationWidth;
-                const starY = offsetY + (star.y / 100) * constellationHeight;
-                return new Star(starX, starY, star.size * starScale);
-            });
-        }
-
-        function nearestWeaveStar(x, y, threshold = 48) {
-            let bestIndex = -1;
-            let bestDistance = threshold;
-            for (let i = 0; i < weaveStars.length; i++) {
-                const star = weaveStars[i];
-                const distance = Math.hypot(x - star.x, y - star.y);
-                if (distance < bestDistance) {
-                    bestDistance = distance;
-                    bestIndex = i;
-                }
-            }
-            return bestIndex;
-        }
-
-        function processOrcaWeave() {
-            if (!weavingActive || !isPointerDown || mouse.x == null || mouse.y == null) return;
-            const nearestStar = nearestWeaveStar(mouse.x, mouse.y);
-            if (nearestStar === -1) return;
-
-            if (activeWeaveStar === null) {
-                activeWeaveStar = nearestStar;
-                weaveStars[nearestStar].isLit = true;
-                if (navigator.vibrate) navigator.vibrate(10);
-                return;
-            }
-
-            if (nearestStar === activeWeaveStar) return;
-
-            const pathKey = getPathKey(activeWeaveStar, nearestStar);
-            if (!orcaPathSet.has(pathKey) || wovenPathKeys.has(pathKey)) return;
-
-            wovenPathKeys.add(pathKey);
-            weaveStars[activeWeaveStar].isLit = true;
-            weaveStars[nearestStar].isLit = true;
-            activeWeaveStar = nearestStar;
-            if (navigator.vibrate) navigator.vibrate([15, 10, 15]);
-        }
-
-        function startWeave() {
-            closeElder();
-            weavingActive = true; show('weave');
-            const instr = document.getElementById('weave-instructions');
-            instr.style.opacity = "1"; setTimeout(() => instr.style.opacity = "0", 3500);
-            const titleEl = instr ? instr.querySelector('h2') : null;
-            const bodyEl = instr ? instr.querySelector('p') : null;
-            if (titleEl) titleEl.innerText = `${wolfLevel.name} (${wolfLevel.phonetic})`;
-            if (bodyEl) bodyEl.innerHTML = `${wolfLevel.meaning}<br><small style="font-weight: normal; opacity: 0.7;">Drag thumb to connect the protective weave.</small>`;
-            weaveCanvas.width = window.innerWidth; weaveCanvas.height = window.innerHeight;
-            weavePoints = wolfLevel.stars.map((star, idx) => ({
-                x: (weaveCanvas.width * star.x) / 100,
-                y: (weaveCanvas.height * star.y) / 100,
-                baseX: (weaveCanvas.width * star.x) / 100,
-                baseY: (weaveCanvas.height * star.y) / 100,
-                size: star.size,
-                driftSeed: idx * 0.75,
-                locked: false
-            }));
-            weavePaths = [...wolfLevel.paths];
-            weaveCanvas.width = window.innerWidth; weaveCanvas.height = window.innerHeight;
-            wovenPathKeys = new Set();
-            activeWeaveStar = null;
-            weaveCompleteAnnounced = false;
-            buildOrcaConstellation();
-            const progress = document.getElementById('weave-progress');
-            if (progress) progress.innerText = `0% WOVEN • ${orcaLevel.meaning}`;
-            animateWeave();
-        }
-
-        function animateWeave() {
-            if (!weavingActive) return;
-            
-            // Create a "Trailing" effect by not clearing the canvas fully
-            wCtx.fillStyle = 'rgba(2, 6, 23, 0.15)';
-            wCtx.fillRect(0, 0, weaveCanvas.width, weaveCanvas.height);
-            
-            let locked = 0;
-            let wovenSegments = 0;
-            const time = Date.now() * 0.002; // Used for the "Pulse"
-
-            weavePaths.forEach(path => {
-                const from = weavePoints[path[0]];
-                const to = weavePoints[path[1]];
-                if (!from || !to) return;
-                const isWoven = from.locked && to.locked;
-                if (isWoven) wovenSegments++;
-                wCtx.strokeStyle = isWoven ? `rgba(251, 191, 36, ${0.35 + Math.sin(time) * 0.1})` : 'rgba(45, 212, 191, 0.15)';
-                wCtx.lineWidth = isWoven ? 2.2 : 1.2;
-                wCtx.beginPath();
-                wCtx.moveTo(from.x, from.y);
-                wCtx.lineTo(to.x, to.y);
-                wCtx.stroke();
-            });
-
-            weavePoints.forEach(p => {
-                // Floating movement (The "Current")
-                if (!p.locked) {
-                    p.x = p.baseX + Math.sin(time + p.driftSeed) * 3;
-                    p.y = p.baseY + Math.cos(time + p.driftSeed) * 3;
-                }
-
-                let d = Math.sqrt((mouse.x - p.x)**2 + (mouse.y - p.y)**2);
-                if (d < 55 && !p.locked) {
-                    p.locked = true;
-                    if (navigator.vibrate) navigator.vibrate(10);
-                }
-                
-                if (p.locked) {
-                    locked++;
-                    // Glowing Core
-                    wCtx.shadowBlur = 15;
-                    wCtx.shadowColor = goldColor;
-                    wCtx.fillStyle = goldColor;
-                    wCtx.beginPath(); wCtx.arc(p.x, p.y, 2 + p.size, 0, Math.PI*2); wCtx.fill();
-                    wCtx.shadowBlur = 0;
-                } else {
-                    // Subtle "Breathing" for uncollected dots
-                    wCtx.fillStyle = `rgba(45, 212, 191, ${0.1 + Math.sin(time) * 0.05})`;
-                    wCtx.beginPath(); wCtx.arc(p.x, p.y, 1 + (p.size * 0.6), 0, Math.PI*2); wCtx.fill();
-                }
-            });
-
-            const starCompletion = weavePoints.length ? (locked / weavePoints.length) : 0;
-            const pathCompletion = weavePaths.length ? (wovenSegments / weavePaths.length) : 0;
-            let percent = Math.round(((starCompletion + pathCompletion) / 2) * 100);
-            document.getElementById('weave-progress').innerText = `${percent}% WOVEN`;
-            
-            if (percent >= 100) {
-                document.getElementById('weave-progress').innerText = "NEURAL SYNC COMPLETE";
-                // Flash effect
-                wCtx.fillStyle = "rgba(255, 255, 255, 0.05)";
-                wCtx.fillRect(0, 0, weaveCanvas.width, weaveCanvas.height);
-            }
-            
-            requestAnimationFrame(animateWeave);
-
-            // Create a "Trailing" effect by not clearing the canvas fully
-            wCtx.fillStyle = 'rgba(2, 6, 23, 0.15)';
-            wCtx.fillRect(0, 0, weaveCanvas.width, weaveCanvas.height);
-
-            processOrcaWeave();
-
-            const pulse = Date.now() * 0.002;
-            orcaLevel.paths.forEach(([a, b]) => {
-                const from = weaveStars[a];
-                const to = weaveStars[b];
-                if (!from || !to) return;
-                const isWoven = wovenPathKeys.has(getPathKey(a, b));
-
-                wCtx.save();
-                wCtx.beginPath();
-                wCtx.moveTo(from.x, from.y);
-                wCtx.lineTo(to.x, to.y);
-                wCtx.lineWidth = isWoven ? 3 : 1.25;
-                if (isWoven) {
-                    wCtx.shadowBlur = 12;
-                    wCtx.shadowColor = goldColor;
-                    wCtx.strokeStyle = `rgba(251, 191, 36, ${0.35 + Math.sin(pulse) * 0.2})`;
-                } else {
-                    wCtx.shadowBlur = 0;
-                    wCtx.strokeStyle = 'rgba(45, 212, 191, 0.18)';
-                }
-                wCtx.stroke();
-                wCtx.restore();
-            });
-
-            if (activeWeaveStar !== null && isPointerDown && mouse.x != null && mouse.y != null) {
-                const activeStar = weaveStars[activeWeaveStar];
-                if (activeStar) {
-                    wCtx.save();
-                    wCtx.beginPath();
-                    wCtx.moveTo(activeStar.x, activeStar.y);
-                    wCtx.lineTo(mouse.x, mouse.y);
-                    wCtx.lineWidth = 2;
-                    wCtx.strokeStyle = 'rgba(45, 212, 191, 0.35)';
-                    wCtx.stroke();
-                    wCtx.restore();
-                }
-            }
-
-            weaveStars.forEach((star) => {
-                star.draw(wCtx);
-            });
-
-            const percent = Math.round((wovenPathKeys.size / orcaLevel.paths.length) * 100);
-            document.getElementById('weave-progress').innerText = `${percent}% WOVEN • ${orcaLevel.meaning}`;
-
-            if (percent >= 100) {
-                document.getElementById('weave-progress').innerText = `${orcaLevel.name} • NEURAL SYNC COMPLETE`;
-                // Flash effect
-                wCtx.fillStyle = "rgba(255, 255, 255, 0.04)";
-                wCtx.fillRect(0, 0, weaveCanvas.width, weaveCanvas.height);
-                if (!weaveCompleteAnnounced) {
-                    weaveCompleteAnnounced = true;
-                    elderSpeak(orcaLevel.name, `${orcaLevel.phonetic} — ${orcaLevel.meaning}`);
-                }
-            }
-
-            requestAnimationFrame(animateWeave);
-        }
-
-        // --- GLOBAL CONTROLS ---
-        // Prevent browser swipe/back-refresh gestures while weaving.
-        window.addEventListener('touchmove', function(e) {
-            if (weavingActive && e.cancelable) e.preventDefault();
-        }, { passive: false });
-
-        function handleInput(e) {
-            const touch = e.touches && e.touches[0];
-            const clientX = touch ? touch.clientX : e.clientX;
-            const clientY = touch ? touch.clientY : e.clientY;
-            mouse.x = clientX;
-            mouse.y = clientY;
-        }
-
-        window.addEventListener('touchstart', (e) => {
-            isPointerDown = true;
-            handleInput(e);
-        }, { passive: false });
-        window.addEventListener('touchmove', handleInput, { passive: false });
-        window.addEventListener('mousedown', e => { isPointerDown = true; handleInput(e); handleSaccadeCatch(e.clientX, e.clientY); });
-        window.addEventListener('mousemove', handleInput);
-        window.addEventListener('mouseup', () => { isPointerDown = false; activeWeaveStar = null; });
-        window.addEventListener('touchend', e => {
-            isPointerDown = false;
-            activeWeaveStar = null;
-            if (!e.changedTouches || !e.changedTouches[0]) return;
-            handleSaccadeCatch(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-        });
-        window.addEventListener('touchcancel', () => { isPointerDown = false; activeWeaveStar = null; });
-        document.getElementById('logic-input').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') checkLogic();
-        });
-
-        function exitAll() {
-            weavingActive = false; vantageMode = false; shatterPoint = false;
-            protocolMode = false;
-            canProceed = false;
-            currentTargetText = "THE NOISE";
-            closeElder();
-            isSaccadicMode = false;
-            saccadeTaps = 0;
-            isPointerDown = false;
-            activeWeaveStar = null;
-            wovenPathKeys = new Set();
-            weaveStars = [];
-            weaveCompleteAnnounced = false;
-            stopNeuralAudio();
-            if (saccadeCanvas && sCtx) {
-                sCtx.clearRect(0, 0, saccadeCanvas.width, saccadeCanvas.height);
-            }
-            const saccadeCountEl = document.getElementById('saccade-count');
-            if (saccadeCountEl) saccadeCountEl.innerText = "SYNCS: 0/10";
-            const saccadeInstr = document.getElementById('saccade-instr');
-            if (saccadeInstr) saccadeInstr.style.opacity = "1";
-            if (vantageShatterTimer) {
-                clearTimeout(vantageShatterTimer);
-                vantageShatterTimer = null;
-            }
-            const display = document.getElementById('floating-thought');
-            if (display) {
-                display.style.opacity = "0";
-                display.style.transform = "scale(1)";
-                display.style.filter = "blur(0px)";
-                display.innerText = "";
-            }
-            document.getElementById('visual-msg').innerText = "CATCH THE CLICK";
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('home').classList.add('active');
-        }
-
-        function exitToHome() {
-            closeElder();
-            const activeScreen = document.querySelector('.screen.active');
-            if (activeScreen) {
-                activeScreen.style.transition = 'opacity 0.8s ease';
-                activeScreen.style.opacity = '0';
-            }
-
-            if (navigator.vibrate) navigator.vibrate(30);
-
-            if (audioCtx && masterGain) {
-                try {
-                    const now = audioCtx.currentTime;
-                    const startGain = Math.max(masterGain.gain.value || 0.05, 0.0001);
-                    masterGain.gain.cancelScheduledValues(now);
-                    masterGain.gain.setValueAtTime(startGain, now);
-                    masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
-                } catch (_) {}
-
-                setTimeout(() => {
-                    stopNeuralAudio();
-                    try { audioCtx.close(); } catch (_) {}
-                    audioCtx = null;
-                }, 600);
-            }
-
-            setTimeout(() => {
-                solvedCount = 0;
-                currentTaskAnswer = "";
-                saccadeTaps = 0;
-                const input = document.getElementById('logic-input');
-                if (input) input.value = "";
-                show('home');
-                if (activeScreen) {
-                    activeScreen.style.opacity = '1';
-                    activeScreen.style.transition = '';
-                }
-            }, 800);
-        }
-
-        // Rotating Tips
-        let tipIdx = 0;
-        setInterval(() => {
-            const tip = document.getElementById('bio-tip');
-            if(tip) { tip.style.opacity = "0"; setTimeout(() => { tipIdx = (tipIdx + 1) % bioTips.length; tip.innerText = bioTips[tipIdx]; tip.style.opacity = "0.6"; }, 1000); }
-        }, 10000);
-
-        setAudioMode(currentAudioMode);
         function moveSpark() {
-            const target = document.getElementById('spark-target');
-            const x = Math.random() * (window.innerWidth - 100) + 50;
-            const y = Math.random() * (window.innerHeight - 100) + 50;
-            target.style.left = x + 'px';
-            target.style.top = y + 'px';
+            const t = document.getElementById('spark-target');
+            t.style.left = (Math.random() * (innerWidth-100)+50) + 'px';
+            t.style.top = (Math.random() * (innerHeight-100)+50) + 'px';
         }
 
-        function updateSparkCount() {
-            document.getElementById('spark-count').innerText = `SYNCS: ${count}/10`;
-        }
-
-        // Resize handler for iPad rotation
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
+        function updateSparkCount() { document.getElementById('spark-count').innerText = `SYNCS: ${count}/10`; }
     </script>
 </body>
 </html>
