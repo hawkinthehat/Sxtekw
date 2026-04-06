@@ -92,7 +92,6 @@
             <p style="font-size: 0.5rem; opacity: 0.2; margin-top: 20px;">PRESS ENTER TO UNWEAVE</p>
         </div>
     </div>
-</body>
 <script>
     // --- DATA & STATE ---
     const totems = [
@@ -104,6 +103,12 @@
     let isDrawing = false;
     let userPath = [];
     let sparkCount = 0;
+
+    function showHomeScreen() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-home').classList.add('active');
+        document.getElementById('feather-target').style.display = 'none';
+    }
 
     // --- NAVIGATION ---
     function startSection(type) {
@@ -117,10 +122,9 @@
     }
 
     function exitToHome() {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('screen-home').classList.add('active');
-        document.getElementById('feather-target').style.display = 'none';
+        showHomeScreen();
         userPath = [];
+        isDrawing = false;
     }
 
     // --- KW’ÉTL’EN (WEAVE) ---
@@ -211,5 +215,9 @@
             }, 2100);
         }
     }
+
+    window.addEventListener('DOMContentLoaded', showHomeScreen);
+    window.addEventListener('pageshow', showHomeScreen);
 </script>
+    </body>
 </html>
