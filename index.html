@@ -5,304 +5,202 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SXT’EKW | The Quiet</title>
     <style>
-        :root { --bg: #020617; --jade: #00A36C; --gold: #fbbf24; --text: #f1f5f9; }
+        :root { --bg: #000000; --jade: #00A36C; --gold: #fbbf24; --text: #f1f5f9; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; touch-action: none; -webkit-user-select: none; }
-        
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.6s ease; z-index: 10; }
+
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.5s ease; z-index: 10; }
         .active { display: flex; opacity: 1; }
 
-        .btn-hilu { position: absolute; top: 30px; left: 30px; background: rgba(0, 163, 108, 0.1); border: 1px solid var(--jade); color: var(--jade); padding: 10px 20px; border-radius: 50px; font-size: 0.7rem; letter-spacing: 2px; z-index: 1000; cursor: pointer; }
-
         .home-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; width: 100%; height: 100%; }
-        .quad-btn { display: flex; flex-direction: column; justify-content: center; align-items: center; border: 0.5px solid rgba(0, 163, 108, 0.2); cursor: pointer; }
-        .quad-title { font-size: 1.2rem; letter-spacing: 5px; font-weight: 900; color: var(--jade); margin: 0; }
-        .quad-sub { font-size: 0.6rem; letter-spacing: 3px; opacity: 0.5; margin-top: 10px; text-transform: uppercase; }
+        .quad-btn { display: flex; flex-direction: column; justify-content: center; align-items: center; border: 0.5px solid #111; cursor: pointer; background: #050505; }
+        .quad-btn:active { background: #111; }
+        .quad-title { font-size: 1.1rem; letter-spacing: 6px; font-weight: 900; color: var(--jade); margin: 0; }
+        .quad-sub { font-size: 0.55rem; letter-spacing: 4px; opacity: 0.4; margin-top: 12px; text-transform: uppercase; }
 
-        .instr-card { background: rgba(0, 163, 108, 0.05); border: 2px solid var(--jade); padding: 20px; border-radius: 20px; max-width: 280px; text-align: center; z-index: 20; }
-        
+        .btn-hilu { position: absolute; top: 30px; left: 30px; background: none; border: 1px solid #333; color: #666; padding: 8px 18px; border-radius: 5px; font-size: 0.6rem; letter-spacing: 3px; z-index: 1000; cursor: pointer; }
+        .instr-card { border: 1px solid #222; padding: 30px; border-radius: 0; max-width: 300px; text-align: center; z-index: 20; background: #050505; }
+
         canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
         #touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
-        #spark-target { position: absolute; width: 50px; height: 50px; background: var(--jade); border-radius: 50%; box-shadow: 0 0 30px var(--jade); cursor: pointer; z-index: 30; display: none; }
-        
-        input, textarea { background: none; border: 1px solid #333; color: white; border-radius: 10px; padding: 10px; outline: none; }
-        input:focus, textarea:focus { border-color: var(--jade); }
+
+        #feather-target {
+            position: absolute; width: 60px; height: 25px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            border-radius: 50%; filter: blur(2px);
+            box-shadow: 0 0 20px var(--gold);
+            display: none; z-index: 30;
+            transition: all 1.4s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+        }
+
+        input { background: none; border-bottom: 2px solid var(--gold); border-top: none; border-left: none; border-right: none; color: white; width: 100px; text-align: center; font-size: 2rem; margin-top: 20px; outline: none; }
+        textarea { background: #050505; border: 1px solid #222; color: var(--text); border-radius: 0; padding: 10px; width: 100%; height: 110px; outline: none; resize: none; }
+        .dissolve { transform: scale(0); opacity: 0; filter: blur(10px); transition: all 2s ease-in-out; }
     </style>
 </head>
 <body>
 
     <div id="screen-home" class="screen active" style="padding:0;">
         <div class="home-grid">
-            <div class="quad-btn" onclick="startSection('weave')">
-                <span class="quad-title">KW’ÉTL’EN</span>
-                <span class="quad-sub">WEAVE</span>
-            </div>
-            <div class="quad-btn" onclick="startSection('paxwad')" style="border-left:none;">
-                <span class="quad-title" style="color: var(--gold);">P’ÁX̌WAD</span>
-                <span class="quad-sub">SPARK</span>
-            </div>
-            <div class="quad-btn" onclick="startSection('stexem')" style="border-top:none;">
-                <span class="quad-title" style="color: var(--gold);">ST’ÉXEM</span>
-                <span class="quad-sub">STILL</span>
-            </div>
-            <div class="quad-btn" onclick="startSection('kwelap')" style="border-top:none; border-left:none;">
-                <span class="quad-title">KW’ÉLAP</span>
-                <span class="quad-sub">HALT</span>
-            </div>
+            <div class="quad-btn" onclick="startSection('weave')"><span class="quad-title">KW’ÉTL’EN</span><span class="quad-sub">WEAVE</span></div>
+            <div class="quad-btn" onclick="startSection('paxwad')" style="border-left:none;"><span class="quad-title" style="color: var(--gold);">P’ÁX̌WAD</span><span class="quad-sub">SPARK</span></div>
+            <div class="quad-btn" onclick="startSection('stexem')" style="border-top:none;"><span class="quad-title" style="color: var(--gold);">ST’ÉXEM</span><span class="quad-sub">STILL</span></div>
+            <div class="quad-btn" onclick="startSection('kwelap')" style="border-top:none; border-left:none;"><span class="quad-title">KW’ÉLAP</span><span class="quad-sub">HALT</span></div>
         </div>
     </div>
 
     <div id="screen-weave" class="screen">
         <button class="btn-hilu" onclick="exitToHome()">HÍLU</button>
-        <div style="z-index: 100; text-align: center; position: absolute; top: 100px; pointer-events: none;">
-            <h2 id="animal-name" style="color: var(--gold); letter-spacing: 8px; text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);"></h2>
-        </div>
         <canvas id="weave-canvas"></canvas>
         <div id="touch-layer"></div>
     </div>
 
     <div id="screen-paxwad" class="screen">
         <button class="btn-hilu" onclick="exitToHome()">HÍLU</button>
-        <div id="paxwad-instr" class="instr-card">
-            <span style="color: var(--gold); font-weight: 900;">STILLNESS RULE:</span><br>
-            Keep head still. Follow with eyes only.
-        </div>
-        <div id="spark-target" onclick="hitSpark()"></div>
-        <div id="spark-count" style="position: absolute; bottom: 50px; color: var(--jade); letter-spacing: 4px;">0 / 10</div>
+        <div id="feather-target" onclick="hitFeather()"></div>
+        <div id="spark-count" style="position: absolute; bottom: 50px; color: #333; letter-spacing: 5px; font-size: 0.7rem;">0 / 10</div>
     </div>
 
     <div id="screen-stexem" class="screen">
         <button class="btn-hilu" onclick="exitToHome()">HÍLU</button>
-        <div class="instr-card" style="border-color: var(--gold);">
-            <p id="logic-question" style="font-size: 1.8rem; color: var(--gold); margin: 0;"></p>
-            <input type="number" id="logic-answer" pattern="[0-9]*" inputmode="numeric" style="width: 80px; margin-top: 15px; text-align: center; font-size: 1.5rem;">
-            <button onclick="checkLogic()" style="display: block; margin: 20px auto 0; background: var(--gold); color: black; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold;">SUBMIT</button>
+        <div class="instr-card">
+            <p id="logic-question" style="font-size: 1.8rem; color: var(--gold); margin: 0; letter-spacing: 2px;"></p>
+            <input type="number" id="logic-answer" pattern="[0-9]*" inputmode="numeric" oninput="checkLogicInstant()">
         </div>
     </div>
 
     <div id="screen-kwelap" class="screen">
         <button class="btn-hilu" onclick="exitToHome()">HÍLU</button>
-        <div class="instr-card" style="border-color: var(--text); width: 80%;">
-            <p style="opacity: 0.7; font-size: 0.8rem;">NAME THE THOUGHT</p>
-            <textarea id="halt-thought" placeholder="..." style="width: 100%; height: 100px;"></textarea>
-            <p style="font-size: 0.6rem; opacity: 0.4; margin-top: 10px;">Watch it dissolve.</p>
+        <div class="instr-card" style="border: none; width: 85%;">
+            <p style="opacity: 0.3; font-size: 0.6rem; letter-spacing: 3px;">NAME THE THOUGHT</p>
+            <textarea id="halt-thought" placeholder="..." onkeypress="handleHalt(event)"></textarea>
+            <p id="halt-msg" style="font-size: 0.5rem; opacity: 0.2; margin-top: 20px; letter-spacing: 1px;">PRESS ENTER TO UNWEAVE</p>
         </div>
     </div>
 
     <script>
         const totems = [
-            { name: "SQUWAL'QUW", points: [{x:0.5, y:0.2}, {x:0.3, y:0.5}, {x:0.7, y:0.5}, {x:0.5, y:0.8}, {x:0.5, y:0.2}] },
-            { name: "STIQÍYU’", points: [{x:0.2, y:0.5}, {x:0.4, y:0.3}, {x:0.6, y:0.3}, {x:0.8, y:0.5}, {x:0.5, y:0.8}, {x:0.2, y:0.5}] },
-            { name: "QW’ULH-LÚ-MUCW", points: [{x:0.2, y:0.7}, {x:0.5, y:0.3}, {x:0.8, y:0.7}, {x:0.5, y:0.9}, {x:0.2, y:0.7}] },
-            { name: "YÍXWULA", points: [{x:0.1, y:0.3}, {x:0.5, y:0.5}, {x:0.9, y:0.3}, {x:0.5, y:0.8}, {x:0.1, y:0.3}] }
-        ];
-
-        const logicStyles = [
-            { type: 'math', get: () => {
-                const a = Math.floor(Math.random() * 12) + 2;
-                const b = Math.floor(Math.random() * 9) + 2;
-                return { q: `${a} x ${b}`, a: a * b };
-            }},
-            { type: 'spatial', get: () => {
-                const count = Math.floor(Math.random() * 7) + 3;
-                return { q: "● ".repeat(count), a: count };
-            }},
-            { type: 'vowel', get: () => {
-                const words = ["SQUWAL'QUW", "STIQÍYU’", "YÍXWULA", "SXT’EKW"];
-                const word = words[Math.floor(Math.random() * words.length)];
-                const count = (word.match(/[AEIOU]/gi) || []).length;
-                return { q: `Vowels in: ${word}`, a: count };
-            }}
+            { points: [{x:0.5, y:0.2}, {x:0.3, y:0.5}, {x:0.7, y:0.5}, {x:0.5, y:0.8}, {x:0.5, y:0.2}] },
+            { points: [{x:0.1, y:0.4}, {x:0.9, y:0.4}, {x:0.5, y:0.8}, {x:0.1, y:0.4}] }
         ];
 
         let currentLevel = 0;
-        let sparkCount = 0;
-        let featherPos = { x: 50, y: 50 };
         let isDrawing = false;
         let userPath = [];
-        let completedLines = [];
-        let touchLayerBound = false;
+        let sparkCount = 0;
+        let fSide = 0;
 
         function startSection(type) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(`screen-${type}`).classList.add('active');
             if(type === 'weave') initWeave();
-            if(type === 'paxwad') initSpark();
+            if(type === 'paxwad') initFeather();
             if(type === 'stexem') initLogic();
         }
 
         function exitToHome() {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-home').classList.add('active');
-            document.getElementById('spark-target').style.display = 'none';
+            document.getElementById('feather-target').style.display = 'none';
             isDrawing = false;
             userPath = [];
-            completedLines = [];
         }
 
         function initWeave() {
             const canvas = document.getElementById('weave-canvas');
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            isDrawing = false;
-            userPath = [];
-            completedLines = [];
-            document.getElementById('animal-name').innerText = totems[currentLevel].name;
-            bindTouchLayer();
-            renderWeave();
-        }
-
-        function bindTouchLayer() {
-            if (touchLayerBound) return;
-            touchLayerBound = true;
             const layer = document.getElementById('touch-layer');
-            if (!layer) return;
-
-            layer.onpointerdown = (e) => {
-                if (!document.getElementById('screen-weave').classList.contains('active')) return;
-                isDrawing = true;
-                userPath = [{ x: e.clientX, y: e.clientY }];
-            };
-
-            layer.onpointermove = (e) => {
-                if (!isDrawing || !document.getElementById('screen-weave').classList.contains('active')) return;
-                const pos = { x: e.clientX, y: e.clientY };
-                userPath.push(pos);
-                checkSnap(pos);
-            };
-
-            layer.onpointerup = () => {
-                if (isDrawing && userPath.length > 0) {
-                    completedLines.push([...userPath]);
-                }
-                isDrawing = false;
-                userPath = [];
-            };
-
+            layer.onpointerdown = (e) => { isDrawing = true; userPath = [{x: e.clientX, y: e.clientY}]; };
+            layer.onpointermove = (e) => { if (isDrawing) userPath.push({x: e.clientX, y: e.clientY}); };
+            layer.onpointerup = () => { isDrawing = false; userPath = []; };
             layer.onpointercancel = layer.onpointerup;
-        }
-
-        function checkSnap(pos) {
-            const canvas = document.getElementById('weave-canvas');
-            if (!canvas) return;
-            const totem = totems[currentLevel];
-            let isNearAnyPoint = false;
-            totem.points.forEach((p) => {
-                const tx = p.x * canvas.width;
-                const ty = p.y * canvas.height;
-                const dist = Math.hypot(pos.x - tx, pos.y - ty);
-                if (dist < 40) isNearAnyPoint = true;
-            });
-            if (isNearAnyPoint && navigator.vibrate) navigator.vibrate(15);
+            renderWeave();
         }
 
         function renderWeave() {
             const canvas = document.getElementById('weave-canvas');
-            if (!canvas || !document.getElementById('screen-weave').classList.contains('active')) return;
+            if(!canvas || !document.getElementById('screen-weave').classList.contains('active')) return;
             const ctx = canvas.getContext('2d');
-            
-            ctx.fillStyle = '#020617';
+            ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.strokeStyle = 'rgba(0, 163, 108, 0.15)';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([5, 15]);
             const totem = totems[currentLevel];
+            ctx.strokeStyle = 'rgba(0, 163, 108, 0.12)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 12]);
             ctx.beginPath();
             totem.points.forEach((p, i) => {
                 const x = p.x * canvas.width;
                 const y = p.y * canvas.height;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
+                if(i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
             });
             ctx.stroke();
             ctx.setLineDash([]);
 
-            completedLines.forEach((line) => {
-                if (line.length < 2) return;
-                ctx.beginPath();
-                line.forEach((p, i) => {
-                    if (i === 0) ctx.moveTo(p.x, p.y);
-                    else ctx.lineTo(p.x, p.y);
-                });
-                ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
+            if(isDrawing && userPath.length > 1) {
+                ctx.strokeStyle = '#fbbf24';
                 ctx.lineWidth = 3;
                 ctx.lineJoin = 'round';
                 ctx.lineCap = 'round';
-                ctx.stroke();
-            });
-
-            if (isDrawing && userPath.length > 1) {
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 4;
-                ctx.lineJoin = 'round';
-                ctx.lineCap = 'round';
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = '#fbbf24';
                 ctx.beginPath();
-                userPath.forEach((p, i) => {
-                    if (i === 0) ctx.moveTo(p.x, p.y);
-                    else ctx.lineTo(p.x, p.y);
-                });
+                userPath.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
                 ctx.stroke();
-                ctx.shadowBlur = 0;
             }
-
             requestAnimationFrame(renderWeave);
-        }
-
-        function initSpark() {
-            initFeather();
         }
 
         function initFeather() {
             sparkCount = 0;
             document.getElementById('spark-count').innerText = "0 / 10";
-            document.getElementById('paxwad-instr').style.opacity = 1;
-            const feather = document.getElementById('spark-target');
-            feather.style.display = 'block';
-            feather.style.borderRadius = '50% 50% 10% 50%';
-            feather.style.transform = 'rotate(45deg)';
-            feather.style.transition = 'all 1.2s ease-in-out';
+            document.getElementById('feather-target').style.display = 'block';
             moveFeather();
         }
 
         function moveFeather() {
-            const t = document.getElementById('spark-target');
-            featherPos.x = (featherPos.x === 10) ? 90 : 10;
-            featherPos.y = Math.random() * 40 + 30;
-            t.style.left = featherPos.x + '%';
-            t.style.top = featherPos.y + '%';
+            const f = document.getElementById('feather-target');
+            fSide = fSide === 0 ? 1 : 0;
+            f.style.left = fSide === 0 ? '10%' : '80%';
+            f.style.top = (Math.random() * 40 + 30) + '%';
         }
 
         function hitFeather() {
             sparkCount++;
             document.getElementById('spark-count').innerText = `${sparkCount} / 10`;
-            if (navigator.vibrate) navigator.vibrate(30);
-            if (sparkCount >= 10) {
-                exitToHome();
-            } else {
-                moveFeather();
-            }
+            if (navigator.vibrate) navigator.vibrate(20);
+            if(sparkCount >= 10) exitToHome(); else moveFeather();
         }
 
-        function hitSpark() {
-            hitFeather();
-        }
+        const logicTasks = [
+            { q: () => { const a = Math.floor(Math.random() * 9) + 2, b = Math.floor(Math.random() * 8) + 2; return {txt: `${a} x ${b}`, ans: a * b}; }},
+            { q: () => { const n = Math.floor(Math.random() * 6) + 4; return {txt: "● ".repeat(n), ans: n}; }}
+        ];
 
         function initLogic() {
-            const style = logicStyles[Math.floor(Math.random() * logicStyles.length)];
-            const task = style.get();
-            document.getElementById('logic-question').innerText = task.q;
-            window.correctResult = task.a;
+            const task = logicTasks[Math.floor(Math.random() * logicTasks.length)].q();
+            document.getElementById('logic-question').innerText = task.txt;
+            window.correctAns = task.ans;
             document.getElementById('logic-answer').value = "";
             document.getElementById('logic-answer').focus();
         }
 
-        function checkLogic() {
-            const ans = parseInt(document.getElementById('logic-answer').value);
-            if(ans === window.correctResult) {
-                if (navigator.vibrate) navigator.vibrate(30);
-                initLogic();
+        function checkLogicInstant() {
+            const val = parseInt(document.getElementById('logic-answer').value);
+            if(val === window.correctAns) {
+                if (navigator.vibrate) navigator.vibrate(40);
+                setTimeout(initLogic, 200);
+            }
+        }
+
+        function handleHalt(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const box = document.getElementById('halt-thought');
+                box.classList.add('dissolve');
+                if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+                setTimeout(() => {
+                    box.value = "";
+                    box.classList.remove('dissolve');
+                }, 2100);
             }
         }
     </script>
