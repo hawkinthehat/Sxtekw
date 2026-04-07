@@ -80,6 +80,11 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
+        .emergency-dial.is-pressed {
+            transform: scale(0.95);
+            background: rgba(239, 68, 68, 0.22);
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.35);
+        }
         .emergency-dial:active {
             transform: scale(0.9);
             background: var(--red);
@@ -105,6 +110,12 @@
             text-align: center;
             transition: all 0.2s ease;
             cursor: pointer;
+        }
+        .pill.is-pressed {
+            transform: scale(0.97);
+            border-color: var(--teal);
+            background: rgba(56, 189, 248, 0.14);
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
         }
         .pill:active {
             border-color: var(--teal);
@@ -657,14 +668,32 @@
                 const target = item.getAttribute('data-go');
                 if (!target) return;
 
+                const setPressed = () => item.classList.add('is-pressed');
+                const clearPressed = () => item.classList.remove('is-pressed');
+
+                item.addEventListener('pointerdown', (event) => {
+                    if (!event.isPrimary) return;
+                    if (event.pointerType === 'mouse' && event.button !== 0) return;
+                    setPressed();
+                });
+
+                item.addEventListener('pointerup', clearPressed);
+                item.addEventListener('pointercancel', clearPressed);
+                item.addEventListener('pointerleave', clearPressed);
+
                 item.addEventListener('click', (event) => {
                     if (event.button !== 0) return;
+                    clearPressed();
                     go(target);
                 });
 
                 item.addEventListener('keydown', (event) => {
                     if (event.key !== 'Enter' && event.key !== ' ') return;
                     event.preventDefault();
+                    setPressed();
+                    requestAnimationFrame(() => {
+                        clearPressed();
+                    });
                     go(target);
                 });
             });
