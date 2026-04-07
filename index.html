@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SXT’EKW | 2.5 Warrior</title>
     <title>SXT’EKW | Legacy</title>
     <style>
+        :root { --bg: #000; --teal: #0d9488; --gold: #fbbf24; --text: #f1f5f9; }
         /* COLOR PALETTE: BLACK (000), RED (f43f5e), YELLOW (fbbf24) */
         :root { --bg: #000; --teal: #0d9488; --gold: #fbbf24; --red: #f43f5e; --text: #f1f5f9; --off: #222; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; touch-action: none; -webkit-user-select: none; }
@@ -12,6 +14,10 @@
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10; opacity: 0; transition: opacity 0.4s; }
         .active { display: flex; opacity: 1; }
 
+        /* 128 BPM HEARTBEAT PULSE */
+        @keyframes beat {
+            0% { transform: scale(1); filter: brightness(1); }
+            14% { transform: scale(1.08); filter: brightness(1.4); box-shadow: 0 0 30px var(--teal); }
         /* 128 BPM HEARTBEAT */
         @keyframes beat {
             0% { transform: scale(1); filter: brightness(1); }
@@ -20,6 +26,19 @@
         }
         .logo-pulse { width: 90px; height: 90px; border: 2px solid var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: beat 0.468s infinite; margin-bottom: 25px; }
 
+        /* BUTTON STYLING */
+        .launch-btn { width: 280px; padding: 20px; margin: 10px 0; border: 1px solid #111; background: #050505; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .btn-title { font-size: 1.1rem; letter-spacing: 6px; font-weight: 900; color: var(--teal); }
+        .phonetic-md { font-size: 0.7rem; letter-spacing: 2px; color: var(--gold); margin-top: 5px; }
+
+        /* HIJACK & EMDR */
+        #logic-q { font-size: 1.8rem; color: var(--gold); margin-bottom: 20px; text-align: center; }
+        #logic-input { background: none; border-bottom: 2px solid var(--gold); border-top:none; border-left:none; border-right:none; color: white; width: 100%; text-align: center; font-size: 2.2rem; outline: none; }
+        #feather { position: absolute; width: 100px; height: 10px; background: var(--teal); border-radius: 20px; filter: blur(2px); box-shadow: 0 0 20px var(--teal); display: none; transition: all 1.2s cubic-bezier(0.65, 0, 0.35, 1); }
+
+        .btn-hilu { position: absolute; top: 30px; left: 30px; background: none; border: 1px solid #222; color: #444; padding: 8px 15px; font-size: 0.55rem; letter-spacing: 2px; z-index: 1000; }
+        .btn-hilu { position: absolute; top: 30px; left: 30px; background: rgba(20, 184, 166, 0.08); border: 1px solid var(--teal); color: var(--teal); padding: 8px 15px; font-size: 0.55rem; letter-spacing: 2px; z-index: 1000; text-transform: uppercase; cursor: pointer; }
+        .btn-hilu:active { background: rgba(20, 184, 166, 0.2); }
         /* HOME BUTTONS */
         .launch-btn { width: 280px; padding: 20px; margin: 10px 0; border: 1px solid #111; background: #050505; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
         .btn-title { font-size: 1.1rem; letter-spacing: 6px; font-weight: 900; color: var(--teal); }
@@ -85,6 +104,9 @@
 
     <div id="screen-kwelap" class="screen">
         <button class="btn-hilu" onclick="exitToHome()">HÍLU</button>
+        <div style="text-align: center; width: 85%;">
+            <textarea id="halt-thought" placeholder="NAME THE WEIGHT..." onkeypress="handleHalt(event)" style="background: none; border: 1px solid #111; color: white; width: 100%; height: 120px; padding: 20px; text-align: center; font-size: 1.1rem; outline: none;"></textarea>
+            <p style="font-size: 0.5rem; color: var(--teal); opacity: 0.4; letter-spacing: 3px; margin-top: 30px;">ENTER TO UNRAVEL</p>
         <div id="halt-container" style="text-align: center; width: 85%;">
             <textarea id="halt-thought" placeholder="TYPE YOUR WORRY..." onkeypress="handleHalt(event)" style="background: none; border: 1px solid #111; color: white; width: 100%; height: 120px; padding: 20px; text-align: center; font-size: 1.1rem; outline: none;"></textarea>
             <p style="font-size: 0.5rem; color: var(--teal); opacity: 0.4; letter-spacing: 3px; margin-top: 30px;">ENTER TO EXPLODE</p>
@@ -165,6 +187,12 @@
         let weaveFrame = null;
         let weaveAdvanceTimer = null;
             { name: "SQUW'AL'QUW", phonetic: "[ sk-wahl-koo ] RAVEN", points: [{x:0.5, y:0.2}, {x:0.3, y:0.5}, {x:0.7, y:0.5}, {x:0.5, y:0.8}, {x:0.5, y:0.2}] },
+            { name: "STIQÍYU’", phonetic: "[ stee-kee-yoo ] WOLF", points: [{x:0.2, y:0.4}, {x:0.5, y:0.2}, {x:0.8, y:0.4}, {x:0.7, y:0.7}, {x:0.3, y:0.7}, {x:0.2, y:0.4}] },
+            { name: "KW’ELHÚ", phonetic: "[ kwel-hoo ] ORCA", points: [{x:0.5, y:0.2}, {x:0.8, y:0.4}, {x:0.6, y:0.7}, {x:0.4, y:0.7}, {x:0.2, y:0.4}, {x:0.5, y:0.2}] },
+            { name: "YEXWALA", phonetic: "[ yeh-hwah-lah ] EAGLE", points: [{x:0.1, y:0.4}, {x:0.3, y:0.3}, {x:0.5, y:0.5}, {x:0.7, y:0.3}, {x:0.9, y:0.4}, {x:0.5, y:0.8}, {x:0.1, y:0.4}] }
+        ];
+
+        let currentLevel = 0, isDrawing = false, userPath = [], lockedLines = [], correctCount = 0, currentAns = "", sparkCount = 0;
             { name: "STIQÍYU’", phonetic: "[ stee-kee-yoo ] WOLF", points: [{x:0.2, y:0.4}, {x:0.5, y:0.2}, {x:0.8, y:0.4}, {x:0.7, y:0.7}, {x:0.3, y:0.7}, {x:0.2, y:0.4}] }
         ];
 
@@ -173,6 +201,7 @@
         function startSection(type) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(`screen-${type}`).classList.add('active');
+            if(type === 'paxwad') initHijack();
             if(type === 'paxwad') initLogic();
             if(type === 'weave') initWeave();
         }
@@ -181,6 +210,15 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-home').classList.add('active');
             document.getElementById('feather').style.display = 'none';
+        }
+
+        /* --- LOGIC (HIJACK) --- */
+        const logicTasks = [
+            { q: () => { const a=Math.floor(Math.random()*9)+3, b=Math.floor(Math.random()*8)+2; return {txt:`${a} x ${b}`, ans:(a*b).toString()}; }},
+            { q: () => { const words=["RAVEN","WOLF","ORCA","EAGLE","CEDAR"]; const w=words[Math.floor(Math.random()*words.length)]; return {txt:`REVERSE: ${w}`, ans:w.split('').reverse().join('')}; }}
+        ];
+
+        function initHijack() {
             isDrawing = false;
             userPath = [];
             weavePointer = null;
@@ -223,6 +261,10 @@
                 correctCount++; if (navigator.vibrate) navigator.vibrate(40);
                 if (correctCount >= 3) startFeather();
                 else { document.getElementById('prog-dots').style.opacity = (correctCount/3)+0.2; setTimeout(nextTask, 300); }
+            } else if (val.length >= currentAns.length && val !== currentAns) {
+                correctCount = 0; document.getElementById('prog-dots').style.opacity = 0.2;
+                if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
+                setTimeout(nextTask, 1000);
             }
         }
 
@@ -243,6 +285,10 @@
 
         function hitFeather() {
             sparkCount++; if (navigator.vibrate) navigator.vibrate(20);
+            if(sparkCount >= 10) exitToHome(); else moveFeather();
+        }
+
+        /* --- WEAVE ENGINE --- */
             if(sparkCount >= 12) exitToHome(); else moveFeather();
         }
 
@@ -272,6 +318,34 @@
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             document.getElementById('animal-name').innerText = totems[currentLevel].name;
             document.getElementById('animal-phonetic').innerText = totems[currentLevel].phonetic;
+            lockedLines = [];
+            
+            const layer = document.getElementById('touch-layer');
+            layer.onpointerdown = (e) => { isDrawing = true; userPath = [{x: e.clientX, y: e.clientY}]; };
+            layer.onpointermove = (e) => { 
+                if(!isDrawing) return;
+                const newP = {x: e.clientX, y: e.clientY};
+                userPath.push(newP);
+                totems[currentLevel].points.forEach(p => {
+                    const dx = newP.x - (p.x * canvas.width);
+                    const dy = newP.y - (p.y * canvas.height);
+                    if (Math.sqrt(dx*dx + dy*dy) < 30) {
+                        if (navigator.vibrate) navigator.vibrate(15);
+                        const lockPoint = {x: p.x * canvas.width, y: p.y * canvas.height};
+                        if (!lockedLines.find(lp => lp.x === lockPoint.x && lp.y === lockPoint.y)) {
+                            lockedLines.push(lockPoint);
+                        }
+                    }
+                });
+            };
+            layer.onpointerup = () => { 
+                isDrawing = false; 
+                if (lockedLines.length >= totems[currentLevel].points.length) {
+                    currentLevel = (currentLevel + 1) % totems.length;
+                    setTimeout(initWeave, 1000);
+                }
+                userPath = []; 
+            };
             userPath = [];
             const layer = document.getElementById('touch-layer');
             layer.onpointerdown = (e) => { isDrawing = true; userPath.push({x: e.clientX, y: e.clientY}); };
@@ -425,6 +499,21 @@
                 ctx.lineTo(weavePointer.x, weavePointer.y);
             // Anchors
             totems[currentLevel].points.forEach(p => {
+                const s = Math.sin(Date.now() * 0.003 + p.x) * 2 + 4;
+                ctx.beginPath(); ctx.arc(p.x * canvas.width, p.y * canvas.height, s, 0, Math.PI*2);
+                ctx.fillStyle = 'var(--gold)'; ctx.fill();
+            });
+
+            // Woven Lines
+            if(lockedLines.length > 1) {
+                ctx.strokeStyle = 'var(--teal)'; ctx.lineWidth = 3; ctx.beginPath();
+                lockedLines.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+                ctx.stroke();
+            }
+
+            // Finger Path
+            if(isDrawing && userPath.length > 1) {
+                ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)'; ctx.lineWidth = 2; ctx.beginPath();
                 ctx.beginPath(); ctx.arc(p.x * canvas.width, p.y * canvas.height, 4, 0, Math.PI*2);
                 ctx.fillStyle = 'rgba(251, 191, 36, 0.5)'; ctx.fill();
             });
@@ -439,11 +528,17 @@
             weaveFrame = requestAnimationFrame(renderWeave);
         }
 
+        /* --- HALT: UNRAVEL --- */
         /* --- HALT: EXPLOSION --- */
         function handleHalt(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const box = document.getElementById('halt-thought');
+                box.style.transition = 'all 2.2s ease-out';
+                box.style.filter = 'blur(20px)'; box.style.opacity = '0';
+                box.style.transform = 'translateY(-120px) scale(1.1)';
+                if (navigator.vibrate) navigator.vibrate([10, 40, 10, 60]);
+                setTimeout(() => { box.value = ""; box.style.filter = "none"; box.style.opacity = "1"; box.style.transform = "none"; exitToHome(); }, 2300);
                 box.classList.add('exploding');
                 if (navigator.vibrate) navigator.vibrate([50, 100, 50]);
                 setTimeout(() => { 
