@@ -682,7 +682,7 @@
                 item.addEventListener('pointerleave', clearPressed);
 
                 item.addEventListener('click', (event) => {
-                    if (event.button !== 0) return;
+                    if (typeof event.button === 'number' && event.button !== 0) return;
                     clearPressed();
                     go(target);
                 });
