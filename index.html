@@ -93,10 +93,12 @@
         let currentLevel = 0, isDrawing = false, userPath = [], lockedLines = [], correctCount = 0, currentAns = "", sparkCount = 0;
 
         function startSection(type) {
+            const targetScreen = document.getElementById(`screen-${type}`);
+            if (!targetScreen) return;
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(`screen-${type}`).classList.add('active');
-            if(type === 'paxwad') initHijack();
-            if(type === 'weave') initWeave();
+            targetScreen.classList.add('active');
+            if (type === 'paxwad') initHijack();
+            if (type === 'weave') initWeave();
         }
 
         function exitToHome() {
