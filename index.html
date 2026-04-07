@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="background:#121212;">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#121212">
+    <meta name="color-scheme" content="dark">
     <title>SXT’EKW | 2.0</title>
     <style>
         :root {
@@ -17,24 +19,125 @@
             --red: #ef4444;
             --text: #f8fafc;
         }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; touch-action: none; -webkit-user-select: none; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg) !important;
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            -webkit-user-select: none;
+            overscroll-behavior: none;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: -9999;
+            pointer-events: none;
+        }
 
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10; opacity: 0; transition: opacity 0.3s; }
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #121212;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+            box-sizing: border-box;
+            background: radial-gradient(circle at center, #1e1e1e 0%, #121212 100%);
+        }
         .active { display: flex; opacity: 1; }
 
-        /* THE HEARTBEAT LOGO */
-        @keyframes pulse {
-            0% { transform: scale(1); filter: brightness(1); }
-            10% { transform: scale(1.1); filter: brightness(1.6); box-shadow: 0 0 30px var(--teal); }
-            100% { transform: scale(1); filter: brightness(1); }
-        }
-        .logo-pulse { width: 85px; height: 85px; border: 2px solid var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: pulse 0.468s infinite; margin-bottom: 20px; }
-
-        /* BUTTONS */
-        .btn-2 { width: 260px; padding: 18px; margin: 8px 0; border: 1px solid #111; background: #050505; text-align: center; cursor: pointer; }
-        .btn-2:active { background: #111; border-color: var(--teal); }
         .t-main { font-size: 1rem; letter-spacing: 5px; font-weight: 900; color: var(--teal); display: block; }
         .t-phonetic { font-size: 0.65rem; letter-spacing: 2px; color: var(--gold); margin-top: 4px; display: block; }
+
+        /* HOME SCREEN INTERFACE */
+        .emergency-dial {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: rgba(244, 63, 94, 0.05);
+            border: 2px solid var(--red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            box-shadow: 0 0 30px rgba(244, 63, 94, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .emergency-dial:active {
+            transform: scale(0.9);
+            background: var(--red);
+        }
+        .emergency-dial span {
+            color: var(--red);
+            font-weight: 900;
+            letter-spacing: 4px;
+            font-size: 1.2rem;
+        }
+        .pill-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 340px;
+        }
+        .pill {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px 15px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .pill:active {
+            border-color: var(--teal);
+            background: rgba(13, 148, 136, 0.1);
+        }
+        .pill .t-main {
+            color: var(--teal);
+            font-size: 0.9rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            display: block;
+        }
+        .pill .t-sub {
+            color: var(--gold);
+            font-size: 0.6rem;
+            letter-spacing: 1px;
+            margin-top: 5px;
+            opacity: 0.7;
+        }
+        #hud-top {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-sizing: border-box;
+        }
+        .win-pips {
+            color: var(--gold);
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+        }
 
         /* INSTRUCTION OVERLAY */
         .overlay {
@@ -69,6 +172,13 @@
         }
 
         /* LOGIC & FEATHERS */
+        #logic-instr {
+            font-size: 0.62rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            opacity: 0.95;
+        }
         #q-text { font-size: 1.8rem; color: var(--gold); margin-bottom: 15px; text-align: center; font-weight: bold; transition: transform 0.2s ease; }
         #logic-in { background: none; border-bottom: 2px solid var(--gold); border-top:none; border-left:none; border-right:none; color: #fff; width: 70%; text-align: center; font-size: 2.2rem; outline: none; }
         #timer-bar-container {
@@ -122,20 +232,29 @@
         /* HÍLU BUTTON - MAXIMUM VISIBILITY */
         .btn-back {
             position: absolute;
-            top: 40px;
-            left: 30px;
-            background: rgba(255, 255, 255, 0.1);
+            top: 50px;
+            left: 25px;
+            background: rgba(255, 255, 255, 0.15);
             border: 2px solid #ffffff;
             color: #ffffff;
-            padding: 12px 24px;
+            padding: 12px 22px;
             font-size: 0.7rem;
-            letter-spacing: 5px;
-            z-index: 1000;
+            letter-spacing: 4px;
+            z-index: 2001;
             border-radius: 40px;
             font-weight: 900;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
+        #cvs {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: transparent;
+        }
         #touch-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
         #weave-instr {
             position: absolute;
@@ -247,7 +366,7 @@
         }
     </style>
 </head>
-<body>
+<body style="background:#121212;">
     <div id="v-border-halt" class="vagal-border"></div>
     <div id="v-border-still" class="vagal-border"></div>
     <div id="instr-overlay" class="overlay" style="display:none;">
@@ -256,30 +375,35 @@
     </div>
 
     <div id="scr-home" class="screen active">
-        <div class="logo-pulse"><span style="color: var(--gold); font-weight: 900; font-size: 0.75rem;">SXT’EKW</span></div>
-        <div class="t-phonetic" style="margin-bottom: 30px; opacity: 0.7;">[ suh-t-ekw ]</div>
+        <div id="hud-top">
+            <div style="color: var(--teal); font-weight: 900; letter-spacing: 2px; font-size: 0.7rem;">SXT’EKW</div>
+            <div class="win-pips">● ● ● ○ ○</div>
+        </div>
 
-        <div class="btn-2" onclick="go('still')">
-            <span class="t-main">ST’ÉXEM</span>
-            <span class="t-phonetic">STILL</span>
+        <div class="emergency-dial" onclick="go('halt')">
+            <span>HALT</span>
         </div>
-        <div class="btn-2" onclick="go('spark')">
-            <span class="t-main">P’ÁX̌WAD</span>
-            <span class="t-phonetic">SPARK</span>
-        </div>
-        <div class="btn-2" onclick="go('weave')">
-            <span class="t-main">KW’ÉTL’EN</span>
-            <span class="t-phonetic">WEAVE</span>
-        </div>
-        <div class="btn-2" onclick="go('halt')">
-            <span class="t-main">KW’ÉLAP</span>
-            <span class="t-phonetic">HALT</span>
+
+        <div class="pill-container">
+            <div class="pill" onclick="go('still')">
+                <div class="t-main">STILL</div>
+                <div class="t-sub">LOGIC + EMDR</div>
+            </div>
+            <div class="pill" onclick="go('spark')">
+                <div class="t-main">SPARK</div>
+                <div class="t-sub">SHATTER + ORBIT</div>
+            </div>
+            <div class="pill" onclick="go('weave')" style="grid-column: span 2;">
+                <div class="t-main">WEAVE</div>
+                <div class="t-sub">SYMMETRY INTEGRATION</div>
+            </div>
         </div>
     </div>
 
     <div id="scr-still" class="screen">
         <button class="btn-back" onclick="home()">HÍLU</button>
         <div id="logic-box" style="text-align: center; width: 85%;">
+            <div id="logic-instr"></div>
             <div id="q-text"></div>
             <input type="text" id="logic-in" autocomplete="off" oninput="doLogic()">
         </div>
@@ -330,6 +454,10 @@
     </div>
 
     <script>
+        // Hard fail-safe so the app never flashes to white.
+        document.documentElement.style.backgroundColor = '#121212';
+        document.body.style.backgroundColor = '#121212';
+
         let currentAns = "", logicHits = 0, hCount = 0, vCount = 0, drawing = false, path = [];
         let stillLevel = 1, saccadeSpeed = 1200, timeLeft = 100, timerId = null;
         let instructionFadeTimer = null, instructionHideTimer = null;
@@ -473,25 +601,41 @@
             () => {
                 const a = Math.floor(Math.random() * 9) + 4;
                 const b = Math.floor(Math.random() * 8) + 3;
-                return { q: `${a} x ${b}`, a: (a * b).toString() };
+                return {
+                    i: "SOLVE THE PRODUCT",
+                    q: `${a} x ${b}`,
+                    a: (a * b).toString()
+                };
             },
             // 2. REVERSE WORDS
             () => {
                 const words = ["RAVEN", "CEDAR", "SALMON", "CANOE", "TOTEM", "EAGLE", "WHALE"];
                 const w = words[Math.floor(Math.random() * words.length)];
-                return { q: `REV: ${w}`, a: w.split('').reverse().join('') };
+                return {
+                    i: "REVERSE THE WORD",
+                    q: `REV: ${w}`,
+                    a: w.split('').reverse().join('')
+                };
             },
             // 3. DOT COUNTING
             () => {
                 const n = Math.floor(Math.random() * 6) + 4;
-                return { q: "● ".repeat(n), a: n.toString() };
+                return {
+                    i: "COUNT THE DOTS",
+                    q: "● ".repeat(n),
+                    a: n.toString()
+                };
             },
             // 4. SEQUENCING
             () => {
                 const start = Math.floor(Math.random() * 10);
                 const step = Math.floor(Math.random() * 4) + 2;
                 const seq = [start, start + step, start + (step * 2)];
-                return { q: `${seq[0]}, ${seq[1]}, ${seq[2]}, ?`, a: (start + (step * 3)).toString() };
+                return {
+                    i: "FIND THE NEXT NUMBER",
+                    q: `${seq[0]}, ${seq[1]}, ${seq[2]}, ?`,
+                    a: (start + (step * 3)).toString()
+                };
             }
         ];
 
@@ -549,17 +693,21 @@
         }
 
         function nextQ() {
-            // Escalation path: dots -> math -> sequence
-            let task;
-            if (logicHits === 0) task = taskPool[2]();
-            else if (logicHits === 1) task = taskPool[0]();
-            else task = taskPool[3]();
-            document.getElementById('q-text').innerText = task.q;
+            const taskIdx = (logicHits === 0) ? 2 : (logicHits === 1) ? 0 : 3;
+            const task = taskPool[taskIdx]();
+
+            const instrEl = document.getElementById('logic-instr');
+            const qTextEl = document.getElementById('q-text');
+            const inputEl = document.getElementById('logic-in');
+
+            instrEl.innerText = task.i;
+            instrEl.style.color = "var(--gold)";
+
+            qTextEl.innerText = task.q;
             currentAns = task.a;
 
-            const input = document.getElementById('logic-in');
-            input.value = "";
-            input.focus();
+            inputEl.value = "";
+            inputEl.focus();
         }
 
         function doLogic() {
@@ -804,7 +952,7 @@
                 return;
             }
             const ctx = c.getContext('2d');
-            ctx.fillStyle = 'var(--bg)';
+            ctx.fillStyle = '#121212';
             ctx.fillRect(0, 0, c.width, c.height);
 
             const pts = levels[curLvl].pts;
@@ -814,10 +962,8 @@
             ctx.lineWidth = 1.5;
             ctx.beginPath();
             pts.forEach((p, i) => {
-                const x = p.x * c.width;
-                const y = p.y * c.height;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
+                if (i === 0) ctx.moveTo(p.x * c.width, p.y * c.height);
+                else ctx.lineTo(p.x * c.width, p.y * c.height);
             });
             ctx.stroke();
             ctx.setLineDash([]);
@@ -825,15 +971,15 @@
             if (connectedPoints.length > 1) {
                 ctx.strokeStyle = '#38bdf8';
                 ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = '#38bdf8';
                 ctx.beginPath();
                 connectedPoints.forEach((idx, i) => {
                     const p = pts[idx];
-                    const x = p.x * c.width;
-                    const y = p.y * c.height;
-                    if (i === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
+                    if (i === 0) ctx.moveTo(p.x * c.width, p.y * c.height);
+                    else ctx.lineTo(p.x * c.width, p.y * c.height);
                 });
                 ctx.stroke();
                 ctx.shadowBlur = 0;
@@ -862,10 +1008,19 @@
                 }
                 ctx.fill();
                 ctx.shadowBlur = 0;
-            });
+            }
 
             weaveRafId = requestAnimationFrame(drawLoop);
         }
+
+        // If any runtime path leaves no active screen, recover to home.
+        window.addEventListener('DOMContentLoaded', () => {
+            const hasActive = document.querySelector('.screen.active');
+            if (!hasActive) {
+                const homeScreen = document.getElementById('scr-home');
+                if (homeScreen) homeScreen.classList.add('active');
+            }
+        });
     </script>
 </body>
 </html>
