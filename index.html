@@ -268,6 +268,29 @@
             z-index: 10;
             pointer-events: none;
         }
+        #weave-neural-lane {
+            position: absolute;
+            left: 50%;
+            top: 55%;
+            width: 260px;
+            border-top: 1px dashed rgba(56, 189, 248, 0.35);
+            transform: translateX(-50%);
+            pointer-events: none;
+            z-index: 8;
+        }
+        #weave-neural-circle {
+            position: absolute;
+            left: 50%;
+            top: calc(55% - 11px);
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.9);
+            transform: translateX(0px);
+            pointer-events: none;
+            z-index: 9;
+        }
         .anchor-pulse {
             animation: anchor-glow 1.5s infinite alternate;
         }
@@ -484,6 +507,8 @@
         <div id="weave-instr">TRACE THE THREAD TO THE NEXT ANCHOR</div>
         <canvas id="cvs"></canvas>
         <div id="touch-area"></div>
+        <div id="weave-neural-lane"></div>
+        <div id="weave-neural-circle" aria-hidden="true"></div>
     </div>
 
     <div id="scr-halt" class="screen">
@@ -535,6 +560,14 @@
         let connectedPoints = [0];
         let isPathBlocked = false;
         let weaveRafId = null;
+        let neuralWeaveRafId = null;
+        let neuralWeaveStartTs = 0;
+        let neuralAudioCtx = null;
+        let neuralPanner = null;
+        let neuralOsc = null;
+        let neuralGain = null;
+        const neuralWeaveSpeed = 1.35;
+        const neuralWeaveRangePx = 120;
         const complexLevels = [
             {
                 n: "THE RAVEN'S EYE",
@@ -610,6 +643,7 @@
         }
 
         function go(s) {
+            stopNeuralWeave();
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
             stopVagalBreathing();
             document.getElementById(`scr-${s}`).classList.add('active');
@@ -669,6 +703,7 @@
                 cancelAnimationFrame(weaveRafId);
                 weaveRafId = null;
             }
+            stopNeuralWeave();
         }
 
         /* --- LOGIC 2.0 --- */
@@ -996,6 +1031,77 @@
             };
             if (weaveRafId !== null) cancelAnimationFrame(weaveRafId);
             drawLoop();
+            if (neuralWeaveRafId === null) startNeuralWeave();
+        }
+
+        function startNeuralWeave() {
+            const weaveScreen = document.getElementById('scr-weave');
+            const circle = document.getElementById('weave-neural-circle');
+            if (!weaveScreen || !circle) return;
+
+            if (!neuralAudioCtx) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) {
+                    neuralAudioCtx = new AudioCtx();
+                    neuralGain = neuralAudioCtx.createGain();
+                    neuralGain.gain.value = 0.035;
+                    neuralOsc = neuralAudioCtx.createOscillator();
+                    neuralOsc.type = 'sine';
+                    neuralOsc.frequency.value = 220;
+
+                    if (typeof neuralAudioCtx.createStereoPanner === 'function') {
+                        neuralPanner = neuralAudioCtx.createStereoPanner();
+                        neuralOsc.connect(neuralPanner);
+                        neuralPanner.connect(neuralGain);
+                    } else {
+                        neuralOsc.connect(neuralGain);
+                    }
+
+                    neuralGain.connect(neuralAudioCtx.destination);
+                    neuralOsc.start();
+                }
+            }
+
+            if (neuralAudioCtx && neuralAudioCtx.state === 'suspended') {
+                neuralAudioCtx.resume();
+            }
+
+            neuralWeaveStartTs = performance.now();
+            if (neuralWeaveRafId !== null) cancelAnimationFrame(neuralWeaveRafId);
+
+            const animateNeuralWeave = (ts) => {
+                if (!weaveScreen.classList.contains('active')) {
+                    neuralWeaveRafId = null;
+                    return;
+                }
+
+                const time = (ts - neuralWeaveStartTs) / 1000;
+                const xPos = Math.sin(time * neuralWeaveSpeed);
+                const panning = xPos;
+
+                if (neuralPanner && neuralAudioCtx) {
+                    neuralPanner.pan.setValueAtTime(panning, neuralAudioCtx.currentTime);
+                }
+                circle.style.transform = `translateX(${xPos * neuralWeaveRangePx}px)`;
+
+                neuralWeaveRafId = requestAnimationFrame(animateNeuralWeave);
+            };
+
+            neuralWeaveRafId = requestAnimationFrame(animateNeuralWeave);
+        }
+
+        function stopNeuralWeave() {
+            if (neuralWeaveRafId !== null) {
+                cancelAnimationFrame(neuralWeaveRafId);
+                neuralWeaveRafId = null;
+            }
+
+            const circle = document.getElementById('weave-neural-circle');
+            if (circle) circle.style.transform = 'translateX(0px)';
+
+            if (neuralAudioCtx && neuralAudioCtx.state === 'running') {
+                neuralAudioCtx.suspend();
+            }
         }
 
         function completeWeave() {
