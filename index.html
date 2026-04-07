@@ -142,6 +142,7 @@
         let currentLevel = 0;
         let isDrawing = false;
         let userPath = [];
+        let ghostPath = []; // Stores all completed strokes
         let promptIndex = 0;
         let sparkCount = 0;
         let fSide = 0;
@@ -167,6 +168,7 @@
             document.getElementById('feather').style.display = 'none';
             isDrawing = false;
             userPath = [];
+            ghostPath = [];
         }
 
         /* --- ST’ÉXEM / PAXWAD --- */
@@ -230,67 +232,110 @@
             canvas.height = window.innerHeight;
             document.getElementById('animal-name').innerText = totems[currentLevel].name;
             document.getElementById('animal-phonetic').innerText = totems[currentLevel].phonetic;
+            
+            // Clear paths for new animal
+            userPath = [];
+            ghostPath = [];
+
             const layer = document.getElementById('touch-layer');
-            layer.onpointerdown = (e) => { isDrawing = true; userPath = [{ x: e.clientX, y: e.clientY }]; };
-            layer.onpointermove = (e) => { if (isDrawing) userPath.push({ x: e.clientX, y: e.clientY }); };
-            layer.onpointerup = () => { isDrawing = false; };
-            layer.onpointercancel = () => { isDrawing = false; };
+
+            layer.onpointerdown = (e) => {
+                isDrawing = true;
+                const p = { x: e.clientX, y: e.clientY };
+                userPath = [p];
+                checkAnchorProximity(p);
+            };
+
+            layer.onpointermove = (e) => {
+                if (!isDrawing) return;
+                const p = { x: e.clientX, y: e.clientY };
+                userPath.push(p);
+                checkAnchorProximity(p);
+            };
+
+            layer.onpointerup = () => {
+                isDrawing = false;
+                // Transfer current stroke to persistent "Ghost" path
+                if (userPath.length > 1) {
+                    ghostPath.push([...userPath]);
+                }
+                userPath = [];
+            };
+
+            layer.onpointercancel = () => {
+                isDrawing = false;
+                userPath = [];
+            };
+
             renderWeave();
+        }
+
+        function checkAnchorProximity(p) {
+            const canvas = document.getElementById('weave-canvas');
+            totems[currentLevel].points.forEach(anchor => {
+                const ax = anchor.x * canvas.width;
+                const ay = anchor.y * canvas.height;
+                const dist = Math.sqrt((p.x - ax) ** 2 + (p.y - ay) ** 2);
+
+                if (dist < 25) { // If finger is within 25px of anchor
+                    if (navigator.vibrate) navigator.vibrate(10);
+                    // Visual feedback: anchor "lights up" via the render loop
+                    anchor.active = true;
+                    setTimeout(() => {
+                        anchor.active = false;
+                    }, 500);
+                }
+            });
         }
 
         function renderWeave() {
             const canvas = document.getElementById('weave-canvas');
             if (!canvas || !document.getElementById('screen-weave').classList.contains('active')) return;
             const ctx = canvas.getContext('2d');
+
+            // Clear Frame
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.setLineDash([]);
-            const totem = totems[currentLevel];
-            const pxPoints = totem.points.map(p => ({ x: p.x * canvas.width, y: p.y * canvas.height }));
-
-            // Draw interlocking weave strands between constellation dots.
-            totem.links.forEach((link, i) => {
-                const a = pxPoints[link[0]];
-                const b = pxPoints[link[1]];
-                const pulse = Math.sin(Date.now() * 0.004 + i) * 0.15 + 0.45;
-
-                ctx.strokeStyle = `rgba(251, 191, 36, ${pulse})`;
-                ctx.lineWidth = 2.5;
+            // 1. Draw Persistent "Ghost" Path (Completed Strokes)
+            ctx.strokeStyle = 'rgba(13, 148, 136, 0.2)'; // Faded Teal
+            ctx.lineWidth = 2;
+            ghostPath.forEach(path => {
                 ctx.beginPath();
-                ctx.moveTo(a.x, a.y);
-                ctx.lineTo(b.x, b.y);
+                path.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
                 ctx.stroke();
-
-                const mx = (a.x + b.x) / 2;
-                const my = (a.y + b.y) / 2;
-                if (i % 2 === 1) {
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.95)';
-                    ctx.beginPath();
-                    ctx.arc(mx, my, 3.3, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                ctx.fillStyle = 'rgba(251, 191, 36, 0.95)';
-                ctx.beginPath();
-                ctx.arc(mx, my, 2.1, 0, Math.PI * 2);
-                ctx.fill();
             });
 
-            totem.points.forEach((p, i) => {
-                const twinkle = Math.sin(Date.now() * 0.003 + p.x) * 0.3 + 0.7;
-                ctx.beginPath();
-                ctx.arc(pxPoints[i].x, pxPoints[i].y, 5.5, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(251, 191, 36, ${twinkle})`;
-                ctx.fill();
-            });
-
+            // 2. Draw Active "Electric" Path (Current Finger)
             if (isDrawing && userPath.length > 1) {
-                ctx.strokeStyle = '#fbbf24';
+                ctx.strokeStyle = 'var(--gold)';
                 ctx.lineWidth = 4;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'var(--gold)';
                 ctx.beginPath();
                 userPath.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
                 ctx.stroke();
+                ctx.shadowBlur = 0; // Reset blur for next items
             }
+
+            // 3. Draw Anchors (Pulsing and Magnetic)
+            totems[currentLevel].points.forEach(p => {
+                const baseSize = 5;
+                const pulse = Math.sin(Date.now() * 0.005) * 2;
+                const size = p.active ? 15 : baseSize + pulse;
+
+                ctx.beginPath();
+                ctx.arc(p.x * canvas.width, p.y * canvas.height, size, 0, Math.PI * 2);
+                ctx.fillStyle = p.active ? 'var(--teal)' : 'var(--gold)';
+                ctx.fill();
+
+                // Glow effect for anchors
+                ctx.shadowBlur = p.active ? 20 : 5;
+                ctx.shadowColor = 'var(--gold)';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            });
+
             requestAnimationFrame(renderWeave);
         }
 
