@@ -3,61 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SXT’EKW | Slate 2.0</title>
+    <title>SXT’EKW | 2.5 Warrior</title>
     <style>
-        :root { --bg: #121212; --red: #f43f5e; --gold: #fbbf24; --teal: #0d9488; --text: #e2e8f0; --off: #222; }
+        :root { --bg: #000; --teal: #0d9488; --gold: #fbbf24; --text: #f1f5f9; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; touch-action: none; -webkit-user-select: none; }
 
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10; opacity: 0; transition: opacity 0.6s ease; }
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10; opacity: 0; transition: opacity 0.4s; }
         .active { display: flex; opacity: 1; }
 
-        /* CENTERED LOGO (128 BPM Pulse) */
+        /* 128 BPM HEARTBEAT PULSE */
         @keyframes beat {
             0% { transform: scale(1); filter: brightness(1); }
-            15% { transform: scale(1.1); filter: brightness(1.6); box-shadow: 0 0 50px var(--gold); }
+            14% { transform: scale(1.08); filter: brightness(1.4); box-shadow: 0 0 30px var(--teal); }
             100% { transform: scale(1); filter: brightness(1); }
         }
-        .logo-beat { width: 120px; height: 120px; border: 3px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: beat 0.468s infinite; margin-bottom: 30px; }
-        .logo-text { color: var(--gold); font-weight: 900; font-size: 1.2rem; letter-spacing: 2px; }
+        .logo-pulse { width: 90px; height: 90px; border: 2px solid var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: beat 0.468s infinite; margin-bottom: 25px; }
 
-        /* BUTTONS */
-        .launch-btn { width: 280px; padding: 18px; margin: 8px 0; border: 1px solid var(--off); background: #050505; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; }
-        .launch-btn:active { background: #111; border-color: var(--red); }
-        .btn-title { font-size: 0.9rem; letter-spacing: 5px; font-weight: 900; color: var(--gold); }
-        .phonetic { font-size: 0.5rem; letter-spacing: 3px; color: var(--text); opacity: 0.5; margin-top: 4px; text-transform: uppercase; }
+        /* BUTTON STYLING */
+        .launch-btn { width: 280px; padding: 20px; margin: 10px 0; border: 1px solid #111; background: #050505; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .btn-title { font-size: 1.1rem; letter-spacing: 6px; font-weight: 900; color: var(--teal); }
+        .phonetic-md { font-size: 0.7rem; letter-spacing: 2px; color: var(--gold); margin-top: 5px; }
 
-        /* NEURAL HIJACK */
-        #logic-q { font-size: 1.4rem; color: var(--gold); margin-bottom: 20px; min-height: 1.5em; text-align: center; line-height: 1.4; }
-        #prog-dots { font-size: 1.5rem; letter-spacing: 15px; color: var(--gold); margin-top: 30px; opacity: 0.9; }
-        #refocus-msg { font-size: 0.6rem; letter-spacing: 2px; color: var(--gold); opacity: 0.85; margin-top: 16px; transition: opacity 0.3s ease; }
-        #spark-next { background: none; border: 1px solid var(--gold); color: var(--gold); padding: 10px 24px; letter-spacing: 3px; font-size: 0.6rem; cursor: pointer; }
-        #spark-next:active { background: rgba(251, 191, 36, 0.1); }
-        #halt-thought {
-            background: rgba(251, 191, 36, 0.08);
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            width: 80%;
-            height: 100px;
-            padding: 15px;
-            text-align: center;
-            outline: none;
-        }
-        #halt-thought::placeholder { color: rgba(251, 191, 36, 0.75); }
+        /* HIJACK & EMDR */
+        #logic-q { font-size: 1.8rem; color: var(--gold); margin-bottom: 20px; text-align: center; }
+        #logic-input { background: none; border-bottom: 2px solid var(--gold); border-top:none; border-left:none; border-right:none; color: white; width: 100%; text-align: center; font-size: 2.2rem; outline: none; }
+        #feather { position: absolute; width: 100px; height: 10px; background: var(--teal); border-radius: 20px; filter: blur(2px); box-shadow: 0 0 20px var(--teal); display: none; transition: all 1.2s cubic-bezier(0.65, 0, 0.35, 1); }
 
-        /* EMDR FEATHER */
-        #feather {
-            position: absolute;
-            width: 90px;
-            height: 6px;
-            background: var(--red);
-            box-shadow: 0 0 20px var(--red), 0 0 40px var(--red);
-            border-radius: 20px;
-            transition: all 1.2s cubic-bezier(0.65, 0, 0.35, 1);
-            display: none;
-        }
-
-        .btn-hilu { position: absolute; top: 30px; left: 30px; background: rgba(20, 184, 166, 0.08); border: 1px solid var(--teal); color: var(--teal); padding: 8px 15px; font-size: 0.55rem; letter-spacing: 2px; z-index: 1000; text-transform: uppercase; cursor: pointer; }
-        .btn-hilu:active { background: rgba(20, 184, 166, 0.2); }
+        .btn-hilu { position: absolute; top: 30px; left: 30px; background: none; border: 1px solid #222; color: #444; padding: 8px 15px; font-size: 0.55rem; letter-spacing: 2px; z-index: 1000; }
         canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
         #touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
     </style>
@@ -65,43 +37,38 @@
 <body>
 
     <div id="screen-home" class="screen active">
-        <div class="logo-beat"><span class="logo-text">SXT’EKW</span></div>
-        <div class="phonetic" style="margin-bottom: 40px; color: var(--gold); opacity: 0.8;">[ suh-t-ekw ] THE QUIET</div>
+        <div class="logo-pulse"><span style="color: var(--gold); font-weight: 900; font-size: 0.8rem;">SXT’EKW</span></div>
+        <div class="phonetic-md" style="margin-bottom: 40px; opacity: 0.8;">[ suh-t-ekw ]</div>
 
         <div class="launch-btn" onclick="startSection('paxwad')">
             <span class="btn-title">P’ÁX̌WAD</span>
-            <span class="phonetic">[ pah-hwah-d ] SPARK</span>
+            <span class="phonetic-md">[ pah-hwah-d ] SPARK</span>
         </div>
         <div class="launch-btn" onclick="startSection('weave')">
             <span class="btn-title">KW’ÉTL’EN</span>
-            <span class="phonetic">[ kw-et-lun ] WEAVE</span>
+            <span class="phonetic-md">[ kw-et-lun ] WEAVE</span>
         </div>
         <div class="launch-btn" onclick="startSection('kwelap')">
             <span class="btn-title">KW’ÉLAP</span>
-            <span class="phonetic">[ kw-ay-lap ] HALT</span>
+            <span class="phonetic-md">[ kw-ay-lap ] HALT</span>
         </div>
     </div>
 
     <div id="screen-paxwad" class="screen">
         <button class="btn-hilu" onclick="exitToHome()">HÍLU</button>
-
-        <div id="hijack-layer" style="text-align: center; width: 80%;">
-            <p style="font-size: 0.5rem; color: var(--gold); letter-spacing: 5px;">ST’ÉXEM [ STILL ]</p>
+        <div id="hijack-layer" style="text-align: center; width: 85%;">
             <div id="logic-q"></div>
-            <button id="spark-next" onclick="advanceSparkPrompt()">NEXT</button>
-            <div id="prog-dots">● ● ●</div>
-            <div id="refocus-msg">FOLLOW THE LEAD-IN</div>
+            <input type="text" id="logic-input" autocomplete="off" oninput="checkLogic()">
+            <div id="prog-dots" style="margin-top: 30px; font-size: 1.2rem; letter-spacing: 12px; color: var(--teal); opacity: 0.2;">● ● ●</div>
         </div>
-
         <div id="feather" onclick="hitFeather()"></div>
-        <div id="spark-count" style="position: absolute; bottom: 50px; color: var(--gold); letter-spacing: 8px; font-size: 0.7rem;">0 / 10</div>
     </div>
 
     <div id="screen-weave" class="screen">
         <button class="btn-hilu" onclick="exitToHome()">HÍLU</button>
-        <div style="z-index: 100; text-align: center; position: absolute; top: 100px; pointer-events: none;">
-            <h2 id="animal-name" style="color: var(--gold); letter-spacing: 6px; margin: 0;"></h2>
-            <div id="animal-phonetic" class="phonetic" style="color: var(--gold); opacity: 0.8;"></div>
+        <div style="z-index: 100; text-align: center; position: absolute; top: 80px; pointer-events: none;">
+            <h2 id="animal-name" style="color: var(--teal); letter-spacing: 6px; margin:0;"></h2>
+            <div id="animal-phonetic" class="phonetic-md"></div>
         </div>
         <canvas id="weave-canvas"></canvas>
         <div id="touch-layer"></div>
@@ -109,47 +76,21 @@
 
     <div id="screen-kwelap" class="screen">
         <button class="btn-hilu" onclick="exitToHome()">HÍLU</button>
-        <div style="text-align: center; width: 100%; z-index: 20;">
-            <p class="phonetic" style="margin-bottom: 20px; color: var(--gold); opacity: 0.9;">NAME THE THOUGHT</p>
-            <textarea id="halt-thought" placeholder="NAME IT. RELEASE IT." onkeypress="handleHalt(event)"></textarea>
-            <p style="font-size: 0.5rem; color: var(--gold); opacity: 0.85; letter-spacing: 2px; margin-top: 20px;">ENTER TO UNWEAVE</p>
+        <div style="text-align: center; width: 85%;">
+            <textarea id="halt-thought" placeholder="NAME THE WEIGHT..." onkeypress="handleHalt(event)" style="background: none; border: 1px solid #111; color: white; width: 100%; height: 120px; padding: 20px; text-align: center; font-size: 1.1rem; outline: none;"></textarea>
+            <p style="font-size: 0.5rem; color: var(--teal); opacity: 0.4; letter-spacing: 3px; margin-top: 30px;">ENTER TO UNRAVEL</p>
         </div>
     </div>
 
     <script>
         const totems = [
-            {
-                name: "SQUWAL'QUW",
-                phonetic: "[ sk-wahl-koo ] RAVEN",
-                points: [
-                    {x: 0.2, y: 0.58}, {x: 0.36, y: 0.45}, {x: 0.5, y: 0.34}, {x: 0.64, y: 0.43},
-                    {x: 0.78, y: 0.56}, {x: 0.62, y: 0.62}, {x: 0.54, y: 0.73}, {x: 0.4, y: 0.71}, {x: 0.28, y: 0.62}
-                ],
-                links: [[0,1], [1,2], [2,3], [3,4], [4,5], [5,6], [6,7], [7,8], [8,0], [1,5], [2,6], [3,7]]
-            },
-            {
-                name: "STIQÍYU’",
-                phonetic: "[ stee-kee-yoo ] WOLF",
-                points: [
-                    {x: 0.14, y: 0.62}, {x: 0.24, y: 0.49}, {x: 0.35, y: 0.42}, {x: 0.48, y: 0.4},
-                    {x: 0.63, y: 0.42}, {x: 0.76, y: 0.5}, {x: 0.86, y: 0.62}, {x: 0.7, y: 0.69}, {x: 0.5, y: 0.73}, {x: 0.3, y: 0.7}
-                ],
-                links: [[0,1], [1,2], [2,3], [3,4], [4,5], [5,6], [6,7], [7,8], [8,9], [9,0], [2,7], [3,8], [4,9]]
-            }
+            { name: "SQUW'AL'QUW", phonetic: "[ sk-wahl-koo ] RAVEN", points: [{x:0.5, y:0.2}, {x:0.3, y:0.5}, {x:0.7, y:0.5}, {x:0.5, y:0.8}, {x:0.5, y:0.2}] },
+            { name: "STIQÍYU’", phonetic: "[ stee-kee-yoo ] WOLF", points: [{x:0.2, y:0.4}, {x:0.5, y:0.2}, {x:0.8, y:0.4}, {x:0.7, y:0.7}, {x:0.3, y:0.7}, {x:0.2, y:0.4}] },
+            { name: "KW’ELHÚ", phonetic: "[ kwel-hoo ] ORCA", points: [{x:0.5, y:0.2}, {x:0.8, y:0.4}, {x:0.6, y:0.7}, {x:0.4, y:0.7}, {x:0.2, y:0.4}, {x:0.5, y:0.2}] },
+            { name: "YEXWALA", phonetic: "[ yeh-hwah-lah ] EAGLE", points: [{x:0.1, y:0.4}, {x:0.3, y:0.3}, {x:0.5, y:0.5}, {x:0.7, y:0.3}, {x:0.9, y:0.4}, {x:0.5, y:0.8}, {x:0.1, y:0.4}] }
         ];
 
-        let currentLevel = 0;
-        let isDrawing = false;
-        let connectedPoints = [];
-        let promptIndex = 0;
-        let sparkCount = 0;
-        let fSide = 0;
-        const sparkPrompts = [
-            "SET YOUR SHOULDERS LOW. BREATHE IN FOR 4.",
-            "HOLD STILL. TRACK ONLY THE SPARK.",
-            "EXHALE SLOWLY. LET THE THOUGHT PASS.",
-            "YOU ARE READY FOR P’ÁX̌WAD."
-        ];
+        let currentLevel = 0, isDrawing = false, connectedPoints = [], correctCount = 0, currentAns = "", sparkCount = 0;
 
         function startSection(type) {
             const targetScreen = document.getElementById(`screen-${type}`);
@@ -168,68 +109,63 @@
             connectedPoints = [];
         }
 
-        /* --- ST’ÉXEM / PAXWAD --- */
+        /* --- LOGIC (HIJACK) --- */
+        const logicTasks = [
+            { q: () => { const a=Math.floor(Math.random()*9)+3, b=Math.floor(Math.random()*8)+2; return {txt:`${a} x ${b}`, ans:(a*b).toString()}; }},
+            { q: () => { const words=["RAVEN","WOLF","ORCA","EAGLE","CEDAR"]; const w=words[Math.floor(Math.random()*words.length)]; return {txt:`REVERSE: ${w}`, ans:w.split('').reverse().join('')}; }}
+        ];
+
         function initHijack() {
-            promptIndex = 0;
-            document.getElementById('hijack-layer').style.display = 'block';
-            document.getElementById('spark-next').style.display = 'inline-block';
-            document.getElementById('refocus-msg').style.opacity = 0.85;
+            correctCount = 0; document.getElementById('hijack-layer').style.display = 'block';
             document.getElementById('feather').style.display = 'none';
-            showSparkPrompt();
+            document.getElementById('prog-dots').style.opacity = 0.2;
+            nextTask();
         }
 
-        function showSparkPrompt() {
-            const dots = sparkPrompts.map((_, i) => i <= promptIndex ? "●" : "○").join(" ");
-            document.getElementById('logic-q').innerText = sparkPrompts[promptIndex];
-            document.getElementById('prog-dots').innerText = dots;
-            document.getElementById('spark-next').innerText = promptIndex >= sparkPrompts.length - 1 ? "BEGIN SPARK" : "NEXT";
+        function nextTask() {
+            const t = logicTasks[Math.floor(Math.random()*logicTasks.length)].q();
+            document.getElementById('logic-q').innerText = t.txt;
+            currentAns = t.ans; document.getElementById('logic-input').value = "";
+            document.getElementById('logic-input').focus();
         }
 
-        function advanceSparkPrompt() {
-            if (navigator.vibrate) navigator.vibrate(25);
-            promptIndex++;
-            if (promptIndex >= sparkPrompts.length) {
-                startFeather();
-                return;
+        function checkLogic() {
+            const val = document.getElementById('logic-input').value.toUpperCase();
+            if (val === currentAns) {
+                correctCount++; if (navigator.vibrate) navigator.vibrate(40);
+                if (correctCount >= 3) startFeather();
+                else { document.getElementById('prog-dots').style.opacity = (correctCount/3)+0.2; setTimeout(nextTask, 300); }
+            } else if (val.length >= currentAns.length && val !== currentAns) {
+                correctCount = 0; document.getElementById('prog-dots').style.opacity = 0.2;
+                if (navigator.vibrate) navigator.vibrate([20, 40, 20]);
+                setTimeout(nextTask, 1000);
             }
-            showSparkPrompt();
         }
 
         function startFeather() {
             document.getElementById('hijack-layer').style.display = 'none';
-            const f = document.getElementById('feather');
-            f.style.display = 'block';
-            sparkCount = 0;
-            document.getElementById('spark-count').innerText = "0 / 10";
-            moveFeather();
+            const f = document.getElementById('feather'); f.style.display = 'block';
+            sparkCount = 0; moveFeather();
         }
 
+        let fSide = 0;
         function moveFeather() {
             const f = document.getElementById('feather');
             fSide = fSide === 0 ? 1 : 0;
-            f.style.left = fSide === 0 ? '10%' : '80%';
-            f.style.top = (Math.random() * 40 + 30) + '%';
+            f.style.left = fSide === 0 ? '10%' : '75%'; f.style.top = '50%';
         }
 
         function hitFeather() {
-            sparkCount++;
-            document.getElementById('spark-count').innerText = `${sparkCount} / 10`;
-            if (navigator.vibrate) navigator.vibrate(20);
-            if (sparkCount >= 10) {
-                exitToHome();
-            } else {
-                moveFeather();
-            }
+            sparkCount++; if (navigator.vibrate) navigator.vibrate(20);
+            if(sparkCount >= 10) exitToHome(); else moveFeather();
         }
 
-        /* --- WEAVE --- */
+        /* --- WEAVE ENGINE --- */
         function initWeave() {
             const canvas = document.getElementById('weave-canvas');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             document.getElementById('animal-name').innerText = totems[currentLevel].name;
             document.getElementById('animal-phonetic').innerText = totems[currentLevel].phonetic;
-
             // Start at first anchor and advance in sequence.
             connectedPoints = [0];
 
@@ -270,20 +206,16 @@
             layer.onpointercancel = () => {
                 isDrawing = false;
             };
-
             renderWeave();
         }
 
         function renderWeave() {
             const canvas = document.getElementById('weave-canvas');
-            if (!canvas || !document.getElementById('screen-weave').classList.contains('active')) return;
+            if(!canvas || !document.getElementById('screen-weave').classList.contains('active')) return;
             const ctx = canvas.getContext('2d');
-
-            // Clear Frame
-            ctx.fillStyle = '#121212';
+            ctx.fillStyle = 'var(--bg)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 1. Draw woven skeleton (only completed sequence points).
             if (connectedPoints.length > 1) {
                 ctx.strokeStyle = 'var(--gold)';
                 ctx.lineWidth = 4;
@@ -300,7 +232,6 @@
                 ctx.shadowBlur = 0;
             }
 
-            // 2. Draw anchors, highlighting the next target in sequence.
             totems[currentLevel].points.forEach((p, i) => {
                 const isConnected = connectedPoints.includes(i);
                 const isNext = connectedPoints.length === i;
@@ -311,33 +242,19 @@
                 else ctx.fillStyle = 'rgba(255,255,255,0.1)';
                 ctx.fill();
             });
-
             requestAnimationFrame(renderWeave);
         }
 
-        /* --- HALT --- */
+        /* --- HALT: UNRAVEL --- */
         function handleHalt(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const box = document.getElementById('halt-thought');
-
-                box.style.transition = 'all 2.5s cubic-bezier(0.1, 0.5, 0.5, 1)';
-                box.style.filter = 'blur(15px)';
-                box.style.opacity = '0';
-                box.style.transform = 'translateY(-100px) scale(1.2) rotate(5deg)';
-                box.style.color = 'var(--gold)';
-
-                if (navigator.vibrate) navigator.vibrate([5, 30, 5, 50, 5, 80]);
-
-                setTimeout(() => {
-                    box.value = "";
-                    box.style.filter = 'none';
-                    box.style.opacity = '1';
-                    box.style.transform = 'none';
-                    box.style.transition = 'none';
-                    box.style.color = 'var(--gold)';
-                    exitToHome();
-                }, 2600);
+                box.style.transition = 'all 2.2s ease-out';
+                box.style.filter = 'blur(20px)'; box.style.opacity = '0';
+                box.style.transform = 'translateY(-120px) scale(1.1)';
+                if (navigator.vibrate) navigator.vibrate([10, 40, 10, 60]);
+                setTimeout(() => { box.value = ""; box.style.filter = "none"; box.style.opacity = "1"; box.style.transform = "none"; exitToHome(); }, 2300);
             }
         }
     </script>
