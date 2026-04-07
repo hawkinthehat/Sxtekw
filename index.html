@@ -336,6 +336,53 @@
             text-align: center;
             width: 100%;
         }
+        .instruction-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 25;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            background: rgba(18, 18, 18, 0.86);
+            text-align: center;
+        }
+        .instruction-layer.hidden {
+            display: none;
+        }
+        .text-top {
+            margin: 0;
+            color: var(--teal);
+            letter-spacing: 4px;
+            font-size: 0.85rem;
+            font-weight: 900;
+        }
+        .text-bottom {
+            margin: 0;
+            color: var(--gold);
+            letter-spacing: 3px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            opacity: 0.9;
+        }
+        .start-circle {
+            margin-top: 4px;
+            width: 92px;
+            height: 92px;
+            border-radius: 50%;
+            border: 2px solid var(--teal);
+            background: rgba(13, 148, 136, 0.12);
+            color: var(--teal);
+            font-size: 1.5rem;
+            font-weight: 900;
+            box-shadow: 0 0 20px rgba(13, 148, 136, 0.35);
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .start-circle:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body style="background:#121212;">
@@ -374,6 +421,11 @@
 
     <div id="scr-still" class="screen">
         <button class="btn-back" onclick="home()">HÍLU</button>
+        <div id="still-instruction-layer" class="instruction-layer hidden">
+            <p class="text-top">KEEP HEAD STILL</p>
+            <p class="text-bottom">TAP CIRCLE TO BEGIN</p>
+            <button class="start-circle" onclick="startStillSession()" aria-label="Begin still session">●</button>
+        </div>
         <div id="logic-box" style="text-align: center; width: 85%;">
             <div id="logic-instr"></div>
             <div id="q-text"></div>
@@ -432,6 +484,7 @@
 
         let currentAns = "", logicHits = 0, hCount = 0, vCount = 0, drawing = false, path = [];
         let stillLevel = 1, saccadeSpeed = 1200, timeLeft = 100, timerId = null;
+        let stillStarted = false;
         let instructionFadeTimer = null, instructionHideTimer = null;
         const instructions = {
             still: {
@@ -492,10 +545,31 @@
 
                 const targetScreen = document.getElementById(`scr-${mode}`);
                 if (!targetScreen || !targetScreen.classList.contains('active')) return;
-                if (mode === 'still') initLogic();
+                if (mode === 'still') prepareStillStart();
                 if (mode === 'weave') initCanvas();
                 if (mode === 'halt') triggerHaltEffects();
             }, 3000);
+        }
+
+        function setStillInstructionVisible(visible) {
+            const instructionLayer = document.getElementById('still-instruction-layer');
+            if (!instructionLayer) return;
+            instructionLayer.classList.toggle('hidden', !visible);
+        }
+
+        function prepareStillStart() {
+            stillStarted = false;
+            setStillInstructionVisible(true);
+            document.getElementById('logic-box').style.display = 'none';
+            document.getElementById('timer-bar-container').style.display = 'none';
+            document.getElementById('f-h').style.display = 'none';
+        }
+
+        function startStillSession() {
+            if (stillStarted) return;
+            stillStarted = true;
+            setStillInstructionVisible(false);
+            initLogic();
         }
 
         function go(s) {
@@ -518,6 +592,8 @@
             document.getElementById('timer-bar-container').style.display = 'none';
             document.getElementById('spark-ui').style.display = 'block';
             document.getElementById('q-text').classList.remove('shake');
+            setStillInstructionVisible(false);
+            stillStarted = false;
             if (haltStrobeInterval) {
                 clearInterval(haltStrobeInterval);
                 haltStrobeInterval = null;
