@@ -110,6 +110,24 @@
         }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
         #touch-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+        #weave-instr {
+            position: absolute;
+            top: 160px;
+            color: var(--gold);
+            letter-spacing: 5px;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            opacity: 0.6;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .anchor-pulse {
+            animation: anchor-glow 1.5s infinite alternate;
+        }
+        @keyframes anchor-glow {
+            0% { filter: drop-shadow(0 0 2px var(--gold)); transform: scale(1); }
+            100% { filter: drop-shadow(0 0 12px var(--teal)); transform: scale(1.3); }
+        }
 
         /* HALT MAXIMIZATION OVERRIDES */
         #scr-halt {
@@ -218,6 +236,7 @@
             <div id="animal-t" style="color: var(--teal); letter-spacing: 5px; font-weight: 900;">RAVEN</div>
             <div id="animal-p" class="t-phonetic">SQUW'AL'QUW</div>
         </div>
+        <div id="weave-instr">TRACE THE THREAD TO THE NEXT ANCHOR</div>
         <canvas id="cvs"></canvas>
         <div id="touch-area"></div>
     </div>
@@ -262,6 +281,9 @@
                 b: "STOP THE BREATH. <br> GAZE INTO THE RED VOID UNTIL THE PULSE SUBSIDES."
             }
         };
+        let connectedPoints = [0];
+        let isPathBlocked = false;
+        let weaveRafId = null;
         const levels = [
             {n:"RAVEN", p:"SQUW'AL'QUW", pts:[{x:0.5, y:0.2}, {x:0.3, y:0.5}, {x:0.7, y:0.5}, {x:0.5, y:0.8}]},
             {n:"WOLF", p:"STIQÍYU’", pts:[{x:0.2, y:0.4}, {x:0.5, y:0.2}, {x:0.8, y:0.4}, {x:0.7, y:0.7}, {x:0.3, y:0.7}]},
@@ -269,8 +291,6 @@
             {n:"EAGLE", p:"YEXWALA", pts:[{x:0.1, y:0.4}, {x:0.3, y:0.3}, {x:0.5, y:0.5}, {x:0.7, y:0.3}, {x:0.9, y:0.4}, {x:0.5, y:0.8}]}
         ];
         let curLvl = 0;
-        let lockedSequence = [];
-        let pendingLevelAdvance = false;
 
         function showInstructions(mode) {
             if (!instructions[mode]) return;
@@ -351,8 +371,12 @@
             }
             drawing = false;
             path = [];
-            lockedSequence = [];
-            pendingLevelAdvance = false;
+            connectedPoints = [0];
+            isPathBlocked = false;
+            if (weaveRafId !== null) {
+                cancelAnimationFrame(weaveRafId);
+                weaveRafId = null;
+            }
         }
 
         /* --- LOGIC 2.0 --- */
@@ -556,85 +580,106 @@
             const c = document.getElementById('cvs');
             c.width = window.innerWidth;
             c.height = window.innerHeight;
+            connectedPoints = [0];
             path = [];
-            lockedSequence = [0];
-            pendingLevelAdvance = false;
+            isPathBlocked = false;
             setCurrentLevelLabels();
 
             const area = document.getElementById('touch-area');
-            area.onpointerdown = (e) => {
+            area.onpointerdown = () => {
                 drawing = true;
-                path = [{x:e.clientX, y:e.clientY}];
+                path = [];
             };
             area.onpointermove = (e) => {
-                if (!drawing) return;
-                const p = {x:e.clientX, y:e.clientY};
-                path.push(p);
-                tryLockAnchor(p);
+                if (!drawing || isPathBlocked) return;
+
+                const nextIdx = connectedPoints.length;
+                if (nextIdx >= levels[curLvl].pts.length) return;
+
+                const target = levels[curLvl].pts[nextIdx];
+                const tx = target.x * c.width;
+                const ty = target.y * c.height;
+
+                const dist = Math.hypot(e.clientX - tx, e.clientY - ty);
+
+                if (dist < 45) {
+                    connectedPoints.push(nextIdx);
+                    if (navigator.vibrate) navigator.vibrate([30, 20, 30]);
+
+                    if (connectedPoints.length === levels[curLvl].pts.length) {
+                        isPathBlocked = true;
+                        setTimeout(completeWeave, 1000);
+                    }
+                } else if (dist < 100 && navigator.vibrate) {
+                    navigator.vibrate(5);
+                }
             };
             area.onpointerup = () => {
                 drawing = false;
-                path = [];
             };
             area.onpointercancel = () => {
                 drawing = false;
-                path = [];
             };
+            if (weaveRafId !== null) cancelAnimationFrame(weaveRafId);
             drawLoop();
         }
 
-        function tryLockAnchor(p) {
-            if (pendingLevelAdvance) return;
+        function completeWeave() {
             const c = document.getElementById('cvs');
             const pts = levels[curLvl].pts;
-            const nextIdx = lockedSequence.length;
-            if (nextIdx >= pts.length) return;
+            const ctx = c.getContext('2d');
+            ctx.strokeStyle = 'var(--teal)';
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            pts.forEach((p, i) => {
+                const x = p.x * c.width;
+                const y = p.y * c.height;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.stroke();
 
-            const next = pts[nextIdx];
-            const nx = next.x * c.width;
-            const ny = next.y * c.height;
-            const dist = Math.hypot(p.x - nx, p.y - ny);
+            if (navigator.vibrate) navigator.vibrate(150);
 
-            if (dist > 40) return;
-
-            lockedSequence.push(nextIdx);
-            if (navigator.vibrate) navigator.vibrate(30);
-
-            if (lockedSequence.length >= pts.length) {
-                advanceWeaveLevel();
-            }
-        }
-
-        function advanceWeaveLevel() {
-            if (pendingLevelAdvance) return;
-            pendingLevelAdvance = true;
-            drawing = false;
-            path = [];
-            if (navigator.vibrate) navigator.vibrate([20, 60, 20]);
             setTimeout(() => {
                 curLvl = (curLvl + 1) % levels.length;
-                lockedSequence = [0];
-                pendingLevelAdvance = false;
-                setCurrentLevelLabels();
-            }, 700);
+                initCanvas();
+            }, 1200);
         }
 
         function drawLoop() {
             const c = document.getElementById('cvs');
-            if (!c || !document.getElementById('scr-weave').classList.contains('active')) return;
+            if (!c || !document.getElementById('scr-weave').classList.contains('active')) {
+                weaveRafId = null;
+                return;
+            }
             const ctx = c.getContext('2d');
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = 'var(--bg)';
             ctx.fillRect(0, 0, c.width, c.height);
 
-            if (lockedSequence.length > 1) {
+            const pts = levels[curLvl].pts;
+
+            ctx.setLineDash([5, 10]);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.beginPath();
+            pts.forEach((p, i) => {
+                const x = p.x * c.width;
+                const y = p.y * c.height;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            if (connectedPoints.length > 1) {
                 ctx.strokeStyle = 'var(--gold)';
-                ctx.lineWidth = 4;
-                ctx.lineCap = 'round';
-                ctx.shadowBlur = 10;
+                ctx.lineWidth = 5;
+                ctx.shadowBlur = 15;
                 ctx.shadowColor = 'var(--gold)';
                 ctx.beginPath();
-                lockedSequence.forEach((idx, i) => {
-                    const p = levels[curLvl].pts[idx];
+                connectedPoints.forEach((idx, i) => {
+                    const p = pts[idx];
                     const x = p.x * c.width;
                     const y = p.y * c.height;
                     if (i === 0) ctx.moveTo(x, y);
@@ -644,26 +689,27 @@
                 ctx.shadowBlur = 0;
             }
 
-            if (path.length > 1) {
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 3;
+            pts.forEach((p, idx) => {
+                const isConnected = connectedPoints.includes(idx);
+                const isNext = connectedPoints.length === idx;
                 ctx.beginPath();
-                path.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-                ctx.stroke();
-            }
+                ctx.arc(p.x * c.width, p.y * c.height, isNext ? 10 : 5, 0, Math.PI * 2);
 
-            levels[curLvl].pts.forEach((p, idx) => {
-                const isConnected = lockedSequence.includes(idx);
-                const isNext = lockedSequence.length === idx;
-                ctx.beginPath();
-                ctx.arc(p.x * c.width, p.y * c.height, isNext ? 8 : 5, 0, Math.PI * 2);
-                if (isConnected) ctx.fillStyle = 'var(--gold)';
-                else if (isNext) ctx.fillStyle = 'var(--teal)';
-                else ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                if (isNext) {
+                    ctx.fillStyle = 'var(--teal)';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = 'var(--teal)';
+                } else if (isConnected) {
+                    ctx.fillStyle = 'var(--gold)';
+                    ctx.shadowBlur = 5;
+                } else {
+                    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                }
                 ctx.fill();
+                ctx.shadowBlur = 0;
             });
 
-            requestAnimationFrame(drawLoop);
+            weaveRafId = requestAnimationFrame(drawLoop);
         }
     </script>
 </body>
