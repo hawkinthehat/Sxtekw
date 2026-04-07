@@ -230,8 +230,7 @@
             {n:"EAGLE", p:"YEXWALA", pts:[{x:0.1, y:0.4}, {x:0.3, y:0.3}, {x:0.5, y:0.5}, {x:0.7, y:0.3}, {x:0.9, y:0.4}, {x:0.5, y:0.8}]}
         ];
         let curLvl = 0;
-        let lockedSequence = [];
-        let pendingLevelAdvance = false;
+        let connectedPoints = [];
 
         function go(s) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
@@ -265,8 +264,7 @@
             if (strobe) strobe.style.opacity = '0';
             drawing = false;
             path = [];
-            lockedSequence = [];
-            pendingLevelAdvance = false;
+            connectedPoints = [];
         }
 
         /* --- LOGIC 2.0 --- */
@@ -458,115 +456,91 @@
             document.getElementById('animal-p').innerText = lvl.p;
         }
 
-        /* --- WEAVE 2.0 --- */
+        /* --- THE ORIGINAL INCREMENTAL WEAVE ENGINE --- */
         function initCanvas() {
             const c = document.getElementById('cvs');
             c.width = window.innerWidth;
             c.height = window.innerHeight;
+
+            // Reset for the current animal
+            connectedPoints = [0];
             path = [];
-            lockedSequence = [0];
-            pendingLevelAdvance = false;
             setCurrentLevelLabels();
 
             const area = document.getElementById('touch-area');
-            area.onpointerdown = (e) => {
+            area.onpointerdown = () => {
                 drawing = true;
-                path = [{x:e.clientX, y:e.clientY}];
             };
             area.onpointermove = (e) => {
                 if (!drawing) return;
-                const p = {x:e.clientX, y:e.clientY};
-                path.push(p);
-                tryLockAnchor(p);
+
+                const nextPointIndex = connectedPoints.length;
+                if (nextPointIndex >= levels[curLvl].pts.length) return;
+
+                const target = levels[curLvl].pts[nextPointIndex];
+                const tx = target.x * c.width;
+                const ty = target.y * c.height;
+
+                // Check if finger is near the NEXT point in the sequence.
+                const dist = Math.sqrt((e.clientX - tx) ** 2 + (e.clientY - ty) ** 2);
+
+                if (dist < 40) {
+                    connectedPoints.push(nextPointIndex);
+                    if (navigator.vibrate) navigator.vibrate(30);
+
+                    // Finished current animal; move to next one after a beat.
+                    if (connectedPoints.length === levels[curLvl].pts.length) {
+                        setTimeout(() => {
+                            curLvl = (curLvl + 1) % levels.length;
+                            initCanvas();
+                        }, 1500);
+                    }
+                }
             };
-            area.onpointerup = () => {
-                drawing = false;
-                path = [];
-            };
-            area.onpointercancel = () => {
-                drawing = false;
-                path = [];
-            };
+            area.onpointerup = () => { drawing = false; };
+            area.onpointercancel = () => { drawing = false; };
             drawLoop();
-        }
-
-        function tryLockAnchor(p) {
-            if (pendingLevelAdvance) return;
-            const c = document.getElementById('cvs');
-            const pts = levels[curLvl].pts;
-            const nextIdx = lockedSequence.length;
-            if (nextIdx >= pts.length) return;
-
-            const next = pts[nextIdx];
-            const nx = next.x * c.width;
-            const ny = next.y * c.height;
-            const dist = Math.hypot(p.x - nx, p.y - ny);
-
-            if (dist > 40) return;
-
-            lockedSequence.push(nextIdx);
-            if (navigator.vibrate) navigator.vibrate(30);
-
-            if (lockedSequence.length >= pts.length) {
-                advanceWeaveLevel();
-            }
-        }
-
-        function advanceWeaveLevel() {
-            if (pendingLevelAdvance) return;
-            pendingLevelAdvance = true;
-            drawing = false;
-            path = [];
-            if (navigator.vibrate) navigator.vibrate([20, 60, 20]);
-            setTimeout(() => {
-                curLvl = (curLvl + 1) % levels.length;
-                lockedSequence = [0];
-                pendingLevelAdvance = false;
-                setCurrentLevelLabels();
-            }, 700);
         }
 
         function drawLoop() {
             const c = document.getElementById('cvs');
             if (!c || !document.getElementById('scr-weave').classList.contains('active')) return;
             const ctx = c.getContext('2d');
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = 'var(--bg)';
             ctx.fillRect(0, 0, c.width, c.height);
+            const pts = levels[curLvl].pts;
 
-            if (lockedSequence.length > 1) {
+            // 1. Draw the "Skeleton" (the lines already woven).
+            if (connectedPoints.length > 1) {
                 ctx.strokeStyle = 'var(--gold)';
                 ctx.lineWidth = 4;
                 ctx.lineCap = 'round';
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = 'var(--gold)';
                 ctx.beginPath();
-                lockedSequence.forEach((idx, i) => {
-                    const p = levels[curLvl].pts[idx];
-                    const x = p.x * c.width;
-                    const y = p.y * c.height;
-                    if (i === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
+
+                connectedPoints.forEach((idx, i) => {
+                    const p = pts[idx];
+                    if (i === 0) ctx.moveTo(p.x * c.width, p.y * c.height);
+                    else ctx.lineTo(p.x * c.width, p.y * c.height);
                 });
                 ctx.stroke();
                 ctx.shadowBlur = 0;
             }
 
-            if (path.length > 1) {
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                path.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-                ctx.stroke();
-            }
-
-            levels[curLvl].pts.forEach((p, idx) => {
-                const isConnected = lockedSequence.includes(idx);
-                const isNext = lockedSequence.length === idx;
+            // 2. Draw the totem anchors.
+            pts.forEach((p, i) => {
+                const isConnected = connectedPoints.includes(i);
+                const isNext = connectedPoints.length === i;
                 ctx.beginPath();
                 ctx.arc(p.x * c.width, p.y * c.height, isNext ? 8 : 5, 0, Math.PI * 2);
-                if (isConnected) ctx.fillStyle = 'var(--gold)';
-                else if (isNext) ctx.fillStyle = 'var(--teal)';
-                else ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                if (isConnected) {
+                    ctx.fillStyle = 'var(--gold)';
+                } else if (isNext) {
+                    ctx.fillStyle = 'var(--teal)';
+                } else {
+                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                }
                 ctx.fill();
             });
 
