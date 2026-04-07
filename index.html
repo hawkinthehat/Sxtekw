@@ -114,9 +114,49 @@
             pointer-events: none;
             z-index: 100;
         }
+
+        /* THE VAGAL BORDER */
+        .vagal-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0 solid var(--teal);
+            box-sizing: border-box;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0;
+        }
+
+        /* 4s INHALE / 6s EXHALE CYCLE */
+        @keyframes vagal-pulse {
+            0% { border-width: 0; opacity: 0; }
+            40% { border-width: 15px; opacity: 0.4; } /* End of inhale */
+            100% { border-width: 0; opacity: 0; } /* End of long exhale */
+        }
+
+        .vagal-active {
+            animation: vagal-pulse 10s infinite ease-in-out;
+        }
+
+        /* COLD START PROMPT */
+        .cold-start {
+            position: absolute;
+            bottom: 40px;
+            color: var(--teal);
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.5;
+            text-align: center;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
+    <div id="v-border-halt" class="vagal-border"></div>
+    <div id="v-border-still" class="vagal-border"></div>
 
     <div id="scr-home" class="screen active">
         <div class="logo-pulse"><span style="color: var(--gold); font-weight: 900; font-size: 0.75rem;">SXT’EKW</span></div>
@@ -150,6 +190,7 @@
                 <div id="timer-bar"></div>
             </div>
         <div id="f-h" class="feather-h" onclick="hitH()"></div>
+        <div class="cold-start">INHALE 4S / EXHALE 6S</div>
     </div>
 
     <div id="scr-spark" class="screen">
@@ -182,11 +223,12 @@
         </div>
         <div style="margin-top: 60px; text-align: center; width: 70%;">
             <p class="t-phonetic" style="color: var(--red); opacity: 0.8; font-size: 0.8rem;">
-                STOP THE BREATH. <br>
-                LOCK YOUR GAZE ON THE CENTER.
+                STOP THE BREATH. LOCK GAZE. <br>
+                SPLASH COLD WATER ON FACE IF HEART IS RACING.
             </p>
         </div>
         <div id="halt-strobe"></div>
+        <div class="cold-start">INHALE 4S / EXHALE 6S</div>
     </div>
 
     <script>
@@ -204,8 +246,12 @@
 
         function go(s) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            stopVagalBreathing();
             document.getElementById(`scr-${s}`).classList.add('active');
-            if (s === 'still') initLogic();
+            if (s === 'still') {
+                initLogic();
+                startStillBreathing();
+            }
             if (s === 'weave') initCanvas();
             if (s === 'halt') triggerHaltEffects();
         }
@@ -232,6 +278,7 @@
             }
             const strobe = document.getElementById('halt-strobe');
             if (strobe) strobe.style.opacity = '0';
+            stopVagalBreathing();
             drawing = false;
             path = [];
             lockedSequence = [];
@@ -268,6 +315,26 @@
 
         let haltStrobeInterval = null;
         let haltStrobeTimeout = null;
+
+        // Updated instructions for HALT if external instruction model exists.
+        if (window.instructions && window.instructions.halt) {
+            window.instructions.halt.b = "STOP THE BREATH. LOCK GAZE. <br> SPLASH COLD WATER ON FACE IF HEART IS RACING.";
+        }
+
+        function stopVagalBreathing() {
+            const haltBorder = document.getElementById('v-border-halt');
+            const stillBorder = document.getElementById('v-border-still');
+            if (haltBorder) haltBorder.classList.remove('vagal-active');
+            if (stillBorder) stillBorder.classList.remove('vagal-active');
+        }
+
+        function startStillBreathing() {
+            const stillBorder = document.getElementById('v-border-still');
+            const haltBorder = document.getElementById('v-border-halt');
+            if (haltBorder) haltBorder.classList.remove('vagal-active');
+            if (stillBorder) stillBorder.classList.add('vagal-active');
+        }
+
         function initLogic() {
             stillLevel = 1;
             saccadeSpeed = 1200;
@@ -389,7 +456,10 @@
         function triggerHaltEffects() {
             const haltScreen = document.getElementById('scr-halt');
             const strobe = document.getElementById('halt-strobe');
-            if (!haltScreen || !strobe) return;
+            const vBorder = document.getElementById('v-border-halt');
+            if (!haltScreen || !strobe || !vBorder) return;
+
+            startVagalHaltBreathing(vBorder);
 
             if (haltStrobeInterval) clearInterval(haltStrobeInterval);
             if (haltStrobeTimeout) clearTimeout(haltStrobeTimeout);
@@ -399,6 +469,7 @@
                     strobe.style.opacity = '0';
                     clearInterval(haltStrobeInterval);
                     haltStrobeInterval = null;
+                    vBorder.classList.remove('vagal-active');
                     return;
                 }
 
@@ -406,6 +477,12 @@
                 if (navigator.vibrate) navigator.vibrate(60);
                 haltStrobeTimeout = setTimeout(() => { strobe.style.opacity = '0'; }, 50);
             }, 4000);
+        }
+
+        function startVagalHaltBreathing(vBorder) {
+            const stillBorder = document.getElementById('v-border-still');
+            if (stillBorder) stillBorder.classList.remove('vagal-active');
+            vBorder.classList.add('vagal-active');
         }
 
         function startFV() {
