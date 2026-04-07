@@ -110,6 +110,24 @@
         }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
         #touch-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+        #weave-instr {
+            position: absolute;
+            top: 160px;
+            color: var(--gold);
+            letter-spacing: 5px;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            opacity: 0.6;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .anchor-pulse {
+            animation: anchor-glow 1.5s infinite alternate;
+        }
+        @keyframes anchor-glow {
+            0% { filter: drop-shadow(0 0 2px var(--gold)); transform: scale(1); }
+            100% { filter: drop-shadow(0 0 12px var(--teal)); transform: scale(1.3); }
+        }
 
         /* HALT MAXIMIZATION OVERRIDES */
         #scr-halt {
@@ -161,9 +179,49 @@
             pointer-events: none;
             z-index: 100;
         }
+
+        /* THE VAGAL BORDER */
+        .vagal-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0 solid var(--teal);
+            box-sizing: border-box;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0;
+        }
+
+        /* 4s INHALE / 6s EXHALE CYCLE */
+        @keyframes vagal-pulse {
+            0% { border-width: 0; opacity: 0; }
+            40% { border-width: 15px; opacity: 0.4; } /* End of inhale */
+            100% { border-width: 0; opacity: 0; } /* End of long exhale */
+        }
+
+        .vagal-active {
+            animation: vagal-pulse 10s infinite ease-in-out;
+        }
+
+        /* COLD START PROMPT */
+        .cold-start {
+            position: absolute;
+            bottom: 40px;
+            color: var(--teal);
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.5;
+            text-align: center;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
+    <div id="v-border-halt" class="vagal-border"></div>
+    <div id="v-border-still" class="vagal-border"></div>
     <div id="instr-overlay" class="overlay" style="display:none;">
         <div id="ititle" class="instr-title"></div>
         <div id="ibody" class="instr-body"></div>
@@ -201,6 +259,7 @@
                 <div id="timer-bar"></div>
             </div>
         <div id="f-h" class="feather-h" onclick="hitH()"></div>
+        <div class="cold-start">INHALE 4S / EXHALE 6S</div>
     </div>
 
     <div id="scr-spark" class="screen">
@@ -218,6 +277,7 @@
             <div id="animal-t" style="color: var(--teal); letter-spacing: 5px; font-weight: 900;">RAVEN</div>
             <div id="animal-p" class="t-phonetic">SQUW'AL'QUW</div>
         </div>
+        <div id="weave-instr">TRACE THE THREAD TO THE NEXT ANCHOR</div>
         <canvas id="cvs"></canvas>
         <div id="touch-area"></div>
     </div>
@@ -233,11 +293,12 @@
         </div>
         <div style="margin-top: 60px; text-align: center; width: 70%;">
             <p class="t-phonetic" style="color: var(--red); opacity: 0.8; font-size: 0.8rem;">
-                STOP THE BREATH. <br>
-                LOCK YOUR GAZE ON THE CENTER.
+                STOP THE BREATH. LOCK GAZE. <br>
+                SPLASH COLD WATER ON FACE IF HEART IS RACING.
             </p>
         </div>
         <div id="halt-strobe"></div>
+        <div class="cold-start">INHALE 4S / EXHALE 6S</div>
     </div>
 
     <script>
@@ -262,6 +323,9 @@
                 b: "STOP THE BREATH. <br> GAZE INTO THE RED VOID UNTIL THE PULSE SUBSIDES."
             }
         };
+        let connectedPoints = [0];
+        let isPathBlocked = false;
+        let weaveRafId = null;
         const levels = [
             {n:"RAVEN", p:"SQUW'AL'QUW", pts:[{x:0.5, y:0.2}, {x:0.3, y:0.5}, {x:0.7, y:0.5}, {x:0.5, y:0.8}]},
             {n:"WOLF", p:"STIQÍYU’", pts:[{x:0.2, y:0.4}, {x:0.5, y:0.2}, {x:0.8, y:0.4}, {x:0.7, y:0.7}, {x:0.3, y:0.7}]},
@@ -269,8 +333,6 @@
             {n:"EAGLE", p:"YEXWALA", pts:[{x:0.1, y:0.4}, {x:0.3, y:0.3}, {x:0.5, y:0.5}, {x:0.7, y:0.3}, {x:0.9, y:0.4}, {x:0.5, y:0.8}]}
         ];
         let curLvl = 0;
-        let lockedSequence = [];
-        let pendingLevelAdvance = false;
         let activeRadius = 80;
 
         function showInstructions(mode) {
@@ -311,7 +373,9 @@
 
         function go(s) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            stopVagalBreathing();
             document.getElementById(`scr-${s}`).classList.add('active');
+            if (s === 'still') startStillBreathing();
             showInstructions(s);
         }
 
@@ -337,6 +401,7 @@
             }
             const strobe = document.getElementById('halt-strobe');
             if (strobe) strobe.style.opacity = '0';
+            stopVagalBreathing();
             if (instructionFadeTimer) {
                 clearTimeout(instructionFadeTimer);
                 instructionFadeTimer = null;
@@ -352,8 +417,12 @@
             }
             drawing = false;
             path = [];
-            lockedSequence = [];
-            pendingLevelAdvance = false;
+            connectedPoints = [0];
+            isPathBlocked = false;
+            if (weaveRafId !== null) {
+                cancelAnimationFrame(weaveRafId);
+                weaveRafId = null;
+            }
         }
 
         /* --- LOGIC 2.0 --- */
@@ -386,6 +455,24 @@
 
         let haltStrobeInterval = null;
         let haltStrobeTimeout = null;
+
+        // Updated instructions for HALT.
+        instructions.halt.b = "STOP THE BREATH. LOCK GAZE. <br> SPLASH COLD WATER ON FACE IF HEART IS RACING.";
+
+        function stopVagalBreathing() {
+            const haltBorder = document.getElementById('v-border-halt');
+            const stillBorder = document.getElementById('v-border-still');
+            if (haltBorder) haltBorder.classList.remove('vagal-active');
+            if (stillBorder) stillBorder.classList.remove('vagal-active');
+        }
+
+        function startStillBreathing() {
+            const stillBorder = document.getElementById('v-border-still');
+            const haltBorder = document.getElementById('v-border-halt');
+            if (haltBorder) haltBorder.classList.remove('vagal-active');
+            if (stillBorder) stillBorder.classList.add('vagal-active');
+        }
+
         function initLogic() {
             stillLevel = 1;
             saccadeSpeed = 1200;
@@ -507,7 +594,10 @@
         function triggerHaltEffects() {
             const haltScreen = document.getElementById('scr-halt');
             const strobe = document.getElementById('halt-strobe');
-            if (!haltScreen || !strobe) return;
+            const vBorder = document.getElementById('v-border-halt');
+            if (!haltScreen || !strobe || !vBorder) return;
+
+            startVagalHaltBreathing(vBorder);
 
             if (haltStrobeInterval) clearInterval(haltStrobeInterval);
             if (haltStrobeTimeout) clearTimeout(haltStrobeTimeout);
@@ -517,6 +607,7 @@
                     strobe.style.opacity = '0';
                     clearInterval(haltStrobeInterval);
                     haltStrobeInterval = null;
+                    vBorder.classList.remove('vagal-active');
                     return;
                 }
 
@@ -524,6 +615,12 @@
                 if (navigator.vibrate) navigator.vibrate(60);
                 haltStrobeTimeout = setTimeout(() => { strobe.style.opacity = '0'; }, 50);
             }, 4000);
+        }
+
+        function startVagalHaltBreathing(vBorder) {
+            const stillBorder = document.getElementById('v-border-still');
+            if (stillBorder) stillBorder.classList.remove('vagal-active');
+            vBorder.classList.add('vagal-active');
         }
 
         function startFV() {
@@ -557,77 +654,86 @@
             const c = document.getElementById('cvs');
             c.width = window.innerWidth;
             c.height = window.innerHeight;
+            connectedPoints = [0];
             path = [];
-            lockedSequence = [0];
-            pendingLevelAdvance = false;
+            isPathBlocked = false;
             setCurrentLevelLabels();
 
             const area = document.getElementById('touch-area');
-            area.onpointerdown = (e) => {
+            area.onpointerdown = () => {
                 drawing = true;
-                path = [{x:e.clientX, y:e.clientY}];
+                path = [];
             };
             area.onpointermove = (e) => {
-                if (!drawing) return;
-                const p = {x:e.clientX, y:e.clientY};
-                path.push(p);
-                tryLockAnchor(p);
+                if (!drawing || isPathBlocked) return;
+
+                const nextIdx = connectedPoints.length;
+                if (nextIdx >= levels[curLvl].pts.length) return;
+
+                const target = levels[curLvl].pts[nextIdx];
+                const tx = target.x * c.width;
+                const ty = target.y * c.height;
+
+                const dist = Math.hypot(e.clientX - tx, e.clientY - ty);
+
+                if (dist < activeRadius) {
+                    connectedPoints.push(nextIdx);
+                    if (navigator.vibrate) navigator.vibrate([40]);
+
+                    if (connectedPoints.length === levels[curLvl].pts.length) {
+                        isPathBlocked = true;
+                        drawing = false;
+                        path = [];
+                        if (navigator.vibrate) navigator.vibrate([20, 50, 100]);
+                        setTimeout(completeWeave, 800);
+                    }
+                }
             };
             area.onpointerup = () => {
                 drawing = false;
-                path = [];
             };
             area.onpointercancel = () => {
                 drawing = false;
-                path = [];
             };
+            if (weaveRafId !== null) cancelAnimationFrame(weaveRafId);
             drawLoop();
         }
 
-        function tryLockAnchor(p) {
-            if (pendingLevelAdvance) return;
+        function completeWeave() {
             const c = document.getElementById('cvs');
             const pts = levels[curLvl].pts;
-            const nextIdx = lockedSequence.length;
-            if (nextIdx >= pts.length) return;
+            const ctx = c.getContext('2d');
+            ctx.strokeStyle = 'var(--teal)';
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            pts.forEach((p, i) => {
+                const x = p.x * c.width;
+                const y = p.y * c.height;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.stroke();
 
-            const next = pts[nextIdx];
-            const nx = next.x * c.width;
-            const ny = next.y * c.height;
-            const dist = Math.hypot(p.x - nx, p.y - ny);
-
-            if (dist >= activeRadius) return;
-
-            lockedSequence.push(nextIdx);
-            if (navigator.vibrate) navigator.vibrate([40]);
-
-            if (lockedSequence.length >= pts.length) {
-                pendingLevelAdvance = true;
-                drawing = false;
-                path = [];
-                if (navigator.vibrate) navigator.vibrate([20, 50, 100]);
-                setTimeout(advanceWeaveLevel, 800);
-            }
-        }
-
-        function advanceWeaveLevel() {
-            if (!pendingLevelAdvance) return;
-            curLvl = (curLvl + 1) % levels.length;
-            lockedSequence = [0];
-            pendingLevelAdvance = false;
-            setCurrentLevelLabels();
+            setTimeout(() => {
+                curLvl = (curLvl + 1) % levels.length;
+                initCanvas();
+            }, 800);
         }
 
         function drawLoop() {
             const c = document.getElementById('cvs');
-            if (!c || !document.getElementById('scr-weave').classList.contains('active')) return;
+            if (!c || !document.getElementById('scr-weave').classList.contains('active')) {
+                weaveRafId = null;
+                return;
+            }
             const ctx = c.getContext('2d');
             const pts = levels[curLvl].pts;
-            ctx.fillStyle = '#000';
+            ctx.setLineDash([10, 20]);
+            ctx.fillStyle = 'var(--bg)';
             ctx.fillRect(0, 0, c.width, c.height);
 
             // Faint guide path showing full weave order.
-            ctx.setLineDash([10, 20]);
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -640,14 +746,13 @@
             ctx.stroke();
             ctx.setLineDash([]);
 
-            if (lockedSequence.length > 1) {
+            if (connectedPoints.length > 1) {
                 ctx.strokeStyle = 'var(--gold)';
-                ctx.lineWidth = 4;
-                ctx.lineCap = 'round';
-                ctx.shadowBlur = 10;
+                ctx.lineWidth = 5;
+                ctx.shadowBlur = 15;
                 ctx.shadowColor = 'var(--gold)';
                 ctx.beginPath();
-                lockedSequence.forEach((idx, i) => {
+                connectedPoints.forEach((idx, i) => {
                     const p = pts[idx];
                     const x = p.x * c.width;
                     const y = p.y * c.height;
@@ -658,27 +763,28 @@
                 ctx.shadowBlur = 0;
             }
 
-            if (path.length > 1) {
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                path.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-                ctx.stroke();
-            }
-
             pts.forEach((p, idx) => {
-                const isConnected = lockedSequence.includes(idx);
-                const isNext = lockedSequence.length === idx;
+                const isConnected = connectedPoints.includes(idx);
+                const isNext = connectedPoints.length === idx;
                 ctx.beginPath();
-                ctx.arc(p.x * c.width, p.y * c.height, isNext ? 8 : 5, 0, Math.PI * 2);
-                if (isConnected) ctx.fillStyle = 'var(--gold)';
-                else if (isNext) ctx.fillStyle = 'var(--teal)';
-                else ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.arc(p.x * c.width, p.y * c.height, isNext ? 10 : 5, 0, Math.PI * 2);
+
+                if (isNext) {
+                    ctx.fillStyle = 'var(--teal)';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = 'var(--teal)';
+                } else if (isConnected) {
+                    ctx.fillStyle = 'var(--gold)';
+                    ctx.shadowBlur = 5;
+                } else {
+                    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                }
                 ctx.fill();
+                ctx.shadowBlur = 0;
             });
 
             // Magnetic pulse on the active target.
-            const nextP = pts[lockedSequence.length];
+            const nextP = pts[connectedPoints.length];
             if (nextP) {
                 const x = nextP.x * c.width;
                 const y = nextP.y * c.height;
@@ -693,7 +799,7 @@
                 ctx.fill();
             }
 
-            requestAnimationFrame(drawLoop);
+            weaveRafId = requestAnimationFrame(drawLoop);
         }
     </script>
 </body>
