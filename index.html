@@ -5,10 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SXT’EKW | 2.0</title>
     <style>
-        :root { --bg: #000; --teal: #0d9488; --gold: #fbbf24; --red: #f43f5e; --text: #f1f5f9; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; touch-action: none; -webkit-user-select: none; }
+        :root { --bg: #121212; --teal: #0d9488; --gold: #fbbf24; --red: #f43f5e; --text: #f1f5f9; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #121212 !important;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            -webkit-user-select: none;
+        }
 
-        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10; opacity: 0; transition: opacity 0.3s; }
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #121212;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
         .active { display: flex; opacity: 1; }
 
         /* THE HEARTBEAT LOGO */
@@ -95,20 +121,29 @@
         /* HÍLU BUTTON - MAXIMUM VISIBILITY */
         .btn-back {
             position: absolute;
-            top: 40px;
-            left: 30px;
-            background: rgba(255, 255, 255, 0.1);
+            top: 50px;
+            left: 25px;
+            background: rgba(255, 255, 255, 0.15);
             border: 2px solid #ffffff;
             color: #ffffff;
-            padding: 12px 24px;
+            padding: 12px 22px;
             font-size: 0.7rem;
-            letter-spacing: 5px;
-            z-index: 1000;
+            letter-spacing: 4px;
+            z-index: 2001;
             border-radius: 40px;
             font-weight: 900;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
         }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
+        #cvs {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: transparent;
+        }
         #touch-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
         #weave-instr {
             position: absolute;
@@ -728,59 +763,52 @@
                 return;
             }
             const ctx = c.getContext('2d');
-            ctx.fillStyle = 'var(--bg)';
+            ctx.fillStyle = '#121212';
             ctx.fillRect(0, 0, c.width, c.height);
 
             const pts = levels[curLvl].pts;
 
-            ctx.setLineDash([5, 10]);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.setLineDash([8, 12]);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.lineWidth = 2;
             ctx.beginPath();
             pts.forEach((p, i) => {
-                const x = p.x * c.width;
-                const y = p.y * c.height;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
+                if (i === 0) ctx.moveTo(p.x * c.width, p.y * c.height);
+                else ctx.lineTo(p.x * c.width, p.y * c.height);
             });
             ctx.stroke();
             ctx.setLineDash([]);
 
             if (connectedPoints.length > 1) {
-                ctx.strokeStyle = 'var(--gold)';
-                ctx.lineWidth = 5;
+                ctx.strokeStyle = '#fbbf24';
+                ctx.lineWidth = 6;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
                 ctx.shadowBlur = 15;
-                ctx.shadowColor = 'var(--gold)';
+                ctx.shadowColor = '#fbbf24';
                 ctx.beginPath();
                 connectedPoints.forEach((idx, i) => {
                     const p = pts[idx];
-                    const x = p.x * c.width;
-                    const y = p.y * c.height;
-                    if (i === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
+                    if (i === 0) ctx.moveTo(p.x * c.width, p.y * c.height);
+                    else ctx.lineTo(p.x * c.width, p.y * c.height);
                 });
                 ctx.stroke();
                 ctx.shadowBlur = 0;
             }
 
-            pts.forEach((p, idx) => {
-                const isConnected = connectedPoints.includes(idx);
-                const isNext = connectedPoints.length === idx;
+            const nextIdx = connectedPoints.length;
+            if (nextIdx < pts.length) {
+                const p = pts[nextIdx];
                 ctx.beginPath();
-                ctx.arc(p.x * c.width, p.y * c.height, isNext ? 10 : 5, 0, Math.PI * 2);
-
-                if (isNext) {
-                    ctx.fillStyle = 'var(--teal)';
-                    ctx.shadowBlur = 20;
-                    ctx.shadowColor = 'var(--teal)';
-                } else if (isConnected) {
-                    ctx.fillStyle = 'var(--gold)';
-                    ctx.shadowBlur = 5;
-                } else {
-                    ctx.fillStyle = 'rgba(255,255,255,0.05)';
-                }
+                ctx.arc(p.x * c.width, p.y * c.height, 20, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(13, 148, 136, 0.3)';
                 ctx.fill();
-                ctx.shadowBlur = 0;
-            });
+
+                ctx.beginPath();
+                ctx.arc(p.x * c.width, p.y * c.height, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#0d9488';
+                ctx.fill();
+            }
 
             weaveRafId = requestAnimationFrame(drawLoop);
         }
