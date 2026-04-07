@@ -6,6 +6,8 @@
     <title>SXT’EKW | 2.5 Warrior</title>
     <style>
         :root { --bg: #000; --teal: #0d9488; --gold: #fbbf24; --text: #f1f5f9; }
+        /* COLOR PALETTE: BLACK (000), RED (f43f5e), YELLOW (fbbf24) */
+        :root { --bg: #000; --red: #f43f5e; --gold: #fbbf24; --teal: #14b8a6; --text: #f1f5f9; --off: #222; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; touch-action: none; -webkit-user-select: none; }
         
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10; opacity: 0; transition: opacity 0.4s; }
@@ -30,6 +32,8 @@
         #feather { position: absolute; width: 100px; height: 10px; background: var(--teal); border-radius: 20px; filter: blur(2px); box-shadow: 0 0 20px var(--teal); display: none; transition: all 1.2s cubic-bezier(0.65, 0, 0.35, 1); }
 
         .btn-hilu { position: absolute; top: 30px; left: 30px; background: none; border: 1px solid #222; color: #444; padding: 8px 15px; font-size: 0.55rem; letter-spacing: 2px; z-index: 1000; }
+        .btn-hilu { position: absolute; top: 30px; left: 30px; background: rgba(20, 184, 166, 0.08); border: 1px solid var(--teal); color: var(--teal); padding: 8px 15px; font-size: 0.55rem; letter-spacing: 2px; z-index: 1000; text-transform: uppercase; cursor: pointer; }
+        .btn-hilu:active { background: rgba(20, 184, 166, 0.2); }
         canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
         #touch-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
     </style>
