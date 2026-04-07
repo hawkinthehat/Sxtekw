@@ -7,7 +7,7 @@
     <style>
         :root { --bg: #000; --teal: #0d9488; --gold: #fbbf24; --red: #f43f5e; --text: #f1f5f9; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; touch-action: none; -webkit-user-select: none; }
-        
+
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10; opacity: 0; transition: opacity 0.3s; }
         .active { display: flex; opacity: 1; }
 
@@ -112,7 +112,6 @@
         ];
         let curLvl = 0;
         let lockedSequence = [];
-        let anchorActiveUntil = [];
         let pendingLevelAdvance = false;
 
         function go(s) {
@@ -266,8 +265,7 @@
             c.width = window.innerWidth;
             c.height = window.innerHeight;
             path = [];
-            lockedSequence = [];
-            anchorActiveUntil = [];
+            lockedSequence = [0];
             pendingLevelAdvance = false;
             setCurrentLevelLabels();
 
@@ -275,7 +273,6 @@
             area.onpointerdown = (e) => {
                 drawing = true;
                 path = [{x:e.clientX, y:e.clientY}];
-                tryLockAnchor(path[0]);
             };
             area.onpointermove = (e) => {
                 if (!drawing) return;
@@ -298,26 +295,18 @@
             if (pendingLevelAdvance) return;
             const c = document.getElementById('cvs');
             const pts = levels[curLvl].pts;
-            const threshold = 30;
-            let nearest = -1;
-            let nearestDist = Number.POSITIVE_INFINITY;
+            const nextIdx = lockedSequence.length;
+            if (nextIdx >= pts.length) return;
 
-            pts.forEach((anchor, idx) => {
-                const ax = anchor.x * c.width;
-                const ay = anchor.y * c.height;
-                const dist = Math.hypot(p.x - ax, p.y - ay);
-                if (dist < threshold && dist < nearestDist) {
-                    nearest = idx;
-                    nearestDist = dist;
-                }
-            });
+            const next = pts[nextIdx];
+            const nx = next.x * c.width;
+            const ny = next.y * c.height;
+            const dist = Math.hypot(p.x - nx, p.y - ny);
 
-            if (nearest === -1) return;
-            if (lockedSequence.includes(nearest)) return;
+            if (dist > 40) return;
 
-            lockedSequence.push(nearest);
-            anchorActiveUntil[nearest] = Date.now() + 350;
-            if (navigator.vibrate) navigator.vibrate(15);
+            lockedSequence.push(nextIdx);
+            if (navigator.vibrate) navigator.vibrate(30);
 
             if (lockedSequence.length >= pts.length) {
                 advanceWeaveLevel();
@@ -332,8 +321,7 @@
             if (navigator.vibrate) navigator.vibrate([20, 60, 20]);
             setTimeout(() => {
                 curLvl = (curLvl + 1) % levels.length;
-                lockedSequence = [];
-                anchorActiveUntil = [];
+                lockedSequence = [0];
                 pendingLevelAdvance = false;
                 setCurrentLevelLabels();
             }, 700);
@@ -347,8 +335,11 @@
             ctx.fillRect(0, 0, c.width, c.height);
 
             if (lockedSequence.length > 1) {
-                ctx.strokeStyle = 'rgba(13, 148, 136, 0.85)';
-                ctx.lineWidth = 3;
+                ctx.strokeStyle = 'var(--gold)';
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'var(--gold)';
                 ctx.beginPath();
                 lockedSequence.forEach((idx, i) => {
                     const p = levels[curLvl].pts[idx];
@@ -358,6 +349,7 @@
                     else ctx.lineTo(x, y);
                 });
                 ctx.stroke();
+                ctx.shadowBlur = 0;
             }
 
             if (path.length > 1) {
@@ -369,11 +361,13 @@
             }
 
             levels[curLvl].pts.forEach((p, idx) => {
-                const active = (anchorActiveUntil[idx] || 0) > Date.now();
-                const radius = active ? 8 : (Math.sin(Date.now() * 0.005 + idx) * 1.2 + 4.5);
+                const isConnected = lockedSequence.includes(idx);
+                const isNext = lockedSequence.length === idx;
                 ctx.beginPath();
-                ctx.arc(p.x * c.width, p.y * c.height, radius, 0, Math.PI * 2);
-                ctx.fillStyle = active ? 'rgba(13, 148, 136, 0.95)' : 'rgba(251, 191, 36, 0.45)';
+                ctx.arc(p.x * c.width, p.y * c.height, isNext ? 8 : 5, 0, Math.PI * 2);
+                if (isConnected) ctx.fillStyle = 'var(--gold)';
+                else if (isNext) ctx.fillStyle = 'var(--teal)';
+                else ctx.fillStyle = 'rgba(255,255,255,0.1)';
                 ctx.fill();
             });
 
