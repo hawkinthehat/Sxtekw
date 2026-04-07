@@ -63,6 +63,57 @@
         .btn-back { position: absolute; top: 30px; left: 30px; background: none; border: 1px solid #222; color: #444; padding: 8px 14px; font-size: 0.5rem; letter-spacing: 2px; z-index: 1000; }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
         #touch-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+
+        /* HALT MAXIMIZATION OVERRIDES */
+        #scr-halt {
+            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+            overflow: hidden;
+        }
+        .halt-core {
+            width: 200px;
+            height: 200px;
+            border: 2px solid var(--red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: halt-expand 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 20;
+        }
+        @keyframes halt-expand {
+            0% { transform: scale(0.8); opacity: 0.3; box-shadow: 0 0 0 var(--red); }
+            50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 50px var(--red); }
+            100% { transform: scale(0.8); opacity: 0.3; box-shadow: 0 0 0 var(--red); }
+        }
+        .halt-label {
+            color: var(--red);
+            font-weight: 900;
+            letter-spacing: 15px;
+            font-size: 2.5rem;
+            text-shadow: 0 0 20px rgba(244, 63, 94, 0.5);
+            z-index: 20;
+            margin-left: 15px;
+        }
+        .gaze-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: var(--red);
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+        #halt-strobe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--red);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
@@ -122,8 +173,20 @@
 
     <div id="scr-halt" class="screen">
         <button class="btn-back" onclick="home()">HÍLU</button>
-        <h1 style="color: var(--red); letter-spacing: 12px; font-weight: 900;">HALT</h1>
-        <div style="margin-top: 40px; font-size: 2rem; color: #111;">●</div>
+        <div class="halt-core">
+            <div class="halt-label">HALT</div>
+            <span class="gaze-dot" style="top: 20%; left: 20%;"></span>
+            <span class="gaze-dot" style="top: 20%; right: 20%;"></span>
+            <span class="gaze-dot" style="bottom: 20%; left: 20%;"></span>
+            <span class="gaze-dot" style="bottom: 20%; right: 20%;"></span>
+        </div>
+        <div style="margin-top: 60px; text-align: center; width: 70%;">
+            <p class="t-phonetic" style="color: var(--red); opacity: 0.8; font-size: 0.8rem;">
+                STOP THE BREATH. <br>
+                LOCK YOUR GAZE ON THE CENTER.
+            </p>
+        </div>
+        <div id="halt-strobe"></div>
     </div>
 
     <script>
@@ -144,6 +207,7 @@
             document.getElementById(`scr-${s}`).classList.add('active');
             if (s === 'still') initLogic();
             if (s === 'weave') initCanvas();
+            if (s === 'halt') triggerHaltEffects();
         }
 
         function home() {
@@ -158,6 +222,16 @@
             document.getElementById('timer-bar-container').style.display = 'none';
             document.getElementById('spark-ui').style.display = 'block';
             document.getElementById('q-text').classList.remove('shake');
+            if (haltStrobeInterval) {
+                clearInterval(haltStrobeInterval);
+                haltStrobeInterval = null;
+            }
+            if (haltStrobeTimeout) {
+                clearTimeout(haltStrobeTimeout);
+                haltStrobeTimeout = null;
+            }
+            const strobe = document.getElementById('halt-strobe');
+            if (strobe) strobe.style.opacity = '0';
             drawing = false;
             path = [];
             lockedSequence = [];
@@ -192,6 +266,8 @@
             }
         ];
 
+        let haltStrobeInterval = null;
+        let haltStrobeTimeout = null;
         function initLogic() {
             stillLevel = 1;
             saccadeSpeed = 1200;
@@ -307,6 +383,29 @@
                     startFV();
                 }, 700);
             }
+        }
+
+        /* --- HALT: SENSORY INTERRUPT --- */
+        function triggerHaltEffects() {
+            const haltScreen = document.getElementById('scr-halt');
+            const strobe = document.getElementById('halt-strobe');
+            if (!haltScreen || !strobe) return;
+
+            if (haltStrobeInterval) clearInterval(haltStrobeInterval);
+            if (haltStrobeTimeout) clearTimeout(haltStrobeTimeout);
+
+            haltStrobeInterval = setInterval(() => {
+                if (!haltScreen.classList.contains('active')) {
+                    strobe.style.opacity = '0';
+                    clearInterval(haltStrobeInterval);
+                    haltStrobeInterval = null;
+                    return;
+                }
+
+                strobe.style.opacity = '0.15';
+                if (navigator.vibrate) navigator.vibrate(60);
+                haltStrobeTimeout = setTimeout(() => { strobe.style.opacity = '0'; }, 50);
+            }, 4000);
         }
 
         function startFV() {
