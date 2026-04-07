@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SXT’EKW | Warrior Master</title>
+    <title>SXT’EKW | Slate 2.0</title>
     <style>
-        /* COLOR PALETTE: BLACK (000), RED (f43f5e), YELLOW (fbbf24) */
-        :root { --bg: #000; --red: #f43f5e; --gold: #fbbf24; --teal: #14b8a6; --text: #f1f5f9; --off: #222; }
+        :root { --bg: #121212; --red: #f43f5e; --gold: #fbbf24; --teal: #0d9488; --text: #e2e8f0; --off: #222; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; touch-action: none; -webkit-user-select: none; }
 
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10; opacity: 0; transition: opacity 0.6s ease; }
@@ -141,8 +140,7 @@
 
         let currentLevel = 0;
         let isDrawing = false;
-        let userPath = [];
-        let ghostPath = []; // Stores all completed strokes
+        let connectedPoints = [];
         let promptIndex = 0;
         let sparkCount = 0;
         let fSide = 0;
@@ -167,8 +165,7 @@
             document.getElementById('screen-home').classList.add('active');
             document.getElementById('feather').style.display = 'none';
             isDrawing = false;
-            userPath = [];
-            ghostPath = [];
+            connectedPoints = [];
         }
 
         /* --- ST’ÉXEM / PAXWAD --- */
@@ -232,60 +229,49 @@
             canvas.height = window.innerHeight;
             document.getElementById('animal-name').innerText = totems[currentLevel].name;
             document.getElementById('animal-phonetic').innerText = totems[currentLevel].phonetic;
-            
-            // Clear paths for new animal
-            userPath = [];
-            ghostPath = [];
+
+            // Start at first anchor and advance in sequence.
+            connectedPoints = [0];
 
             const layer = document.getElementById('touch-layer');
 
-            layer.onpointerdown = (e) => {
+            layer.onpointerdown = () => {
                 isDrawing = true;
-                const p = { x: e.clientX, y: e.clientY };
-                userPath = [p];
-                checkAnchorProximity(p);
             };
 
             layer.onpointermove = (e) => {
                 if (!isDrawing) return;
-                const p = { x: e.clientX, y: e.clientY };
-                userPath.push(p);
-                checkAnchorProximity(p);
+
+                const nextPointIndex = connectedPoints.length;
+                if (nextPointIndex >= totems[currentLevel].points.length) return;
+
+                const target = totems[currentLevel].points[nextPointIndex];
+                const tx = target.x * canvas.width;
+                const ty = target.y * canvas.height;
+                const dist = Math.hypot(e.clientX - tx, e.clientY - ty);
+
+                if (dist < 40) {
+                    connectedPoints.push(nextPointIndex);
+                    if (navigator.vibrate) navigator.vibrate(30);
+
+                    if (connectedPoints.length === totems[currentLevel].points.length) {
+                        setTimeout(() => {
+                            currentLevel = (currentLevel + 1) % totems.length;
+                            initWeave();
+                        }, 1500);
+                    }
+                }
             };
 
             layer.onpointerup = () => {
                 isDrawing = false;
-                // Transfer current stroke to persistent "Ghost" path
-                if (userPath.length > 1) {
-                    ghostPath.push([...userPath]);
-                }
-                userPath = [];
             };
 
             layer.onpointercancel = () => {
                 isDrawing = false;
-                userPath = [];
             };
 
             renderWeave();
-        }
-
-        function checkAnchorProximity(p) {
-            const canvas = document.getElementById('weave-canvas');
-            totems[currentLevel].points.forEach(anchor => {
-                const ax = anchor.x * canvas.width;
-                const ay = anchor.y * canvas.height;
-                const dist = Math.sqrt((p.x - ax) ** 2 + (p.y - ay) ** 2);
-
-                if (dist < 25) { // If finger is within 25px of anchor
-                    if (navigator.vibrate) navigator.vibrate(10);
-                    // Visual feedback: anchor "lights up" via the render loop
-                    anchor.active = true;
-                    setTimeout(() => {
-                        anchor.active = false;
-                    }, 500);
-                }
-            });
         }
 
         function renderWeave() {
@@ -294,46 +280,36 @@
             const ctx = canvas.getContext('2d');
 
             // Clear Frame
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = '#121212';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 1. Draw Persistent "Ghost" Path (Completed Strokes)
-            ctx.strokeStyle = 'rgba(13, 148, 136, 0.2)'; // Faded Teal
-            ctx.lineWidth = 2;
-            ghostPath.forEach(path => {
-                ctx.beginPath();
-                path.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-                ctx.stroke();
-            });
-
-            // 2. Draw Active "Electric" Path (Current Finger)
-            if (isDrawing && userPath.length > 1) {
+            // 1. Draw woven skeleton (only completed sequence points).
+            if (connectedPoints.length > 1) {
                 ctx.strokeStyle = 'var(--gold)';
                 ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = 'var(--gold)';
                 ctx.beginPath();
-                userPath.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-                ctx.stroke();
-                ctx.shadowBlur = 0; // Reset blur for next items
-            }
-
-            // 3. Draw Anchors (Pulsing and Magnetic)
-            totems[currentLevel].points.forEach(p => {
-                const baseSize = 5;
-                const pulse = Math.sin(Date.now() * 0.005) * 2;
-                const size = p.active ? 15 : baseSize + pulse;
-
-                ctx.beginPath();
-                ctx.arc(p.x * canvas.width, p.y * canvas.height, size, 0, Math.PI * 2);
-                ctx.fillStyle = p.active ? 'var(--teal)' : 'var(--gold)';
-                ctx.fill();
-
-                // Glow effect for anchors
-                ctx.shadowBlur = p.active ? 20 : 5;
-                ctx.shadowColor = 'var(--gold)';
+                connectedPoints.forEach((idx, i) => {
+                    const p = totems[currentLevel].points[idx];
+                    if (i === 0) ctx.moveTo(p.x * canvas.width, p.y * canvas.height);
+                    else ctx.lineTo(p.x * canvas.width, p.y * canvas.height);
+                });
                 ctx.stroke();
                 ctx.shadowBlur = 0;
+            }
+
+            // 2. Draw anchors, highlighting the next target in sequence.
+            totems[currentLevel].points.forEach((p, i) => {
+                const isConnected = connectedPoints.includes(i);
+                const isNext = connectedPoints.length === i;
+                ctx.beginPath();
+                ctx.arc(p.x * canvas.width, p.y * canvas.height, isNext ? 8 : 5, 0, Math.PI * 2);
+                if (isConnected) ctx.fillStyle = 'var(--gold)';
+                else if (isNext) ctx.fillStyle = 'var(--teal)';
+                else ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.fill();
             });
 
             requestAnimationFrame(renderWeave);
