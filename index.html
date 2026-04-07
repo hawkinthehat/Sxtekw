@@ -25,6 +25,38 @@
         .t-main { font-size: 1rem; letter-spacing: 5px; font-weight: 900; color: var(--teal); display: block; }
         .t-phonetic { font-size: 0.65rem; letter-spacing: 2px; color: var(--gold); margin-top: 4px; display: block; }
 
+        /* INSTRUCTION OVERLAY */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(18, 18, 18, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        .instr-title {
+            color: var(--teal);
+            letter-spacing: 8px;
+            font-weight: 900;
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+        .instr-body {
+            color: var(--gold);
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            text-align: center;
+            width: 80%;
+            line-height: 1.6;
+        }
+
         /* LOGIC & FEATHERS */
         #q-text { font-size: 1.8rem; color: var(--gold); margin-bottom: 15px; text-align: center; font-weight: bold; transition: transform 0.2s ease; }
         #logic-in { background: none; border-bottom: 2px solid var(--gold); border-top:none; border-left:none; border-right:none; color: #fff; width: 70%; text-align: center; font-size: 2.2rem; outline: none; }
@@ -60,7 +92,22 @@
         }
         .is-exploding { animation: explode-v2 0.7s forwards; }
 
-        .btn-back { position: absolute; top: 30px; left: 30px; background: none; border: 1px solid #222; color: #444; padding: 8px 14px; font-size: 0.5rem; letter-spacing: 2px; z-index: 1000; }
+        /* HÍLU BUTTON - MAXIMUM VISIBILITY */
+        .btn-back {
+            position: absolute;
+            top: 40px;
+            left: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            padding: 12px 24px;
+            font-size: 0.7rem;
+            letter-spacing: 5px;
+            z-index: 1000;
+            border-radius: 40px;
+            font-weight: 900;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
         #touch-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
         #weave-instr {
@@ -135,6 +182,10 @@
     </style>
 </head>
 <body>
+    <div id="instr-overlay" class="overlay" style="display:none;">
+        <div id="ititle" class="instr-title"></div>
+        <div id="ibody" class="instr-body"></div>
+    </div>
 
     <div id="scr-home" class="screen active">
         <div class="logo-pulse"><span style="color: var(--gold); font-weight: 900; font-size: 0.75rem;">SXT’EKW</span></div>
@@ -211,6 +262,25 @@
     <script>
         let currentAns = "", logicHits = 0, hCount = 0, vCount = 0, drawing = false, path = [];
         let stillLevel = 1, saccadeSpeed = 1200, timeLeft = 100, timerId = null;
+        let instructionFadeTimer = null, instructionHideTimer = null;
+        const instructions = {
+            still: {
+                t: "ST’ÉXEM",
+                b: "SOLVE 3 TASKS TO UNLOCK. <br> THEN FOLLOW THE TEAL FEATHER WITH YOUR EYES ONLY."
+            },
+            spark: {
+                t: "P’ÁX̌WAD",
+                b: "TYPE YOUR BURDEN AND HIT ENTER TO SHATTER IT. <br> TRACK THE ORBITING TEAL LIGHT."
+            },
+            weave: {
+                t: "KW’ÉTL’EN",
+                b: "WEAVE THE TOTEM IN SEQUENCE. <br> CONNECT THE TEAL BEACONS TO FORM THE ANIMAL."
+            },
+            halt: {
+                t: "KW’ÉLAP",
+                b: "STOP THE BREATH. <br> GAZE INTO THE RED VOID UNTIL THE PULSE SUBSIDES."
+            }
+        };
         let connectedPoints = [0];
         let isPathBlocked = false;
         let weaveRafId = null;
@@ -222,12 +292,46 @@
         ];
         let curLvl = 0;
 
+        function showInstructions(mode) {
+            if (!instructions[mode]) return;
+
+            const overlay = document.getElementById('instr-overlay');
+            const title = document.getElementById('ititle');
+            const body = document.getElementById('ibody');
+
+            if (instructionFadeTimer) {
+                clearTimeout(instructionFadeTimer);
+                instructionFadeTimer = null;
+            }
+            if (instructionHideTimer) {
+                clearTimeout(instructionHideTimer);
+                instructionHideTimer = null;
+            }
+
+            title.innerText = instructions[mode].t;
+            body.innerHTML = instructions[mode].b;
+
+            overlay.style.display = 'flex';
+            overlay.style.opacity = '1';
+
+            instructionFadeTimer = setTimeout(() => {
+                overlay.style.opacity = '0';
+                instructionHideTimer = setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 500);
+
+                const targetScreen = document.getElementById(`scr-${mode}`);
+                if (!targetScreen || !targetScreen.classList.contains('active')) return;
+                if (mode === 'still') initLogic();
+                if (mode === 'weave') initCanvas();
+                if (mode === 'halt') triggerHaltEffects();
+            }, 3000);
+        }
+
         function go(s) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
             document.getElementById(`scr-${s}`).classList.add('active');
-            if (s === 'still') initLogic();
-            if (s === 'weave') initCanvas();
-            if (s === 'halt') triggerHaltEffects();
+            showInstructions(s);
         }
 
         function home() {
@@ -252,6 +356,19 @@
             }
             const strobe = document.getElementById('halt-strobe');
             if (strobe) strobe.style.opacity = '0';
+            if (instructionFadeTimer) {
+                clearTimeout(instructionFadeTimer);
+                instructionFadeTimer = null;
+            }
+            if (instructionHideTimer) {
+                clearTimeout(instructionHideTimer);
+                instructionHideTimer = null;
+            }
+            const overlay = document.getElementById('instr-overlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                overlay.style.display = 'none';
+            }
             drawing = false;
             path = [];
             connectedPoints = [0];
