@@ -25,9 +25,62 @@
         .t-main { font-size: 1rem; letter-spacing: 5px; font-weight: 900; color: var(--teal); display: block; }
         .t-phonetic { font-size: 0.65rem; letter-spacing: 2px; color: var(--gold); margin-top: 4px; display: block; }
 
+        /* INSTRUCTION OVERLAY */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(18, 18, 18, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        .instr-title {
+            color: var(--teal);
+            letter-spacing: 8px;
+            font-weight: 900;
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+        .instr-body {
+            color: var(--gold);
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            text-align: center;
+            width: 80%;
+            line-height: 1.6;
+        }
+
         /* LOGIC & FEATHERS */
-        #q-text { font-size: 1.8rem; color: var(--gold); margin-bottom: 15px; text-align: center; font-weight: bold; }
+        #q-text { font-size: 1.8rem; color: var(--gold); margin-bottom: 15px; text-align: center; font-weight: bold; transition: transform 0.2s ease; }
         #logic-in { background: none; border-bottom: 2px solid var(--gold); border-top:none; border-left:none; border-right:none; color: #fff; width: 70%; text-align: center; font-size: 2.2rem; outline: none; }
+        #timer-bar-container {
+            width: 70%;
+            height: 4px;
+            background: rgba(255,255,255,0.05);
+            margin-top: 20px;
+            border-radius: 2px;
+            overflow: hidden;
+            display: none;
+        }
+        #timer-bar {
+            width: 100%;
+            height: 100%;
+            background: var(--teal);
+            transition: width 0.1s linear;
+        }
+        .shake { animation: shake 0.3s; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
         
         .feather-h { position: absolute; width: 90px; height: 10px; background: var(--teal); border-radius: 20px; box-shadow: 0 0 20px var(--teal); display: none; transition: all 1.1s cubic-bezier(0.65, 0, 0.35, 1); }
         .feather-v {
@@ -71,9 +124,42 @@
             box-shadow: 0 0 15px rgba(244, 63, 94, 0.2);
         }
 
-        .btn-back { position: absolute; top: 30px; left: 30px; background: none; border: 1px solid #222; color: #444; padding: 8px 14px; font-size: 0.5rem; letter-spacing: 2px; z-index: 1000; }
+        /* HÍLU BUTTON - MAXIMUM VISIBILITY */
+        .btn-back {
+            position: absolute;
+            top: 40px;
+            left: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            padding: 12px 24px;
+            font-size: 0.7rem;
+            letter-spacing: 5px;
+            z-index: 1000;
+            border-radius: 40px;
+            font-weight: 900;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
         canvas { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
         #touch-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+        #weave-instr {
+            position: absolute;
+            top: 160px;
+            color: var(--gold);
+            letter-spacing: 5px;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            opacity: 0.6;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .anchor-pulse {
+            animation: anchor-glow 1.5s infinite alternate;
+        }
+        @keyframes anchor-glow {
+            0% { filter: drop-shadow(0 0 2px var(--gold)); transform: scale(1); }
+            100% { filter: drop-shadow(0 0 12px var(--teal)); transform: scale(1.3); }
+        }
 
         /* HALT MAXIMIZATION OVERRIDES */
         #scr-halt {
@@ -125,9 +211,53 @@
             pointer-events: none;
             z-index: 100;
         }
+
+        /* THE VAGAL BORDER */
+        .vagal-border {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0 solid var(--teal);
+            box-sizing: border-box;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0;
+        }
+
+        /* 4s INHALE / 6s EXHALE CYCLE */
+        @keyframes vagal-pulse {
+            0% { border-width: 0; opacity: 0; }
+            40% { border-width: 15px; opacity: 0.4; } /* End of inhale */
+            100% { border-width: 0; opacity: 0; } /* End of long exhale */
+        }
+
+        .vagal-active {
+            animation: vagal-pulse 10s infinite ease-in-out;
+        }
+
+        /* COLD START PROMPT */
+        .cold-start {
+            position: absolute;
+            bottom: 40px;
+            color: var(--teal);
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.5;
+            text-align: center;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
+    <div id="v-border-halt" class="vagal-border"></div>
+    <div id="v-border-still" class="vagal-border"></div>
+    <div id="instr-overlay" class="overlay" style="display:none;">
+        <div id="ititle" class="instr-title"></div>
+        <div id="ibody" class="instr-body"></div>
+    </div>
 
     <div id="scr-home" class="screen active">
         <div class="logo-pulse"><span style="color: var(--gold); font-weight: 900; font-size: 0.75rem;">SXT’EKW</span></div>
@@ -157,7 +287,11 @@
             <div id="q-text"></div>
             <input type="text" id="logic-in" autocomplete="off" oninput="doLogic()">
         </div>
+            <div id="timer-bar-container">
+                <div id="timer-bar"></div>
+            </div>
         <div id="f-h" class="feather-h" onclick="hitH()"></div>
+        <div class="cold-start">INHALE 4S / EXHALE 6S</div>
     </div>
 
     <div id="scr-spark" class="screen">
@@ -175,6 +309,7 @@
             <div id="animal-t" style="color: var(--teal); letter-spacing: 5px; font-weight: 900;">RAVEN</div>
             <div id="animal-p" class="t-phonetic">SQUW'AL'QUW</div>
         </div>
+        <div id="weave-instr">TRACE THE THREAD TO THE NEXT ANCHOR</div>
         <canvas id="cvs"></canvas>
         <div id="touch-area"></div>
     </div>
@@ -190,15 +325,39 @@
         </div>
         <div style="margin-top: 60px; text-align: center; width: 70%;">
             <p class="t-phonetic" style="color: var(--red); opacity: 0.8; font-size: 0.8rem;">
-                STOP THE BREATH. <br>
-                LOCK YOUR GAZE ON THE CENTER.
+                STOP THE BREATH. LOCK GAZE. <br>
+                SPLASH COLD WATER ON FACE IF HEART IS RACING.
             </p>
         </div>
         <div id="halt-strobe"></div>
+        <div class="cold-start">INHALE 4S / EXHALE 6S</div>
     </div>
 
     <script>
         let currentAns = "", logicHits = 0, hCount = 0, orbitCount = 0, orbitRadius = 140, drawing = false, path = [];
+        let stillLevel = 1, saccadeSpeed = 1200, timeLeft = 100, timerId = null;
+        let instructionFadeTimer = null, instructionHideTimer = null;
+        const instructions = {
+            still: {
+                t: "ST’ÉXEM",
+                b: "SOLVE 3 TASKS TO UNLOCK. <br> THEN FOLLOW THE TEAL FEATHER WITH YOUR EYES ONLY."
+            },
+            spark: {
+                t: "P’ÁX̌WAD",
+                b: "TYPE YOUR BURDEN AND HIT ENTER TO SHATTER IT. <br> TRACK THE ORBITING TEAL LIGHT."
+            },
+            weave: {
+                t: "KW’ÉTL’EN",
+                b: "WEAVE THE TOTEM IN SEQUENCE. <br> CONNECT THE TEAL BEACONS TO FORM THE ANIMAL."
+            },
+            halt: {
+                t: "KW’ÉLAP",
+                b: "STOP THE BREATH. <br> GAZE INTO THE RED VOID UNTIL THE PULSE SUBSIDES."
+            }
+        };
+        let connectedPoints = [0];
+        let isPathBlocked = false;
+        let weaveRafId = null;
         const levels = [
             {n:"RAVEN", p:"SQUW'AL'QUW", pts:[{x:0.5, y:0.2}, {x:0.3, y:0.5}, {x:0.7, y:0.5}, {x:0.5, y:0.8}]},
             {n:"WOLF", p:"STIQÍYU’", pts:[{x:0.2, y:0.4}, {x:0.5, y:0.2}, {x:0.8, y:0.4}, {x:0.7, y:0.7}, {x:0.3, y:0.7}]},
@@ -206,26 +365,66 @@
             {n:"EAGLE", p:"YEXWALA", pts:[{x:0.1, y:0.4}, {x:0.3, y:0.3}, {x:0.5, y:0.5}, {x:0.7, y:0.3}, {x:0.9, y:0.4}, {x:0.5, y:0.8}]}
         ];
         let curLvl = 0;
-        let lockedSequence = [];
-        let pendingLevelAdvance = false;
+
+        function showInstructions(mode) {
+            if (!instructions[mode]) return;
+
+            const overlay = document.getElementById('instr-overlay');
+            const title = document.getElementById('ititle');
+            const body = document.getElementById('ibody');
+
+            if (instructionFadeTimer) {
+                clearTimeout(instructionFadeTimer);
+                instructionFadeTimer = null;
+            }
+            if (instructionHideTimer) {
+                clearTimeout(instructionHideTimer);
+                instructionHideTimer = null;
+            }
+
+            title.innerText = instructions[mode].t;
+            body.innerHTML = instructions[mode].b;
+
+            overlay.style.display = 'flex';
+            overlay.style.opacity = '1';
+
+            instructionFadeTimer = setTimeout(() => {
+                overlay.style.opacity = '0';
+                instructionHideTimer = setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 500);
+
+                const targetScreen = document.getElementById(`scr-${mode}`);
+                if (!targetScreen || !targetScreen.classList.contains('active')) return;
+                if (mode === 'still') initLogic();
+                if (mode === 'weave') initCanvas();
+                if (mode === 'halt') triggerHaltEffects();
+            }, 3000);
+        }
 
         function go(s) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            stopVagalBreathing();
             document.getElementById(`scr-${s}`).classList.add('active');
-            if (s === 'still') initLogic();
-            if (s === 'weave') initCanvas();
-            if (s === 'halt') triggerHaltEffects();
+            if (s === 'still') startStillBreathing();
+            showInstructions(s);
         }
 
         function home() {
+            if (timerId) {
+                clearInterval(timerId);
+                timerId = null;
+            }
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
             document.getElementById('scr-home').classList.add('active');
             document.getElementById('f-h').style.display = 'none';
             document.getElementById('f-v').style.display = 'none';
+            document.getElementById('timer-bar-container').style.display = 'none';
             document.getElementById('spark-ui').style.display = 'block';
             const sparkBox = document.getElementById('spark-in');
             sparkBox.classList.remove('shattering');
             sparkBox.value = '';
+            document.getElementById('q-text').classList.remove('shake');
             if (haltStrobeInterval) {
                 clearInterval(haltStrobeInterval);
                 haltStrobeInterval = null;
@@ -236,10 +435,28 @@
             }
             const strobe = document.getElementById('halt-strobe');
             if (strobe) strobe.style.opacity = '0';
+            stopVagalBreathing();
+            if (instructionFadeTimer) {
+                clearTimeout(instructionFadeTimer);
+                instructionFadeTimer = null;
+            }
+            if (instructionHideTimer) {
+                clearTimeout(instructionHideTimer);
+                instructionHideTimer = null;
+            }
+            const overlay = document.getElementById('instr-overlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                overlay.style.display = 'none';
+            }
             drawing = false;
             path = [];
-            lockedSequence = [];
-            pendingLevelAdvance = false;
+            connectedPoints = [0];
+            isPathBlocked = false;
+            if (weaveRafId !== null) {
+                cancelAnimationFrame(weaveRafId);
+                weaveRafId = null;
+            }
         }
 
         /* --- LOGIC 2.0 --- */
@@ -272,21 +489,68 @@
 
         let haltStrobeInterval = null;
         let haltStrobeTimeout = null;
+
+        // Updated instructions for HALT.
+        instructions.halt.b = "STOP THE BREATH. LOCK GAZE. <br> SPLASH COLD WATER ON FACE IF HEART IS RACING.";
+
+        function stopVagalBreathing() {
+            const haltBorder = document.getElementById('v-border-halt');
+            const stillBorder = document.getElementById('v-border-still');
+            if (haltBorder) haltBorder.classList.remove('vagal-active');
+            if (stillBorder) stillBorder.classList.remove('vagal-active');
+        }
+
+        function startStillBreathing() {
+            const stillBorder = document.getElementById('v-border-still');
+            const haltBorder = document.getElementById('v-border-halt');
+            if (haltBorder) haltBorder.classList.remove('vagal-active');
+            if (stillBorder) stillBorder.classList.add('vagal-active');
+        }
+
         function initLogic() {
+            stillLevel = 1;
+            saccadeSpeed = 1200;
             logicHits = 0;
+            timeLeft = 100;
             document.getElementById('logic-box').style.display = 'block';
+            document.getElementById('timer-bar-container').style.display = 'block';
             document.getElementById('f-h').style.display = 'none';
+            document.getElementById('f-h').style.transition = `all ${saccadeSpeed}ms cubic-bezier(0.65, 0, 0.35, 1)`;
+            startTimer();
             nextQ();
         }
 
+        function startTimer() {
+            if (timerId) clearInterval(timerId);
+            timeLeft = 100;
+            const bar = document.getElementById('timer-bar');
+            bar.style.width = "100%";
+            bar.style.background = "var(--teal)";
+
+            timerId = setInterval(() => {
+                timeLeft--;
+                bar.style.width = `${timeLeft}%`;
+                bar.style.background = timeLeft <= 30 ? "var(--red)" : "var(--teal)";
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    timerId = null;
+                    failStill();
+                }
+            }, 100);
+        }
+
         function nextQ() {
-            const task = taskPool[Math.floor(Math.random() * taskPool.length)]();
+            // Escalation path: dots -> math -> sequence
+            let task;
+            if (logicHits === 0) task = taskPool[2]();
+            else if (logicHits === 1) task = taskPool[0]();
+            else task = taskPool[3]();
             document.getElementById('q-text').innerText = task.q;
             currentAns = task.a;
 
             const input = document.getElementById('logic-in');
             input.value = "";
-            input.placeholder = "?";
             input.focus();
         }
 
@@ -295,18 +559,31 @@
             if (val === currentAns) {
                 logicHits++;
                 if (navigator.vibrate) navigator.vibrate(40);
-                document.getElementById('q-text').style.color = 'var(--teal)';
+                // Add 2 seconds back for each correct answer.
+                timeLeft = Math.min(100, timeLeft + 20);
 
                 if (logicHits >= 3) {
+                    if (timerId) {
+                        clearInterval(timerId);
+                        timerId = null;
+                    }
+                    document.getElementById('timer-bar-container').style.display = 'none';
                     document.getElementById('logic-box').style.display = 'none';
                     startFH();
                 } else {
-                    setTimeout(() => {
-                        document.getElementById('q-text').style.color = 'var(--gold)';
-                        nextQ();
-                    }, 200);
+                    nextQ();
                 }
             }
+        }
+
+        function failStill() {
+            const q = document.getElementById('q-text');
+            q.classList.add('shake');
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            setTimeout(() => {
+                q.classList.remove('shake');
+                home();
+            }, 500);
         }
 
         /* --- FEATHERS --- */
@@ -318,14 +595,17 @@
 
         function moveH() {
             const f = document.getElementById('f-h');
-            f.style.left = hCount % 2 === 0 ? '10%' : '70%';
+            // Accelerate each hit until a 500ms floor.
+            saccadeSpeed = Math.max(500, 1200 - (hCount * 80));
+            f.style.transition = `all ${saccadeSpeed}ms cubic-bezier(0.65, 0, 0.35, 1)`;
+            f.style.left = hCount % 2 === 0 ? '5%' : '78%';
             f.style.top = '50%';
         }
 
         function hitH() {
             hCount++;
-            if (navigator.vibrate) navigator.vibrate(20);
-            if (hCount > 10) home();
+            if (navigator.vibrate) navigator.vibrate(25);
+            if (hCount > 12) home();
             else moveH();
         }
 
@@ -350,7 +630,10 @@
         function triggerHaltEffects() {
             const haltScreen = document.getElementById('scr-halt');
             const strobe = document.getElementById('halt-strobe');
-            if (!haltScreen || !strobe) return;
+            const vBorder = document.getElementById('v-border-halt');
+            if (!haltScreen || !strobe || !vBorder) return;
+
+            startVagalHaltBreathing(vBorder);
 
             if (haltStrobeInterval) clearInterval(haltStrobeInterval);
             if (haltStrobeTimeout) clearTimeout(haltStrobeTimeout);
@@ -360,6 +643,7 @@
                     strobe.style.opacity = '0';
                     clearInterval(haltStrobeInterval);
                     haltStrobeInterval = null;
+                    vBorder.classList.remove('vagal-active');
                     return;
                 }
 
@@ -374,6 +658,12 @@
             orbitRadius = 140;
             document.getElementById('f-v').style.display = 'block';
             moveOrbit();
+        }
+
+        function startVagalHaltBreathing(vBorder) {
+            const stillBorder = document.getElementById('v-border-still');
+            if (stillBorder) stillBorder.classList.remove('vagal-active');
+            vBorder.classList.add('vagal-active');
         }
 
         function moveOrbit() {
@@ -413,85 +703,106 @@
             const c = document.getElementById('cvs');
             c.width = window.innerWidth;
             c.height = window.innerHeight;
+            connectedPoints = [0];
             path = [];
-            lockedSequence = [0];
-            pendingLevelAdvance = false;
+            isPathBlocked = false;
             setCurrentLevelLabels();
 
             const area = document.getElementById('touch-area');
-            area.onpointerdown = (e) => {
+            area.onpointerdown = () => {
                 drawing = true;
-                path = [{x:e.clientX, y:e.clientY}];
+                path = [];
             };
             area.onpointermove = (e) => {
-                if (!drawing) return;
-                const p = {x:e.clientX, y:e.clientY};
-                path.push(p);
-                tryLockAnchor(p);
+                if (!drawing || isPathBlocked) return;
+
+                const nextIdx = connectedPoints.length;
+                if (nextIdx >= levels[curLvl].pts.length) return;
+
+                const target = levels[curLvl].pts[nextIdx];
+                const tx = target.x * c.width;
+                const ty = target.y * c.height;
+
+                const dist = Math.hypot(e.clientX - tx, e.clientY - ty);
+
+                if (dist < 45) {
+                    connectedPoints.push(nextIdx);
+                    if (navigator.vibrate) navigator.vibrate([30, 20, 30]);
+
+                    if (connectedPoints.length === levels[curLvl].pts.length) {
+                        isPathBlocked = true;
+                        setTimeout(completeWeave, 1000);
+                    }
+                } else if (dist < 100 && navigator.vibrate) {
+                    navigator.vibrate(5);
+                }
             };
             area.onpointerup = () => {
                 drawing = false;
-                path = [];
             };
             area.onpointercancel = () => {
                 drawing = false;
-                path = [];
             };
+            if (weaveRafId !== null) cancelAnimationFrame(weaveRafId);
             drawLoop();
         }
 
-        function tryLockAnchor(p) {
-            if (pendingLevelAdvance) return;
+        function completeWeave() {
             const c = document.getElementById('cvs');
             const pts = levels[curLvl].pts;
-            const nextIdx = lockedSequence.length;
-            if (nextIdx >= pts.length) return;
+            const ctx = c.getContext('2d');
+            ctx.strokeStyle = 'var(--teal)';
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            pts.forEach((p, i) => {
+                const x = p.x * c.width;
+                const y = p.y * c.height;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.stroke();
 
-            const next = pts[nextIdx];
-            const nx = next.x * c.width;
-            const ny = next.y * c.height;
-            const dist = Math.hypot(p.x - nx, p.y - ny);
+            if (navigator.vibrate) navigator.vibrate(150);
 
-            if (dist > 40) return;
-
-            lockedSequence.push(nextIdx);
-            if (navigator.vibrate) navigator.vibrate(30);
-
-            if (lockedSequence.length >= pts.length) {
-                advanceWeaveLevel();
-            }
-        }
-
-        function advanceWeaveLevel() {
-            if (pendingLevelAdvance) return;
-            pendingLevelAdvance = true;
-            drawing = false;
-            path = [];
-            if (navigator.vibrate) navigator.vibrate([20, 60, 20]);
             setTimeout(() => {
                 curLvl = (curLvl + 1) % levels.length;
-                lockedSequence = [0];
-                pendingLevelAdvance = false;
-                setCurrentLevelLabels();
-            }, 700);
+                initCanvas();
+            }, 1200);
         }
 
         function drawLoop() {
             const c = document.getElementById('cvs');
-            if (!c || !document.getElementById('scr-weave').classList.contains('active')) return;
+            if (!c || !document.getElementById('scr-weave').classList.contains('active')) {
+                weaveRafId = null;
+                return;
+            }
             const ctx = c.getContext('2d');
-            ctx.fillStyle = '#000';
+            ctx.fillStyle = 'var(--bg)';
             ctx.fillRect(0, 0, c.width, c.height);
 
-            if (lockedSequence.length > 1) {
+            const pts = levels[curLvl].pts;
+
+            ctx.setLineDash([5, 10]);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.beginPath();
+            pts.forEach((p, i) => {
+                const x = p.x * c.width;
+                const y = p.y * c.height;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            if (connectedPoints.length > 1) {
                 ctx.strokeStyle = 'var(--gold)';
-                ctx.lineWidth = 4;
-                ctx.lineCap = 'round';
-                ctx.shadowBlur = 10;
+                ctx.lineWidth = 5;
+                ctx.shadowBlur = 15;
                 ctx.shadowColor = 'var(--gold)';
                 ctx.beginPath();
-                lockedSequence.forEach((idx, i) => {
-                    const p = levels[curLvl].pts[idx];
+                connectedPoints.forEach((idx, i) => {
+                    const p = pts[idx];
                     const x = p.x * c.width;
                     const y = p.y * c.height;
                     if (i === 0) ctx.moveTo(x, y);
@@ -501,26 +812,27 @@
                 ctx.shadowBlur = 0;
             }
 
-            if (path.length > 1) {
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 3;
+            pts.forEach((p, idx) => {
+                const isConnected = connectedPoints.includes(idx);
+                const isNext = connectedPoints.length === idx;
                 ctx.beginPath();
-                path.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-                ctx.stroke();
-            }
+                ctx.arc(p.x * c.width, p.y * c.height, isNext ? 10 : 5, 0, Math.PI * 2);
 
-            levels[curLvl].pts.forEach((p, idx) => {
-                const isConnected = lockedSequence.includes(idx);
-                const isNext = lockedSequence.length === idx;
-                ctx.beginPath();
-                ctx.arc(p.x * c.width, p.y * c.height, isNext ? 8 : 5, 0, Math.PI * 2);
-                if (isConnected) ctx.fillStyle = 'var(--gold)';
-                else if (isNext) ctx.fillStyle = 'var(--teal)';
-                else ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                if (isNext) {
+                    ctx.fillStyle = 'var(--teal)';
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = 'var(--teal)';
+                } else if (isConnected) {
+                    ctx.fillStyle = 'var(--gold)';
+                    ctx.shadowBlur = 5;
+                } else {
+                    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                }
                 ctx.fill();
+                ctx.shadowBlur = 0;
             });
 
-            requestAnimationFrame(drawLoop);
+            weaveRafId = requestAnimationFrame(drawLoop);
         }
     </script>
 </body>
