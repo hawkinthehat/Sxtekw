@@ -271,6 +271,7 @@
         let curLvl = 0;
         let lockedSequence = [];
         let pendingLevelAdvance = false;
+        let activeRadius = 80;
 
         function showInstructions(mode) {
             if (!instructions[mode]) return;
@@ -595,36 +596,49 @@
             const ny = next.y * c.height;
             const dist = Math.hypot(p.x - nx, p.y - ny);
 
-            if (dist > 40) return;
+            if (dist >= activeRadius) return;
 
             lockedSequence.push(nextIdx);
-            if (navigator.vibrate) navigator.vibrate(30);
+            if (navigator.vibrate) navigator.vibrate([40]);
 
             if (lockedSequence.length >= pts.length) {
-                advanceWeaveLevel();
+                pendingLevelAdvance = true;
+                drawing = false;
+                path = [];
+                if (navigator.vibrate) navigator.vibrate([20, 50, 100]);
+                setTimeout(advanceWeaveLevel, 800);
             }
         }
 
         function advanceWeaveLevel() {
-            if (pendingLevelAdvance) return;
-            pendingLevelAdvance = true;
-            drawing = false;
-            path = [];
-            if (navigator.vibrate) navigator.vibrate([20, 60, 20]);
-            setTimeout(() => {
-                curLvl = (curLvl + 1) % levels.length;
-                lockedSequence = [0];
-                pendingLevelAdvance = false;
-                setCurrentLevelLabels();
-            }, 700);
+            if (!pendingLevelAdvance) return;
+            curLvl = (curLvl + 1) % levels.length;
+            lockedSequence = [0];
+            pendingLevelAdvance = false;
+            setCurrentLevelLabels();
         }
 
         function drawLoop() {
             const c = document.getElementById('cvs');
             if (!c || !document.getElementById('scr-weave').classList.contains('active')) return;
             const ctx = c.getContext('2d');
+            const pts = levels[curLvl].pts;
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, c.width, c.height);
+
+            // Faint guide path showing full weave order.
+            ctx.setLineDash([10, 20]);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            pts.forEach((p, i) => {
+                const x = p.x * c.width;
+                const y = p.y * c.height;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            ctx.setLineDash([]);
 
             if (lockedSequence.length > 1) {
                 ctx.strokeStyle = 'var(--gold)';
@@ -634,7 +648,7 @@
                 ctx.shadowColor = 'var(--gold)';
                 ctx.beginPath();
                 lockedSequence.forEach((idx, i) => {
-                    const p = levels[curLvl].pts[idx];
+                    const p = pts[idx];
                     const x = p.x * c.width;
                     const y = p.y * c.height;
                     if (i === 0) ctx.moveTo(x, y);
@@ -652,7 +666,7 @@
                 ctx.stroke();
             }
 
-            levels[curLvl].pts.forEach((p, idx) => {
+            pts.forEach((p, idx) => {
                 const isConnected = lockedSequence.includes(idx);
                 const isNext = lockedSequence.length === idx;
                 ctx.beginPath();
@@ -662,6 +676,22 @@
                 else ctx.fillStyle = 'rgba(255,255,255,0.1)';
                 ctx.fill();
             });
+
+            // Magnetic pulse on the active target.
+            const nextP = pts[lockedSequence.length];
+            if (nextP) {
+                const x = nextP.x * c.width;
+                const y = nextP.y * c.height;
+                ctx.beginPath();
+                ctx.arc(x, y, 15, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(13, 148, 136, 0.2)';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, Math.PI * 2);
+                ctx.fillStyle = 'var(--teal)';
+                ctx.fill();
+            }
 
             requestAnimationFrame(drawLoop);
         }
