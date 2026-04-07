@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SXT’EKW | 2.5 Warrior</title>
-    <title>SXT’EKW | Legacy</title>
     <style>
         :root { --bg: #000; --teal: #0d9488; --gold: #fbbf24; --text: #f1f5f9; }
-        /* COLOR PALETTE: BLACK (000), RED (f43f5e), YELLOW (fbbf24) */
-        :root { --bg: #000; --teal: #0d9488; --gold: #fbbf24; --red: #f43f5e; --text: #f1f5f9; --off: #222; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; touch-action: none; -webkit-user-select: none; }
         
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10; opacity: 0; transition: opacity 0.4s; }
@@ -18,10 +15,6 @@
         @keyframes beat {
             0% { transform: scale(1); filter: brightness(1); }
             14% { transform: scale(1.08); filter: brightness(1.4); box-shadow: 0 0 30px var(--teal); }
-        /* 128 BPM HEARTBEAT */
-        @keyframes beat {
-            0% { transform: scale(1); filter: brightness(1); }
-            14% { transform: scale(1.1); filter: brightness(1.5); box-shadow: 0 0 30px var(--teal); }
             100% { transform: scale(1); filter: brightness(1); }
         }
         .logo-pulse { width: 90px; height: 90px; border: 2px solid var(--teal); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: beat 0.468s infinite; margin-bottom: 25px; }
@@ -35,27 +28,6 @@
         #logic-q { font-size: 1.8rem; color: var(--gold); margin-bottom: 20px; text-align: center; }
         #logic-input { background: none; border-bottom: 2px solid var(--gold); border-top:none; border-left:none; border-right:none; color: white; width: 100%; text-align: center; font-size: 2.2rem; outline: none; }
         #feather { position: absolute; width: 100px; height: 10px; background: var(--teal); border-radius: 20px; filter: blur(2px); box-shadow: 0 0 20px var(--teal); display: none; transition: all 1.2s cubic-bezier(0.65, 0, 0.35, 1); }
-
-        .btn-hilu { position: absolute; top: 30px; left: 30px; background: none; border: 1px solid #222; color: #444; padding: 8px 15px; font-size: 0.55rem; letter-spacing: 2px; z-index: 1000; }
-        .btn-hilu { position: absolute; top: 30px; left: 30px; background: rgba(20, 184, 166, 0.08); border: 1px solid var(--teal); color: var(--teal); padding: 8px 15px; font-size: 0.55rem; letter-spacing: 2px; z-index: 1000; text-transform: uppercase; cursor: pointer; }
-        .btn-hilu:active { background: rgba(20, 184, 166, 0.2); }
-        /* HOME BUTTONS */
-        .launch-btn { width: 280px; padding: 20px; margin: 10px 0; border: 1px solid #111; background: #050505; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-        .btn-title { font-size: 1.1rem; letter-spacing: 6px; font-weight: 900; color: var(--teal); }
-        .phonetic-md { font-size: 0.7rem; letter-spacing: 2px; color: var(--gold); margin-top: 5px; }
-
-        /* LOGIC & FEATHER */
-        #logic-q { font-size: 1.8rem; color: var(--gold); margin-bottom: 20px; text-align: center; font-weight: bold; }
-        #logic-input { background: none; border-bottom: 2px solid var(--gold); border-top:none; border-left:none; border-right:none; color: white; width: 80%; text-align: center; font-size: 2.2rem; outline: none; text-transform: uppercase; }
-        #feather { position: absolute; width: 100px; height: 10px; background: var(--teal); border-radius: 20px; filter: blur(2px); box-shadow: 0 0 20px var(--teal); display: none; transition: all 1.2s cubic-bezier(0.65, 0, 0.35, 1); z-index: 100; }
-
-        /* EXPLOSION ANIMATION */
-        @keyframes explode {
-            0% { transform: scale(1); opacity: 1; filter: blur(0); }
-            50% { transform: scale(1.5); opacity: 0.5; filter: blur(10px); color: var(--red); }
-            100% { transform: scale(3); opacity: 0; filter: blur(50px); }
-        }
-        .exploding { animation: explode 0.8s forwards; }
 
         .btn-hilu { position: absolute; top: 30px; left: 30px; background: none; border: 1px solid #222; color: #444; padding: 8px 15px; font-size: 0.55rem; letter-spacing: 2px; z-index: 1000; }
         canvas { position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none; }
@@ -107,85 +79,11 @@
         <div style="text-align: center; width: 85%;">
             <textarea id="halt-thought" placeholder="NAME THE WEIGHT..." onkeypress="handleHalt(event)" style="background: none; border: 1px solid #111; color: white; width: 100%; height: 120px; padding: 20px; text-align: center; font-size: 1.1rem; outline: none;"></textarea>
             <p style="font-size: 0.5rem; color: var(--teal); opacity: 0.4; letter-spacing: 3px; margin-top: 30px;">ENTER TO UNRAVEL</p>
-        <div id="halt-container" style="text-align: center; width: 85%;">
-            <textarea id="halt-thought" placeholder="TYPE YOUR WORRY..." onkeypress="handleHalt(event)" style="background: none; border: 1px solid #111; color: white; width: 100%; height: 120px; padding: 20px; text-align: center; font-size: 1.1rem; outline: none;"></textarea>
-            <p style="font-size: 0.5rem; color: var(--teal); opacity: 0.4; letter-spacing: 3px; margin-top: 30px;">ENTER TO EXPLODE</p>
         </div>
     </div>
 
     <script>
         const totems = [
-            {
-                name: "SQUWAL'QUW",
-                phonetic: "[ sk-wahl-koo ] RAVEN",
-                points: [
-                    { x: 0.50, y: 0.16 }, // beak
-                    { x: 0.28, y: 0.34 },
-                    { x: 0.72, y: 0.34 },
-                    { x: 0.20, y: 0.56 },
-                    { x: 0.80, y: 0.56 },
-                    { x: 0.50, y: 0.84 } // tail
-                ],
-                links: [[0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 5], [1, 2], [3, 4]]
-            },
-            {
-                name: "STIQÍYU’",
-                phonetic: "[ stee-kee-yoo ] WOLF",
-                points: [
-                    { x: 0.16, y: 0.60 },
-                    { x: 0.32, y: 0.30 },
-                    { x: 0.52, y: 0.18 },
-                    { x: 0.72, y: 0.34 },
-                    { x: 0.86, y: 0.58 },
-                    { x: 0.58, y: 0.78 },
-                    { x: 0.30, y: 0.76 }
-                ],
-                links: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 0], [1, 6], [2, 5]]
-            },
-            {
-                name: "QW’ULH-LÚ-MUCW",
-                phonetic: "[ qwoo-lh-loo-much ] ORCA",
-                points: [
-                    { x: 0.18, y: 0.56 },
-                    { x: 0.34, y: 0.34 },
-                    { x: 0.56, y: 0.30 },
-                    { x: 0.78, y: 0.44 },
-                    { x: 0.70, y: 0.68 },
-                    { x: 0.46, y: 0.82 },
-                    { x: 0.24, y: 0.74 }
-                ],
-                links: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 0], [1, 5], [2, 6], [2, 4]]
-            },
-            {
-                name: "YÍXWULA",
-                phonetic: "[ yee-xwoo-lah ] EAGLE",
-                points: [
-                    { x: 0.50, y: 0.14 },
-                    { x: 0.28, y: 0.30 },
-                    { x: 0.72, y: 0.30 },
-                    { x: 0.14, y: 0.56 },
-                    { x: 0.86, y: 0.56 },
-                    { x: 0.36, y: 0.72 },
-                    { x: 0.64, y: 0.72 },
-                    { x: 0.50, y: 0.88 }
-                ],
-                links: [[0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 6], [5, 7], [6, 7], [1, 2], [5, 6]]
-            }
-        ];
-
-        let currentLevel = 0;
-        let isDrawing = false;
-        let userPath = [];
-        let correctCount = 0;
-        let currentAns = "";
-        let sparkCount = 0;
-        let fSide = 0;
-        let weaveNodePx = [];
-        let weaveCompletedLinks = new Set();
-        let weaveActiveNode = null;
-        let weavePointer = null;
-        let weaveFrame = null;
-        let weaveAdvanceTimer = null;
             { name: "SQUW'AL'QUW", phonetic: "[ sk-wahl-koo ] RAVEN", points: [{x:0.5, y:0.2}, {x:0.3, y:0.5}, {x:0.7, y:0.5}, {x:0.5, y:0.8}, {x:0.5, y:0.2}] },
             { name: "STIQÍYU’", phonetic: "[ stee-kee-yoo ] WOLF", points: [{x:0.2, y:0.4}, {x:0.5, y:0.2}, {x:0.8, y:0.4}, {x:0.7, y:0.7}, {x:0.3, y:0.7}, {x:0.2, y:0.4}] },
             { name: "KW’ELHÚ", phonetic: "[ kwel-hoo ] ORCA", points: [{x:0.5, y:0.2}, {x:0.8, y:0.4}, {x:0.6, y:0.7}, {x:0.4, y:0.7}, {x:0.2, y:0.4}, {x:0.5, y:0.2}] },
@@ -193,16 +91,11 @@
         ];
 
         let currentLevel = 0, isDrawing = false, userPath = [], lockedLines = [], correctCount = 0, currentAns = "", sparkCount = 0;
-            { name: "STIQÍYU’", phonetic: "[ stee-kee-yoo ] WOLF", points: [{x:0.2, y:0.4}, {x:0.5, y:0.2}, {x:0.8, y:0.4}, {x:0.7, y:0.7}, {x:0.3, y:0.7}, {x:0.2, y:0.4}] }
-        ];
-
-        let currentLevel = 0, isDrawing = false, userPath = [], correctCount = 0, currentAns = "", sparkCount = 0;
 
         function startSection(type) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(`screen-${type}`).classList.add('active');
             if(type === 'paxwad') initHijack();
-            if(type === 'paxwad') initLogic();
             if(type === 'weave') initWeave();
         }
 
@@ -219,29 +112,6 @@
         ];
 
         function initHijack() {
-            isDrawing = false;
-            userPath = [];
-            weavePointer = null;
-            weaveActiveNode = null;
-            if (weaveFrame) {
-                cancelAnimationFrame(weaveFrame);
-                weaveFrame = null;
-            }
-            if (weaveAdvanceTimer) {
-                clearTimeout(weaveAdvanceTimer);
-                weaveAdvanceTimer = null;
-            }
-            document.getElementById('halt-container').style.display = 'block';
-        }
-
-        /* --- LOGIC HIJACK (OLD VERSION RESTORED) --- */
-        const logicTasks = [
-            { q: () => { const a=Math.floor(Math.random()*9)+4, b=Math.floor(Math.random()*8)+3; return {txt:`${a} x ${b}`, ans:(a*b).toString()}; }},
-            { q: () => { const words=["RAVEN","CEDAR","SALMON","CANOE"]; const w=words[Math.floor(Math.random()*words.length)]; return {txt:`REVERSE: ${w}`, ans:w.split('').reverse().join('')}; }},
-            { q: () => { const n=Math.floor(Math.random()*5)+4; return {txt:"● ".repeat(n), ans:n.toString()}; }}
-        ];
-
-        function initLogic() {
             correctCount = 0; document.getElementById('hijack-layer').style.display = 'block';
             document.getElementById('feather').style.display = 'none';
             document.getElementById('prog-dots').style.opacity = 0.2;
@@ -268,10 +138,8 @@
             }
         }
 
-        /* --- EMDR FEATHER --- */
         function startFeather() {
             document.getElementById('hijack-layer').style.display = 'none';
-            document.getElementById('halt-container').style.display = 'none';
             const f = document.getElementById('feather'); f.style.display = 'block';
             sparkCount = 0; moveFeather();
         }
@@ -289,32 +157,8 @@
         }
 
         /* --- WEAVE ENGINE --- */
-            if(sparkCount >= 12) exitToHome(); else moveFeather();
-        }
-
-        /* --- ORIGINAL WEAVE (YELLOW LINES) --- */
         function initWeave() {
             const canvas = document.getElementById('weave-canvas');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            updateWeaveHeader();
-            resetWeaveState();
-
-            const layer = document.getElementById('touch-layer');
-            layer.onpointerdown = onWeavePointerDown;
-            layer.onpointermove = onWeavePointerMove;
-            layer.onpointerup = stopWeaveStroke;
-            layer.onpointercancel = stopWeaveStroke;
-            layer.onpointerleave = stopWeaveStroke;
-
-            window.onresize = () => {
-                if (!document.getElementById('screen-weave').classList.contains('active')) return;
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                weaveNodePx = projectWeavePoints();
-            };
-
-            if (weaveFrame) cancelAnimationFrame(weaveFrame);
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
             document.getElementById('animal-name').innerText = totems[currentLevel].name;
             document.getElementById('animal-phonetic').innerText = totems[currentLevel].phonetic;
@@ -346,114 +190,7 @@
                 }
                 userPath = []; 
             };
-            userPath = [];
-            const layer = document.getElementById('touch-layer');
-            layer.onpointerdown = (e) => { isDrawing = true; userPath.push({x: e.clientX, y: e.clientY}); };
-            layer.onpointermove = (e) => { if(isDrawing) userPath.push({x: e.clientX, y: e.clientY}); };
-            layer.onpointerup = () => { isDrawing = false; };
             renderWeave();
-        }
-
-        function updateWeaveHeader() {
-            const level = totems[currentLevel];
-            document.getElementById('animal-name').innerText = level.name;
-            document.getElementById('animal-phonetic').innerText = `${level.phonetic} ${currentLevel + 1}/${totems.length}`;
-        }
-
-        function resetWeaveState() {
-            weaveCompletedLinks = new Set();
-            weaveActiveNode = null;
-            weavePointer = null;
-            isDrawing = false;
-            userPath = [];
-            weaveNodePx = projectWeavePoints();
-        }
-
-        function projectWeavePoints() {
-            const canvas = document.getElementById('weave-canvas');
-            const totem = totems[currentLevel];
-            const marginX = Math.max(70, canvas.width * 0.10);
-            const marginY = Math.max(120, canvas.height * 0.18);
-            const usableW = canvas.width - marginX * 2;
-            const usableH = canvas.height - marginY * 2;
-            return totem.points.map((p) => ({
-                x: marginX + p.x * usableW,
-                y: marginY + p.y * usableH
-            }));
-        }
-
-        function getNearestNodeIndex(pos) {
-            let bestIdx = -1;
-            let bestDist = Infinity;
-            for (let i = 0; i < weaveNodePx.length; i++) {
-                const dx = weaveNodePx[i].x - pos.x;
-                const dy = weaveNodePx[i].y - pos.y;
-                const dist = Math.hypot(dx, dy);
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    bestIdx = i;
-                }
-            }
-            return bestDist < 36 ? bestIdx : -1;
-        }
-
-        function getLinkKey(a, b) {
-            return a < b ? `${a}-${b}` : `${b}-${a}`;
-        }
-
-        function isValidLink(a, b) {
-            if (a === null || b < 0 || a === b) return false;
-            const key = getLinkKey(a, b);
-            const allowed = totems[currentLevel].links.some(([x, y]) => getLinkKey(x, y) === key);
-            return allowed && !weaveCompletedLinks.has(key);
-        }
-
-        function onWeavePointerDown(e) {
-            const idx = getNearestNodeIndex({ x: e.clientX, y: e.clientY });
-            if (idx < 0) return;
-            isDrawing = true;
-            weaveActiveNode = idx;
-            weavePointer = { x: e.clientX, y: e.clientY };
-            userPath = [{ x: weaveNodePx[idx].x, y: weaveNodePx[idx].y }];
-        }
-
-        function onWeavePointerMove(e) {
-            if (!isDrawing) return;
-            weavePointer = { x: e.clientX, y: e.clientY };
-            userPath.push({ x: e.clientX, y: e.clientY });
-            if (userPath.length > 28) userPath.shift();
-
-            const nextNode = getNearestNodeIndex(weavePointer);
-            if (!isValidLink(weaveActiveNode, nextNode)) return;
-
-            const key = getLinkKey(weaveActiveNode, nextNode);
-            weaveCompletedLinks.add(key);
-            weaveActiveNode = nextNode;
-            userPath = [{ x: weaveNodePx[nextNode].x, y: weaveNodePx[nextNode].y }];
-            if (navigator.vibrate) navigator.vibrate(22);
-
-            if (weaveCompletedLinks.size === totems[currentLevel].links.length) {
-                completeWeaveLevel();
-            }
-        }
-
-        function stopWeaveStroke() {
-            isDrawing = false;
-            weavePointer = null;
-            userPath = [];
-        }
-
-        function completeWeaveLevel() {
-            stopWeaveStroke();
-            if (navigator.vibrate) navigator.vibrate([40, 40, 60]);
-            const label = document.getElementById('animal-name');
-            label.innerText = `${totems[currentLevel].name} INTERLOCKED`;
-            if (weaveAdvanceTimer) clearTimeout(weaveAdvanceTimer);
-            weaveAdvanceTimer = setTimeout(() => {
-                currentLevel = (currentLevel + 1) % totems.length;
-                updateWeaveHeader();
-                resetWeaveState();
-            }, 1100);
         }
 
         function renderWeave() {
@@ -462,41 +199,6 @@
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
 
-            const totem = totems[currentLevel];
-            const now = Date.now();
-
-            // Draw scaffold links, then illuminate completed links.
-            ctx.setLineDash([6, 8]);
-            ctx.lineWidth = 2;
-            totem.links.forEach(([a, b]) => {
-                const key = getLinkKey(a, b);
-                const p1 = weaveNodePx[a];
-                const p2 = weaveNodePx[b];
-                if (!p1 || !p2) return;
-                ctx.beginPath();
-                ctx.moveTo(p1.x, p1.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.strokeStyle = weaveCompletedLinks.has(key) ? 'rgba(251, 191, 36, 0.95)' : 'rgba(244, 63, 94, 0.22)';
-                ctx.stroke();
-            });
-
-            ctx.setLineDash([]);
-            totem.points.forEach((p, i) => {
-                const node = weaveNodePx[i];
-                if (!node) return;
-                const twinkle = Math.sin(now * 0.003 + i) * 0.3 + 0.7;
-                ctx.beginPath();
-                ctx.arc(node.x, node.y, weaveActiveNode === i ? 8 : 6, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(251, 191, 36, ${twinkle})`;
-                ctx.fill();
-            });
-
-            if (isDrawing && weaveActiveNode !== null && weavePointer) {
-                ctx.strokeStyle = '#fbbf24';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(weaveNodePx[weaveActiveNode].x, weaveNodePx[weaveActiveNode].y);
-                ctx.lineTo(weavePointer.x, weavePointer.y);
             // Anchors
             totems[currentLevel].points.forEach(p => {
                 const s = Math.sin(Date.now() * 0.003 + p.x) * 2 + 4;
@@ -514,22 +216,13 @@
             // Finger Path
             if(isDrawing && userPath.length > 1) {
                 ctx.strokeStyle = 'rgba(251, 191, 36, 0.3)'; ctx.lineWidth = 2; ctx.beginPath();
-                ctx.beginPath(); ctx.arc(p.x * canvas.width, p.y * canvas.height, 4, 0, Math.PI*2);
-                ctx.fillStyle = 'rgba(251, 191, 36, 0.5)'; ctx.fill();
-            });
-
-            // Drawing the Yellow Line
-            if(userPath.length > 1) {
-                ctx.strokeStyle = 'var(--gold)'; ctx.lineWidth = 3; ctx.beginPath();
                 userPath.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
                 ctx.stroke();
             }
-
-            weaveFrame = requestAnimationFrame(renderWeave);
+            requestAnimationFrame(renderWeave);
         }
 
         /* --- HALT: UNRAVEL --- */
-        /* --- HALT: EXPLOSION --- */
         function handleHalt(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -539,13 +232,6 @@
                 box.style.transform = 'translateY(-120px) scale(1.1)';
                 if (navigator.vibrate) navigator.vibrate([10, 40, 10, 60]);
                 setTimeout(() => { box.value = ""; box.style.filter = "none"; box.style.opacity = "1"; box.style.transform = "none"; exitToHome(); }, 2300);
-                box.classList.add('exploding');
-                if (navigator.vibrate) navigator.vibrate([50, 100, 50]);
-                setTimeout(() => { 
-                    box.classList.remove('exploding');
-                    box.value = "";
-                    startFeather(); // Transition to EMDR after explosion
-                }, 800);
             }
         }
     </script>
