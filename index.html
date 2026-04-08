@@ -112,8 +112,22 @@
         let curLvl = 0;
         let drawing = false;
 
-        const levels = [
-            { n: "HUB-EYE", pts: [{x:0.5, y:0.5}, {x:0.2, y:0.2}, {x:0.5, y:0.5}, {x:0.8, y:0.2}, {x:0.5, y:0.5}, {x:0.5, y:0.8}] }
+        const advancedLevels = [
+            {
+                n: "ST’ÉXEM MASK",
+                pts: [
+                    {x: 0.5, y: 0.5, h: true},  // 0: THE HUB (Center)
+                    {x: 0.2, y: 0.3},           // 1: Top Left
+                    {x: 0.5, y: 0.5, h: true},  // 2: Back to Hub
+                    {x: 0.8, y: 0.3},           // 3: Top Right
+                    {x: 0.5, y: 0.5, h: true},  // 4: Back to Hub
+                    {x: 0.2, y: 0.7},           // 5: Bottom Left
+                    {x: 0.5, y: 0.5, h: true},  // 6: Back to Hub
+                    {x: 0.8, y: 0.7},           // 7: Bottom Right
+                    {x: 0.5, y: 0.2, h: true},  // 8: Crown Point
+                    {x: 0.5, y: 0.8}            // 9: Base Anchor
+                ]
+            }
         ];
 
         function go(s) {
@@ -172,13 +186,12 @@
         // WEAVE LOGIC (MAGNETIC HUB)
         function initWeave() {
             const c = document.getElementById('cvs');
-            const ctx = c.getContext('2d');
             c.width = window.innerWidth;
             c.height = window.innerHeight;
             connectedPoints = [0];
 
             document.getElementById('touch-layer').onpointermove = (e) => {
-                const pts = levels[curLvl].pts;
+                const pts = advancedLevels[curLvl].pts;
                 const nextIdx = connectedPoints.length;
                 if(nextIdx >= pts.length) return;
 
@@ -192,40 +205,62 @@
                     if(navigator.vibrate) navigator.vibrate(40);
                 }
             };
-            requestAnimationFrame(drawWeave);
+            requestAnimationFrame(drawLoop);
         }
 
-        function drawWeave() {
+        function drawLoop() {
             const c = document.getElementById('cvs');
             const ctx = c.getContext('2d');
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(0, 0, c.width, c.height);
+            c.width = window.innerWidth;
+            c.height = window.innerHeight;
 
-            const pts = levels[curLvl].pts;
+            ctx.fillStyle = '#0f172a'; // Midnight Slate
+            ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
 
-            // GHOST LEAD
-            ctx.setLineDash([5, 15]);
+            const pts = advancedLevels[curLvl].pts;
+
+            // 1. THE ROADMAP (Bone White Dashed Path)
+            // This now shows the "In-and-Out" complexity before they start
+            ctx.setLineDash([6, 10]);
             ctx.strokeStyle = 'rgba(248, 250, 252, 0.2)';
+            ctx.lineWidth = 1.5;
             ctx.beginPath();
             pts.forEach((p, i) => {
-                if(i===0) ctx.moveTo(p.x*c.width, p.y*c.height);
-                else ctx.lineTo(p.x*c.width, p.y*c.height);
+                if (i === 0) ctx.moveTo(p.x * window.innerWidth, p.y * window.innerHeight);
+                else ctx.lineTo(p.x * window.innerWidth, p.y * window.innerHeight);
             });
             ctx.stroke();
 
-            // ACTIVE THREAD
+            // 2. THE ACTIVE THREAD (Sky Blue)
             ctx.setLineDash([]);
             ctx.strokeStyle = '#38bdf8';
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
             ctx.beginPath();
             connectedPoints.forEach((idx, i) => {
                 const p = pts[idx];
-                if(i===0) ctx.moveTo(p.x*c.width, p.y*c.height);
-                else ctx.lineTo(p.x*c.width, p.y*c.height);
+                if (i === 0) ctx.moveTo(p.x * window.innerWidth, p.y * window.innerHeight);
+                else ctx.lineTo(p.x * window.innerWidth, p.y * window.innerHeight);
             });
             ctx.stroke();
 
-            requestAnimationFrame(drawWeave);
+            // 3. THE NEXT TARGET (Teal Glow)
+            const nextIdx = connectedPoints.length;
+            if (nextIdx < pts.length) {
+                const p = pts[nextIdx];
+                const isHub = p.h === true;
+
+                // Large Beacon for Hub, Standard for Spoke
+                ctx.beginPath();
+                ctx.arc(p.x * window.innerWidth, p.y * window.innerHeight, isHub ? 15 : 8, 0, 7);
+                ctx.fillStyle = isHub ? '#38bdf8' : '#0d9488';
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = ctx.fillStyle;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            requestAnimationFrame(drawLoop);
         }
     </script>
 </body>
