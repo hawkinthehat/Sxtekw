@@ -60,10 +60,24 @@
             color: var(--bone); font-size: 2.2rem; text-align: center;
             outline: none; transition: transform 0.1s;
         }
-        .terminating { animation: pressure-hold 1.2s forwards; }
-        @keyframes pressure-hold {
-            0% { transform: scale(1); }
-            80% { transform: scale(1.4); color: var(--danger); filter: blur(1px); }
+        .feather-orb {
+            width: 60px;
+            height: 60px;
+            position: absolute;
+            pointer-events: none;
+            z-index: 1000;
+            filter: drop-shadow(0 0 8px var(--accent));
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2338bdf8"><path d="M21 2c-5 0-11 5-13 11-1 3 0 6 0 6l-5 3 1 1 3-5s3 1 6 0c6-2 11-8 11-13 0-1-1-3-3-3z"/></svg>') no-repeat center;
+            background-size: contain;
+        }
+        .stress-grow {
+            animation: jade-shatter 1.8s cubic-bezier(0.95, 0.05, 0.795, 0.035) forwards;
+        }
+        @keyframes jade-shatter {
+            0% { transform: scale(1); opacity: 1; }
+            30% { transform: scale(1.2); color: var(--bone); }
+            70% { transform: scale(2.5); color: var(--danger); filter: blur(1px); opacity: 1; }
+            95% { transform: scale(4); filter: blur(10px); opacity: 0.5; }
             100% { transform: scale(0); opacity: 0; }
         }
 
@@ -97,7 +111,7 @@
     <div id="scr-spark" class="screen">
         <button class="btn-hilu" onclick="home()">HÍLU</button>
         <input type="text" id="spark-in" placeholder="TYPE BURDEN" onkeydown="handleSpark(event)">
-        <div id="orb-v" style="display:none; width:40px; height:40px; background:var(--accent); border-radius:50%; position:absolute; box-shadow: 0 0 20px var(--accent);"></div>
+        <div id="orb-v" style="display:none;"></div>
     </div>
 
     <div id="scr-weave" class="screen">
@@ -131,32 +145,61 @@
         ];
 
         function go(s) {
+            currentMode = s;
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
             document.getElementById(`scr-${s}`).classList.add('active');
             if(s === 'weave') initWeave();
             if(s === 'still') nextStill();
+            if(s === 'spark') resetSpark();
         }
 
         function home() { go('home'); }
 
         // SPARK LOGIC
         function handleSpark(e) {
-            if(e.key === 'Enter') {
-                const input = document.getElementById('spark-in');
-                input.classList.add('terminating');
-                if(navigator.vibrate) navigator.vibrate([50, 100, 50, 300]);
+            if (e.key !== 'Enter') return;
 
-                setTimeout(() => {
-                    input.style.display = 'none';
-                    startOrbit();
-                }, 1200);
-            }
+            const input = document.getElementById('spark-in');
+            if (!input.value.trim() || input.classList.contains('stress-grow')) return;
+
+            input.classList.add('stress-grow');
+            if(navigator.vibrate) navigator.vibrate([50, 50, 100, 50, 400]);
+
+            setTimeout(() => {
+                input.style.display = 'none';
+                startOrbit();
+            }, 1800);
+        }
+
+        function resetSpark() {
+            const input = document.getElementById('spark-in');
+            const orb = document.getElementById('orb-v');
+            input.style.display = 'block';
+            input.classList.remove('stress-grow');
+            input.value = '';
+            orb.style.display = 'none';
         }
 
         function startOrbit() {
             const orb = document.getElementById('orb-v');
             orb.style.display = 'block';
-            // Simple orbital logic for visual confirmation...
+            orb.className = 'feather-orb';
+
+            let angle = 0;
+            const radius = 150;
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            function animate() {
+                if (currentMode !== 'spark') return;
+                angle += 0.03;
+                orb.style.left = (centerX + radius * Math.cos(angle) - 30) + 'px';
+                orb.style.top = (centerY + radius * Math.sin(angle) - 30) + 'px';
+                orb.style.transform = `rotate(${angle + 1.5}rad)`;
+                requestAnimationFrame(animate);
+            }
+
+            animate();
         }
 
         // STILL LOGIC
