@@ -138,6 +138,7 @@
         let currentMode = 'home';
         let connectedPoints = [];
         let curLvl = 0;
+        let activeRadius = 80;
         let drawing = false;
 
         const advancedLevels = [
@@ -283,8 +284,13 @@
             c.width = window.innerWidth;
             c.height = window.innerHeight;
             connectedPoints = [0];
-
-            document.getElementById('touch-layer').onpointermove = (e) => {
+            drawing = false;
+            const touchLayer = document.getElementById('touch-layer');
+            touchLayer.onpointerdown = () => { drawing = true; };
+            touchLayer.onpointerup = () => { drawing = false; };
+            touchLayer.onpointercancel = () => { drawing = false; };
+            touchLayer.onpointermove = (e) => {
+                if (!drawing) return;
                 const pts = advancedLevels[curLvl].pts;
                 const nextIdx = connectedPoints.length;
                 if(nextIdx >= pts.length) return;
@@ -292,11 +298,20 @@
                 const target = pts[nextIdx];
                 const tx = target.x * c.width;
                 const ty = target.y * c.height;
-                const dist = Math.sqrt((e.clientX - tx)**2 + (e.clientY - ty)**2);
+                const dist = Math.hypot(e.clientX - tx, e.clientY - ty);
 
-                if(dist < 60) {
+                if (dist < activeRadius) {
                     connectedPoints.push(nextIdx);
-                    if(navigator.vibrate) navigator.vibrate(40);
+                    if (navigator.vibrate) navigator.vibrate([40]);
+
+                    if (connectedPoints.length === pts.length) {
+                        drawing = false;
+                        if (navigator.vibrate) navigator.vibrate([20, 50, 100]);
+                        setTimeout(() => {
+                            curLvl = (curLvl + 1) % advancedLevels.length;
+                            initWeave();
+                        }, 800);
+                    }
                 }
             };
             requestAnimationFrame(drawLoop);
