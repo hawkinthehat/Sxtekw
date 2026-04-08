@@ -45,6 +45,13 @@
             background: rgba(255, 255, 255, 0.03); border: 1px solid var(--lead);
             padding: 30px 10px; border-radius: 20px; text-align: center;
         }
+        .pill.is-pressed {
+            transform: scale(0.97);
+            border-color: var(--accent);
+            background: rgba(56, 189, 248, 0.14);
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+        }
+        .pill:active { border-color: var(--accent); background: rgba(56, 189, 248, 0.1); }
         .pill-large { grid-column: span 2; }
         .halt-trigger {
             width: 140px; height: 140px; border-radius: 50%;
@@ -52,6 +59,13 @@
             display: flex; align-items: center; justify-content: center;
             color: var(--danger); font-weight: 900; letter-spacing: 5px;
             box-shadow: 0 0 30px rgba(239, 68, 68, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .halt-trigger.is-pressed {
+            transform: scale(0.95);
+            background: rgba(239, 68, 68, 0.22);
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.35);
         }
 
         /* SPARK: PRESSURE SYSTEM */
@@ -93,11 +107,11 @@
 <body>
 
     <div id="scr-home" class="screen active">
-        <div class="halt-trigger" onclick="go('halt')">HALT</div>
+        <div class="halt-trigger" data-go="halt" role="button" tabindex="0" aria-label="Open HALT protocol">HALT</div>
         <div class="pill-grid">
-            <div class="pill" onclick="go('still')"><div style="color:var(--accent)">STILL</div></div>
-            <div class="pill" onclick="go('spark')"><div style="color:var(--accent)">SPARK</div></div>
-            <div class="pill pill-large" onclick="go('weave')"><div style="color:var(--accent)">WEAVE</div></div>
+            <div class="pill" data-go="still" role="button" tabindex="0" aria-label="Open STILL protocol"><div style="color:var(--accent)">STILL</div></div>
+            <div class="pill" data-go="spark" role="button" tabindex="0" aria-label="Open SPARK protocol"><div style="color:var(--accent)">SPARK</div></div>
+            <div class="pill pill-large" data-go="weave" role="button" tabindex="0" aria-label="Open WEAVE protocol"><div style="color:var(--accent)">WEAVE</div></div>
         </div>
     </div>
 
@@ -151,6 +165,43 @@
             if(s === 'weave') initWeave();
             if(s === 'still') nextStill();
             if(s === 'spark') resetSpark();
+        }
+
+        function bindHomeNavigation() {
+            const navItems = document.querySelectorAll('#scr-home [data-go]');
+            navItems.forEach((item) => {
+                const target = item.getAttribute('data-go');
+                if (!target) return;
+
+                const setPressed = () => item.classList.add('is-pressed');
+                const clearPressed = () => item.classList.remove('is-pressed');
+
+                item.addEventListener('pointerdown', (event) => {
+                    if (!event.isPrimary) return;
+                    if (event.pointerType === 'mouse' && event.button !== 0) return;
+                    setPressed();
+                });
+
+                item.addEventListener('pointerup', clearPressed);
+                item.addEventListener('pointercancel', clearPressed);
+                item.addEventListener('pointerleave', clearPressed);
+
+                item.addEventListener('click', (event) => {
+                    if (typeof event.button === 'number' && event.button !== 0) return;
+                    clearPressed();
+                    go(target);
+                });
+
+                item.addEventListener('keydown', (event) => {
+                    if (event.key !== 'Enter' && event.key !== ' ') return;
+                    event.preventDefault();
+                    setPressed();
+                    requestAnimationFrame(() => {
+                        clearPressed();
+                    });
+                    go(target);
+                });
+            });
         }
 
         function home() { go('home'); }
@@ -305,6 +356,14 @@
 
             requestAnimationFrame(drawLoop);
         }
+        window.addEventListener('DOMContentLoaded', () => {
+            const hasActive = document.querySelector('.screen.active');
+            if (!hasActive) {
+                const homeScreen = document.getElementById('scr-home');
+                if (homeScreen) homeScreen.classList.add('active');
+            }
+            bindHomeNavigation();
+        });
     </script>
 </body>
 </html>
